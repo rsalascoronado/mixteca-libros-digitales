@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -20,7 +19,9 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { Book, mockBooks } from '@/types';
-import { Search, BookOpen, BookPlus } from 'lucide-react';
+import { Search, BookOpen, BookPlus, FileText } from 'lucide-react';
+import { mockDigitalBooks } from '@/types/digitalBook';
+import PDFViewer from '@/components/shared/PDFViewer';
 
 const Catalogo = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,6 +57,9 @@ const Catalogo = () => {
       filteredBooks = filteredBooks.filter(libro => libro.disponibles > 0);
     } else if (disponibilidad === 'no-disponible') {
       filteredBooks = filteredBooks.filter(libro => libro.disponibles === 0);
+    } else if (disponibilidad === 'digital') {
+      const librosConDigital = mockDigitalBooks.map(digital => digital.bookId);
+      filteredBooks = filteredBooks.filter(libro => librosConDigital.includes(libro.id));
     }
     
     setLibros(filteredBooks);
@@ -65,6 +69,11 @@ const Catalogo = () => {
     setSearchTerm('');
     setCategoria('');
     setDisponibilidad('');
+  };
+
+  // Función para obtener las versiones digitales de un libro
+  const getDigitalVersions = (bookId: string) => {
+    return mockDigitalBooks.filter(digital => digital.bookId === bookId);
   };
 
   return (
@@ -112,9 +121,10 @@ const Catalogo = () => {
                     <SelectValue placeholder="Cualquier disponibilidad" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Cualquier disponibilidad</SelectItem>
-                    <SelectItem value="disponible">Disponible</SelectItem>
+                    <SelectItem value="">Cualquier disponibilidad</SelectItem>
+                    <SelectItem value="disponible">Disponible físicamente</SelectItem>
                     <SelectItem value="no-disponible">No disponible</SelectItem>
+                    <SelectItem value="digital">Disponible en digital</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -135,52 +145,74 @@ const Catalogo = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {libros.map((libro) => (
-            <Card key={libro.id} className="overflow-hidden">
-              <div className="h-40 bg-gray-200 flex items-center justify-center">
-                {libro.imagen ? (
-                  <img 
-                    src={libro.imagen} 
-                    alt={libro.titulo} 
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <BookPlus className="h-16 w-16 text-gray-400" />
-                )}
-              </div>
-              <CardHeader className="pb-2">
-                <CardTitle className="line-clamp-2">{libro.titulo}</CardTitle>
-              </CardHeader>
-              <CardContent className="pb-4">
-                <p className="text-gray-600 mb-2">{libro.autor}</p>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm bg-accent/80 px-2 py-1 rounded">
-                    {libro.categoria}
-                  </span>
-                  <span className={`text-sm ${libro.disponibles > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {libro.disponibles > 0 
-                      ? `${libro.disponibles} disponibles` 
-                      : 'No disponible'
-                    }
-                  </span>
+          {libros.map((libro) => {
+            const versionesDigitales = getDigitalVersions(libro.id);
+            return (
+              <Card key={libro.id} className="overflow-hidden">
+                <div className="h-40 bg-gray-200 flex items-center justify-center">
+                  {libro.imagen ? (
+                    <img 
+                      src={libro.imagen} 
+                      alt={libro.titulo} 
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <BookPlus className="h-16 w-16 text-gray-400" />
+                  )}
                 </div>
-                <p className="text-sm text-gray-500">
-                  Editorial: {libro.editorial}, {libro.anioPublicacion}
-                </p>
-                <p className="text-sm text-gray-500">
-                  ISBN: {libro.isbn}
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Link to={`/libro/${libro.id}`} className="w-full">
-                  <Button variant="outline" className="w-full">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Ver detalles
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
+                <CardHeader className="pb-2">
+                  <CardTitle className="line-clamp-2">{libro.titulo}</CardTitle>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  <p className="text-gray-600 mb-2">{libro.autor}</p>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm bg-accent/80 px-2 py-1 rounded">
+                      {libro.categoria}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm ${libro.disponibles > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {libro.disponibles > 0 
+                          ? `${libro.disponibles} disponibles` 
+                          : 'No disponible'
+                        }
+                      </span>
+                      {versionesDigitales.length > 0 && (
+                        <span className="text-sm text-blue-600 flex items-center gap-1">
+                          <FileText className="h-4 w-4" />
+                          Digital
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Editorial: {libro.editorial}, {libro.anioPublicacion}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    ISBN: {libro.isbn}
+                  </p>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-2">
+                  <Link to={`/libro/${libro.id}`} className="w-full">
+                    <Button variant="outline" className="w-full">
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Ver detalles
+                    </Button>
+                  </Link>
+                  {versionesDigitales.length > 0 && (
+                    <div className="w-full flex flex-wrap gap-2">
+                      {versionesDigitales.map((version) => (
+                        <PDFViewer
+                          key={version.id}
+                          url={version.url}
+                          fileName={`${libro.titulo} - ${version.formato}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
         
         {libros.length === 0 && (
