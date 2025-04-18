@@ -156,7 +156,7 @@ const GestionLibros = () => {
     });
   };
 
-  const isAdmin = hasRole('administrador');
+  const isStaff = hasRole(['administrador', 'bibliotecario']);
 
   return (
     <MainLayout>
@@ -311,10 +311,12 @@ const GestionLibros = () => {
 
               <TabsContent value="digital">
                 <div className="flex justify-end mb-4">
-                  <NewDigitalBookDialog 
-                    categories={categories}
-                    onAddBook={handleAddBookDigital}
-                  />
+                  {isStaff && (
+                    <NewDigitalBookDialog 
+                      categories={categories}
+                      onAddBook={handleAddBookDigital}
+                    />
+                  )}
                 </div>
                 <div className="rounded-md border">
                   <Table>
@@ -341,12 +343,14 @@ const GestionLibros = () => {
                                 <DigitalBooksDialog 
                                   book={book} 
                                   digitalBooks={digitalBooks}
-                                  onDeleteDigitalBook={handleDeleteDigitalBook}
+                                  onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
                                 />
-                                <UploadDigitalBookDialog 
-                                  book={book} 
-                                  onAddDigitalBook={handleAddDigitalBook}
-                                />
+                                {isStaff && (
+                                  <UploadDigitalBookDialog 
+                                    book={book} 
+                                    onAddDigitalBook={handleAddDigitalBook}
+                                  />
+                                )}
                               </div>
                             </TableCell>
                           </TableRow>

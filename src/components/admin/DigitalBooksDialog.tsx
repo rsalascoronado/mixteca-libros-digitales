@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,8 @@ import { Book } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useAuth } from '@/contexts/AuthContext';
+import PDFViewer from '../shared/PDFViewer';
 
 interface DigitalBooksDialogProps {
   book: Book;
@@ -18,15 +21,10 @@ interface DigitalBooksDialogProps {
 
 export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDeleteDigitalBook }: DigitalBooksDialogProps) {
   const [open, setOpen] = useState(false);
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [selectedBook, setSelectedBook] = useState<DigitalBook | null>(null);
+  const { hasRole } = useAuth();
+  const isStaff = hasRole(['administrador', 'bibliotecario']);
 
   const bookDigitalVersions = digitalBooks.filter(db => db.bookId === book.id);
-
-  const handleViewBook = (digitalBook: DigitalBook) => {
-    setSelectedBook(digitalBook);
-    setViewerOpen(true);
-  };
 
   const handleDeleteVersion = (id: string) => {
     if (onDeleteDigitalBook) {
@@ -41,15 +39,6 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
       case 'MOBI': return <BookOpen className="h-4 w-4 text-green-500" />;
       default: return <File className="h-4 w-4" />;
     }
-  };
-
-  const handleDownload = (digitalBook: DigitalBook) => {
-    const link = document.createElement('a');
-    link.href = digitalBook.url;
-    link.download = `${book.titulo}.${digitalBook.formato.toLowerCase()}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (
@@ -103,23 +92,11 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleViewBook(digitalBook)}
-                        >
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">Ver</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownload(digitalBook)}
-                        >
-                          <FileText className="h-4 w-4" />
-                          <span className="sr-only">Descargar</span>
-                        </Button>
-                        {onDeleteDigitalBook && (
+                        <PDFViewer 
+                          url={digitalBook.url} 
+                          fileName={`${book.titulo} - ${digitalBook.formato}`} 
+                        />
+                        {isStaff && onDeleteDigitalBook && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -139,26 +116,6 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
           )}
         </DialogContent>
       </Dialog>
-
-      {selectedBook && (
-        <Dialog open={viewerOpen} onOpenChange={setViewerOpen}>
-          <DialogContent className="sm:max-w-[900px] sm:h-[80vh]">
-            <DialogHeader>
-              <DialogTitle>
-                Visualizando: {book.titulo} - {selectedBook.formato}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="h-full flex-1 overflow-hidden rounded border">
-              <iframe 
-                src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedBook.url)}&embedded=true`}
-                className="w-full h-full"
-                title={`${book.titulo} - ${selectedBook.formato}`}
-                sandbox="allow-scripts allow-same-origin"
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </>
   );
 }
