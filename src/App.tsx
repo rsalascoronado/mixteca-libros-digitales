@@ -19,6 +19,7 @@ import MisPrestamos from "./pages/MisPrestamos";
 import Configuracion from "./pages/admin/Configuracion";
 import GestionPrestamos from "./pages/admin/GestionPrestamos";
 import GestionLibros from "./pages/admin/GestionLibros";
+import GestionTesis from "./pages/admin/GestionTesis";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,11 @@ const App = () => (
             <Route path="/admin/libros" element={
               <AdminRoute>
                 <GestionLibros />
+              </AdminRoute>
+            } />
+            <Route path="/admin/tesis" element={
+              <AdminRoute>
+                <GestionTesis />
               </AdminRoute>
             } />
             <Route path="/admin/configuracion" element={

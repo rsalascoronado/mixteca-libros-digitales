@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, User, BookOpen } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
 const Header = () => {
   const {
     user,
@@ -35,6 +36,9 @@ const Header = () => {
               </Link>
               <Link to="/admin/libros" className="text-primary-foreground hover:text-white transition-colors">
                 Gestionar libros
+              </Link>
+              <Link to="/admin/tesis" className="text-primary-foreground hover:text-white transition-colors">
+                Gestionar tesis
               </Link>
               {hasRole('administrador') && <Link to="/admin/configuracion" className="text-primary-foreground hover:text-white transition-colors">
                   Configuración
@@ -76,4 +80,5 @@ const Header = () => {
       </div>
     </header>;
 };
+
 export default Header;
