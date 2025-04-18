@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { CheckCircle2 } from 'lucide-react';
 import type { Prestamo } from '@/types';
+import BarcodeScanner from './BarcodeScanner';
+import { useToast } from '@/hooks/use-toast';
 
 interface PrestamoItemProps {
   prestamo: Prestamo & {
@@ -19,6 +21,20 @@ interface PrestamoItemProps {
 }
 
 const PrestamoItem = ({ prestamo, onMarcarDevuelto }: PrestamoItemProps) => {
+  const { toast } = useToast();
+  
+  const handleScan = (isbn: string) => {
+    // Aquí deberías verificar que el ISBN escaneado corresponde al libro
+    // Por ahora, solo validamos que se haya escaneado algo
+    if (isbn) {
+      onMarcarDevuelto(prestamo.id);
+      toast({
+        title: "Libro escaneado correctamente",
+        description: `ISBN: ${isbn}`,
+      });
+    }
+  };
+
   return (
     <TableRow 
       className={
@@ -79,14 +95,17 @@ const PrestamoItem = ({ prestamo, onMarcarDevuelto }: PrestamoItemProps) => {
       </TableCell>
       <TableCell>
         {prestamo.estado !== 'devuelto' ? (
-          <Button 
-            size="sm" 
-            variant="outline"
-            onClick={() => onMarcarDevuelto(prestamo.id)}
-          >
-            <CheckCircle2 className="h-4 w-4 mr-1" />
-            Marcar como devuelto
-          </Button>
+          <div className="flex gap-2">
+            <BarcodeScanner onScan={handleScan} />
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => onMarcarDevuelto(prestamo.id)}
+            >
+              <CheckCircle2 className="h-4 w-4 mr-1" />
+              Marcar como devuelto
+            </Button>
+          </div>
         ) : (
           <span className="text-sm text-gray-500">Devuelto</span>
         )}
