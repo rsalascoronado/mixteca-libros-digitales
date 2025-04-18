@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,12 +15,14 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DataExport from '@/components/admin/DataExport';
+import DataImport from '@/components/admin/DataImport';
+import { useToast } from '@/components/ui/use-toast';
 
 const GestionLibros = () => {
   const { hasRole } = useAuth();
   const [searchTerm, setSearchTerm] = React.useState('');
+  const { toast } = useToast();
   
-  // Filter books based on search term
   const filteredBooks = React.useMemo(() => {
     return mockBooks.filter(book => 
       book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -29,6 +30,13 @@ const GestionLibros = () => {
       book.isbn.includes(searchTerm)
     );
   }, [searchTerm]);
+
+  const handleImportData = (data: any[]) => {
+    toast({
+      title: "Datos importados",
+      description: `Se importaron ${data.length} libros correctamente.`
+    });
+  };
 
   return (
     <MainLayout>
@@ -42,7 +50,8 @@ const GestionLibros = () => {
                   Administra el catálogo de libros de la biblioteca
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                <DataImport onImport={handleImportData} />
                 <DataExport 
                   data={mockBooks} 
                   filename="libros-biblioteca" 

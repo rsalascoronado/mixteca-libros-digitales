@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,10 +15,13 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DataExport from '@/components/admin/DataExport';
+import DataImport from '@/components/admin/DataImport';
+import { useToast } from '@/components/ui/use-toast';
 
 const GestionUsuarios = () => {
   const { hasRole } = useAuth();
   const [searchTerm, setSearchTerm] = React.useState('');
+  const { toast } = useToast();
   
   // Filter users based on search term
   const filteredUsers = React.useMemo(() => {
@@ -29,6 +31,15 @@ const GestionUsuarios = () => {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm]);
+
+  const handleImportData = (data: any[]) => {
+    // Here you would typically send this data to your backend
+    // For now, we'll just show a toast notification
+    toast({
+      title: "Datos importados",
+      description: `Se importaron ${data.length} usuarios correctamente.`
+    });
+  };
 
   return (
     <MainLayout>
@@ -42,7 +53,8 @@ const GestionUsuarios = () => {
                   Administra los usuarios del sistema de biblioteca
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                <DataImport onImport={handleImportData} />
                 <DataExport 
                   data={mockUsers} 
                   filename="usuarios-biblioteca" 
