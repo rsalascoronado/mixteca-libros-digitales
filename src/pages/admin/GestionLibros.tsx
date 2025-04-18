@@ -4,7 +4,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockBooks, mockCategories } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash, MoreHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -20,20 +20,29 @@ import DataImport from '@/components/admin/DataImport';
 import { CategoriaDialog } from '@/components/admin/CategoriaDialog';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const GestionLibros = () => {
   const { hasRole } = useAuth();
   const [searchTerm, setSearchTerm] = React.useState('');
   const { toast } = useToast();
   const [categories, setCategories] = React.useState(mockCategories);
+  const [books, setBooks] = React.useState(mockBooks);
   
   const filteredBooks = React.useMemo(() => {
-    return mockBooks.filter(book => 
+    return books.filter(book => 
       book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.isbn.includes(searchTerm)
     );
-  }, [searchTerm]);
+  }, [books, searchTerm]);
 
   const handleImportData = (data: any[]) => {
     toast({
@@ -54,6 +63,40 @@ const GestionLibros = () => {
     });
   };
 
+  const handleDeleteCategory = (id: string) => {
+    setCategories(categories.filter(cat => cat.id !== id));
+    toast({
+      title: "Categoría eliminada",
+      description: "La categoría ha sido eliminada exitosamente."
+    });
+  };
+
+  const handleEditCategory = (id: string) => {
+    // This would normally open a dialog to edit the category
+    toast({
+      title: "Editar categoría",
+      description: "Funcionalidad de edición en desarrollo."
+    });
+  };
+
+  const handleDeleteBook = (id: string) => {
+    setBooks(books.filter(book => book.id !== id));
+    toast({
+      title: "Libro eliminado",
+      description: "El libro ha sido eliminado exitosamente."
+    });
+  };
+
+  const handleEditBook = (id: string) => {
+    // This would normally open a dialog to edit the book
+    toast({
+      title: "Editar libro",
+      description: "Funcionalidad de edición en desarrollo."
+    });
+  };
+
+  const isAdmin = hasRole('administrador');
+
   return (
     <MainLayout>
       <div className="container mx-auto py-8">
@@ -69,7 +112,7 @@ const GestionLibros = () => {
               <div className="flex gap-2 items-center">
                 <DataImport onImport={handleImportData} />
                 <DataExport 
-                  data={mockBooks} 
+                  data={books} 
                   filename="libros-biblioteca" 
                   buttonLabel="Exportar libros"
                 />
@@ -123,12 +166,29 @@ const GestionLibros = () => {
                           <TableCell>{book.disponibles} / {book.copias}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
-                                Editar
-                              </Button>
-                              <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
-                                Eliminar
-                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Acciones</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => handleEditBook(book.id)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => handleDeleteBook(book.id)}
+                                    className="text-red-500 focus:text-red-500"
+                                  >
+                                    <Trash className="mr-2 h-4 w-4" />
+                                    Eliminar
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -158,10 +218,21 @@ const GestionLibros = () => {
                           <TableCell>{category.descripcion}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleEditCategory(category.id)}
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
                                 Editar
                               </Button>
-                              <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-red-500 hover:text-red-700"
+                                onClick={() => handleDeleteCategory(category.id)}
+                              >
+                                <Trash className="mr-2 h-4 w-4" />
                                 Eliminar
                               </Button>
                             </div>
