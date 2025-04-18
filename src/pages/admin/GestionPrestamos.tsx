@@ -88,6 +88,28 @@ const GestionPrestamos = () => {
     });
   };
 
+  const handleAplicarPenalizacion = (prestamoId: string, dias: number, razon: string) => {
+    setPrestamos(prev => 
+      prev.map(prestamo => 
+        prestamo.id === prestamoId 
+          ? {
+              ...prestamo,
+              penalizacion: {
+                dias,
+                razon,
+                fechaAplicacion: new Date(),
+              }
+            }
+          : prestamo
+      )
+    );
+    
+    toast({
+      title: "Penalización aplicada",
+      description: `Se ha aplicado una penalización de ${dias} días al usuario.`,
+    });
+  };
+
   const limpiarFiltros = () => {
     setFiltroEstado('all');
     setBusqueda('');
@@ -135,6 +157,7 @@ const GestionPrestamos = () => {
         <PrestamosList 
           prestamos={prestamosFiltrados} 
           onMarcarDevuelto={handleMarcarDevuelto}
+          onAplicarPenalizacion={handleAplicarPenalizacion}
         />
       </div>
     </MainLayout>

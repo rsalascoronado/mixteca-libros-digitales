@@ -1,13 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import type { Prestamo } from '@/types';
 import BarcodeScanner from './BarcodeScanner';
 import { useToast } from '@/hooks/use-toast';
+import PenalizacionDialog from './PenalizacionDialog';
 
 interface PrestamoItemProps {
   prestamo: Prestamo & {
@@ -18,10 +19,12 @@ interface PrestamoItemProps {
     vencido: boolean;
   };
   onMarcarDevuelto: (id: string) => void;
+  onAplicarPenalizacion: (id: string, dias: number, razon: string) => void;
 }
 
-const PrestamoItem = ({ prestamo, onMarcarDevuelto }: PrestamoItemProps) => {
+const PrestamoItem = ({ prestamo, onMarcarDevuelto, onAplicarPenalizacion }: PrestamoItemProps) => {
   const { toast } = useToast();
+  const [showPenalizacionDialog, setShowPenalizacionDialog] = useState(false);
   
   const handleScan = (isbn: string) => {
     // Aquí deberías verificar que el ISBN escaneado corresponde al libro
@@ -33,6 +36,11 @@ const PrestamoItem = ({ prestamo, onMarcarDevuelto }: PrestamoItemProps) => {
         description: `ISBN: ${isbn}`,
       });
     }
+  };
+
+  const handlePenalizacion = (dias: number, razon: string) => {
+    onAplicarPenalizacion(prestamo.id, dias, razon);
+    setShowPenalizacionDialog(false);
   };
 
   return (
@@ -92,23 +100,48 @@ const PrestamoItem = ({ prestamo, onMarcarDevuelto }: PrestamoItemProps) => {
             </>
           )}
         </div>
+        {prestamo.penalizacion && (
+          <div className="mt-1 text-xs text-red-600">
+            <AlertTriangle className="inline-block h-3 w-3 mr-1" />
+            Penalizado {prestamo.penalizacion.dias} días
+          </div>
+        )}
       </TableCell>
       <TableCell>
-        {prestamo.estado !== 'devuelto' ? (
-          <div className="flex gap-2">
-            <BarcodeScanner onScan={handleScan} />
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => onMarcarDevuelto(prestamo.id)}
-            >
-              <CheckCircle2 className="h-4 w-4 mr-1" />
-              Marcar como devuelto
-            </Button>
-          </div>
-        ) : (
-          <span className="text-sm text-gray-500">Devuelto</span>
-        )}
+        <div className="flex gap-2">
+          {prestamo.estado !== 'devuelto' ? (
+            <>
+              <BarcodeScanner onScan={handleScan} />
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => onMarcarDevuelto(prestamo.id)}
+              >
+                <CheckCircle2 className="h-4 w-4 mr-1" />
+                Marcar como devuelto
+              </Button>
+              {(prestamo.vencido || prestamo.estado === 'retrasado') && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => setShowPenalizacionDialog(true)}
+                >
+                  <AlertTriangle className="h-4 w-4 mr-1" />
+                  Penalizar
+                </Button>
+              )}
+            </>
+          ) : (
+            <span className="text-sm text-gray-500">Devuelto</span>
+          )}
+        </div>
+
+        <PenalizacionDialog
+          isOpen={showPenalizacionDialog}
+          onClose={() => setShowPenalizacionDialog(false)}
+          onConfirm={handlePenalizacion}
+          nombreUsuario={prestamo.usuario}
+        />
       </TableCell>
     </TableRow>
   );

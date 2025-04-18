@@ -21,9 +21,10 @@ interface PrestamosListProps {
     vencido: boolean;
   }>;
   onMarcarDevuelto: (id: string) => void;
+  onAplicarPenalizacion: (id: string, dias: number, razon: string) => void;
 }
 
-const PrestamosList = ({ prestamos, onMarcarDevuelto }: PrestamosListProps) => {
+const PrestamosList = ({ prestamos, onMarcarDevuelto, onAplicarPenalizacion }: PrestamosListProps) => {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <Table>
@@ -45,6 +46,7 @@ const PrestamosList = ({ prestamos, onMarcarDevuelto }: PrestamosListProps) => {
                 key={prestamo.id} 
                 prestamo={prestamo} 
                 onMarcarDevuelto={onMarcarDevuelto}
+                onAplicarPenalizacion={onAplicarPenalizacion}
               />
             ))
           ) : (

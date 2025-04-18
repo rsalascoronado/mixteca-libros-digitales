@@ -39,6 +39,11 @@ export interface Prestamo {
   fechaDevolucion: Date;
   estado: 'prestado' | 'devuelto' | 'retrasado';
   observaciones?: string;
+  penalizacion?: {
+    dias: number;
+    razon: string;
+    fechaAplicacion: Date;
+  };
 }
 
 export interface Thesis {
@@ -210,6 +215,11 @@ export const mockPrestamos: Prestamo[] = [
     fechaPrestamo: new Date('2023-04-20'),
     fechaDevolucion: new Date('2023-05-04'),
     estado: 'retrasado',
+    penalizacion: {
+      dias: 15,
+      razon: 'Devolución con retraso significativo',
+      fechaAplicacion: new Date('2023-05-04'),
+    },
   },
   {
     id: '4',
