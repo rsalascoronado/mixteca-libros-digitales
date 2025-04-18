@@ -16,7 +16,8 @@ const bookSchema = z.object({
   autor: z.string().min(1, 'El autor es requerido'),
   isbn: z.string().min(1, 'El ISBN es requerido'),
   categoria: z.string().min(1, 'La categoría es requerida'),
-  disponibles: z.number().min(0, 'El número debe ser positivo'),
+  disponibles: z.coerce.number().min(0, 'El número debe ser positivo'),
+  copias: z.coerce.number().min(0, 'El número debe ser positivo'),
 });
 
 type BookFormData = z.infer<typeof bookSchema>;
@@ -38,20 +39,21 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
       isbn: book.isbn,
       categoria: book.categoria,
       disponibles: book.disponibles,
+      copias: book.copias,
     },
   });
 
   const onSubmit = (data: BookFormData) => {
     onEditBook(book.id, data);
-    form.reset();
     setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <Edit className="h-4 w-4" />
+        <Button variant="ghost" className="w-full justify-start">
+          <Edit className="mr-2 h-4 w-4" />
+          Editar
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -132,7 +134,24 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
                   <FormControl>
                     <Input 
                       type="number" 
-                      {...field} 
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="copias"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Total de copias</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>
