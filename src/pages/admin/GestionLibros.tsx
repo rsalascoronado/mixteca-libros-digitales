@@ -32,6 +32,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NewDigitalBookDialog } from '@/components/admin/NewDigitalBookDialog';
 
 const GestionLibros = () => {
   const { hasRole } = useAuth();
@@ -144,6 +145,14 @@ const GestionLibros = () => {
     toast({
       title: "Archivo digital eliminado",
       description: "El archivo digital ha sido eliminado exitosamente."
+    });
+  };
+
+  const handleAddBookDigital = (book: Book) => {
+    setBooks([...books, book]);
+    toast({
+      title: "Libro digital agregado",
+      description: "Se ha agregado un nuevo libro digital al catálogo."
     });
   };
 
@@ -301,6 +310,12 @@ const GestionLibros = () => {
               </TabsContent>
 
               <TabsContent value="digital">
+                <div className="flex justify-end mb-4">
+                  <NewDigitalBookDialog 
+                    categories={categories}
+                    onAddBook={handleAddBookDigital}
+                  />
+                </div>
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
