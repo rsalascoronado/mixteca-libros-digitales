@@ -139,6 +139,14 @@ const GestionLibros = () => {
     });
   };
 
+  const handleDeleteDigitalBook = (id: string) => {
+    setDigitalBooks(digitalBooks.filter(db => db.id !== id));
+    toast({
+      title: "Archivo digital eliminado",
+      description: "El archivo digital ha sido eliminado exitosamente."
+    });
+  };
+
   const isAdmin = hasRole('administrador');
 
   return (
@@ -318,6 +326,7 @@ const GestionLibros = () => {
                                 <DigitalBooksDialog 
                                   book={book} 
                                   digitalBooks={digitalBooks}
+                                  onDeleteDigitalBook={handleDeleteDigitalBook}
                                 />
                                 <UploadDigitalBookDialog 
                                   book={book} 

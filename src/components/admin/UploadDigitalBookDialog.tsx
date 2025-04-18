@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
@@ -12,16 +12,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Book } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
 
-// Define the schema with required fields matching the DigitalBook type
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
 const digitalBookSchema = z.object({
   formato: z.enum(['PDF', 'EPUB', 'MOBI', 'HTML'], {
     required_error: 'Debe seleccionar un formato',
   }),
-  url: z.string().url({ message: 'Debe ser una URL válida' }),
-  tamanioMb: z.coerce.number().positive({ message: 'El tamaño debe ser mayor a 0' }),
+  file: z.instanceof(File).refine((file) => file.size <= MAX_FILE_SIZE, `El archivo debe ser menor a 100MB`),
 });
 
-// Type for the form data that ensures all fields are required
 type DigitalBookFormData = z.infer<typeof digitalBookSchema>;
 
 interface UploadDigitalBookDialogProps {
@@ -31,25 +30,43 @@ interface UploadDigitalBookDialogProps {
 
 export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigitalBookDialogProps) {
   const [open, setOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const form = useForm<DigitalBookFormData>({
     resolver: zodResolver(digitalBookSchema),
     defaultValues: {
       formato: 'PDF',
-      url: '',
-      tamanioMb: 0,
     },
   });
 
-  const onSubmit = (data: DigitalBookFormData) => {
-    // The data object now has non-optional properties that match the expected type
-    onAddDigitalBook(book.id, {
-      formato: data.formato,
-      url: data.url,
-      tamanioMb: data.tamanioMb,
-    });
-    form.reset();
-    setOpen(false);
+  const onSubmit = async (data: DigitalBookFormData) => {
+    try {
+      // Here we would typically upload to a server
+      // For now, we'll create an object URL
+      const url = URL.createObjectURL(data.file);
+      
+      onAddDigitalBook(book.id, {
+        formato: data.formato,
+        url: url,
+        tamanioMb: Number((data.file.size / (1024 * 1024)).toFixed(2)),
+      });
+      
+      form.reset();
+      setOpen(false);
+    } catch (error) {
+      console.error('Error al subir el archivo:', error);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      form.setValue('file', file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -89,39 +106,40 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
-              name="url"
-              render={({ field }) => (
+              name="file"
+              render={({ field: { onChange, ...field } }) => (
                 <FormItem>
-                  <FormLabel>URL del archivo</FormLabel>
+                  <FormLabel>Archivo</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://ejemplo.com/archivo.pdf" {...field} />
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={handleFileSelect}
+                        accept=".pdf,.epub,.mobi,.html"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={triggerFileInput}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Seleccionar archivo
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="tamanioMb"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tamaño (MB)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      step="0.1"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
             <Button type="submit" className="w-full">
-              <Upload className="mr-2 h-4 w-4" />
+              <FileUp className="mr-2 h-4 w-4" />
               Subir archivo
             </Button>
           </form>
