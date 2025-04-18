@@ -12,6 +12,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Book } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
 
+// Define the schema with required fields matching the DigitalBook type
 const digitalBookSchema = z.object({
   formato: z.enum(['PDF', 'EPUB', 'MOBI', 'HTML'], {
     required_error: 'Debe seleccionar un formato',
@@ -20,6 +21,7 @@ const digitalBookSchema = z.object({
   tamanioMb: z.coerce.number().positive({ message: 'El tamaño debe ser mayor a 0' }),
 });
 
+// Type for the form data that ensures all fields are required
 type DigitalBookFormData = z.infer<typeof digitalBookSchema>;
 
 interface UploadDigitalBookDialogProps {
@@ -40,7 +42,12 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
   });
 
   const onSubmit = (data: DigitalBookFormData) => {
-    onAddDigitalBook(book.id, data);
+    // The data object now has non-optional properties that match the expected type
+    onAddDigitalBook(book.id, {
+      formato: data.formato,
+      url: data.url,
+      tamanioMb: data.tamanioMb,
+    });
     form.reset();
     setOpen(false);
   };
