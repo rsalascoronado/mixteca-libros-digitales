@@ -1,9 +1,10 @@
+
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockBooks, mockCategories, BookCategory, Book } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Search, Edit, Trash, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash, MoreHorizontal, Database, Upload } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -19,6 +20,9 @@ import DataImport from '@/components/admin/DataImport';
 import { CategoriaDialog } from '@/components/admin/CategoriaDialog';
 import { EditCategoriaDialog } from '@/components/admin/EditCategoriaDialog';
 import { EditBookDialog } from '@/components/admin/EditBookDialog';
+import { DigitalBooksDialog } from '@/components/admin/DigitalBooksDialog';
+import { UploadDigitalBookDialog } from '@/components/admin/UploadDigitalBookDialog';
+import { mockDigitalBooks, DigitalBook } from '@/types/digitalBook';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -36,6 +40,7 @@ const GestionLibros = () => {
   const { toast } = useToast();
   const [categories, setCategories] = React.useState(mockCategories);
   const [books, setBooks] = React.useState(mockBooks);
+  const [digitalBooks, setDigitalBooks] = React.useState(mockDigitalBooks);
   
   const filteredBooks = React.useMemo(() => {
     return books.filter(book => 
@@ -100,6 +105,20 @@ const GestionLibros = () => {
     });
   };
 
+  const handleAddDigitalBook = (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => {
+    const newDigitalBook: DigitalBook = {
+      id: Math.random().toString(36).substr(2, 9),
+      bookId,
+      fechaSubida: new Date(),
+      ...data
+    };
+    setDigitalBooks([...digitalBooks, newDigitalBook]);
+    toast({
+      title: "Archivo digital agregado",
+      description: `Se ha agregado una versión ${data.formato} al libro correctamente.`
+    });
+  };
+
   const isAdmin = hasRole('administrador');
 
   return (
@@ -133,6 +152,7 @@ const GestionLibros = () => {
               <TabsList className="mb-4">
                 <TabsTrigger value="libros">Libros</TabsTrigger>
                 <TabsTrigger value="categorias">Categorías</TabsTrigger>
+                <TabsTrigger value="digital">Libros digitales</TabsTrigger>
               </TabsList>
               
               <TabsContent value="libros">
@@ -185,6 +205,12 @@ const GestionLibros = () => {
                                     book={book}
                                     categories={categories}
                                     onEditBook={handleEditBook}
+                                  />
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <DigitalBooksDialog 
+                                    book={book} 
+                                    digitalBooks={digitalBooks}
                                   />
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
@@ -243,6 +269,73 @@ const GestionLibros = () => {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="digital">
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Título</TableHead>
+                        <TableHead>Autor</TableHead>
+                        <TableHead>Categoría</TableHead>
+                        <TableHead>Versiones digitales</TableHead>
+                        <TableHead>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {books.map((book) => {
+                        const bookDigitalVersions = digitalBooks.filter(db => db.bookId === book.id);
+                        return (
+                          <TableRow key={book.id}>
+                            <TableCell className="font-medium">{book.titulo}</TableCell>
+                            <TableCell>{book.autor}</TableCell>
+                            <TableCell>{book.categoria}</TableCell>
+                            <TableCell>{bookDigitalVersions.length}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <DigitalBooksDialog 
+                                  book={book} 
+                                  digitalBooks={digitalBooks}
+                                />
+                                <UploadDigitalBookDialog 
+                                  book={book} 
+                                  onAddDigitalBook={handleAddDigitalBook}
+                                />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="mt-4">
+                  <div className="flex justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium">Exportar/Importar libros digitales</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Gestiona tu base de datos de libros digitales
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <DataImport 
+                        onImport={(data) => {
+                          toast({
+                            title: "Libros digitales importados",
+                            description: `Se importaron ${data.length} archivos digitales correctamente.`
+                          });
+                        }} 
+                      />
+                      <DataExport 
+                        data={digitalBooks} 
+                        filename="libros-digitales" 
+                        buttonLabel="Exportar libros digitales"
+                        variant="default"
+                      />
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>
