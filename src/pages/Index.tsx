@@ -6,6 +6,7 @@ import { Search, BookOpen, Clock, BookPlus, FileDown, Users } from 'lucide-react
 import { useAuth } from '@/contexts/AuthContext';
 import { mockBooks } from '@/types';
 import ChatButton from '@/components/chat/ChatButton';
+import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const {
@@ -183,8 +184,24 @@ const Index = () => {
           <p className="text-xl mb-8 max-w-2xl mx-auto">
             Si necesitas asistencia para encontrar un libro o realizar un préstamo, nuestro personal bibliotecario está disponible para ayudarte.
           </p>
-          <Button size="lg" className="bg-white text-secondary hover:bg-gray-100">
-            Contactar a la biblioteca
+          <Button 
+            size="lg" 
+            className="bg-white text-secondary hover:bg-gray-100"
+            asChild
+          >
+            <a 
+              href="mailto:biblioteca@mixteco.utm.mx?subject=Consulta%20Biblioteca%20UTM"
+              onClick={() => {
+                if (hasRole('bibliotecario')) {
+                  toast({
+                    title: "Notificación de correo",
+                    description: "Se ha enviado una consulta a través del sistema de biblioteca.",
+                  });
+                }
+              }}
+            >
+              Contactar a la biblioteca
+            </a>
           </Button>
         </div>
       </section>
