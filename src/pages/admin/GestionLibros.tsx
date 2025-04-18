@@ -474,7 +474,7 @@ const GestionLibros = () => {
                   <SelectValue placeholder="Todas las categorías" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas las categorías</SelectItem>
+                  <SelectItem value="all">Todas las categorías</SelectItem>
                   {categorias.map((cat) => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
