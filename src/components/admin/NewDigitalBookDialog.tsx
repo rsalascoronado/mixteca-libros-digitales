@@ -40,9 +40,13 @@ export function NewDigitalBookDialog({ categories, onAddBook }: NewDigitalBookDi
   });
 
   const onSubmit = (data: NewBookFormData) => {
+    // Creating a new Book object with all required properties explicitly defined
     const newBook: Book = {
       id: Math.random().toString(36).substr(2, 9),
-      ...data,
+      titulo: data.titulo,
+      autor: data.autor,
+      categoria: data.categoria,
+      descripcion: data.descripcion,
       isbn: '',
       copias: 1,
       disponibles: 1,
