@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -6,15 +5,14 @@ import { Link } from 'react-router-dom';
 import { Search, BookOpen, Clock, BookPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockBooks } from '@/types';
-
 const Index = () => {
-  const { user } = useAuth();
-  
+  const {
+    user
+  } = useAuth();
+
   // Seleccionar algunos libros destacados para mostrar
   const librosDestacados = mockBooks.slice(0, 3);
-
-  return (
-    <MainLayout>
+  return <MainLayout>
       {/* Hero Section */}
       <section className="bg-primary py-16 text-primary-foreground">
         <div className="container mx-auto px-4">
@@ -24,8 +22,7 @@ const Index = () => {
               <p className="text-xl mb-6">
                 Bienvenido al sistema de gestión de libros de la Biblioteca de la Universidad Tecnológica de la Mixteca.
               </p>
-              {user ? (
-                <div className="flex flex-wrap gap-4">
+              {user ? <div className="flex flex-wrap gap-4">
                   <Link to="/catalogo">
                     <Button size="lg" className="bg-white text-primary hover:bg-gray-100">
                       <Search className="mr-2 h-5 w-5" />
@@ -38,9 +35,7 @@ const Index = () => {
                       Mis préstamos
                     </Button>
                   </Link>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-4">
+                </div> : <div className="flex flex-wrap gap-4">
                   <Link to="/login">
                     <Button size="lg" className="bg-white text-primary hover:bg-gray-100">
                       Iniciar sesión
@@ -52,15 +47,10 @@ const Index = () => {
                       Explorar catálogo
                     </Button>
                   </Link>
-                </div>
-              )}
+                </div>}
             </div>
             <div className="md:w-1/2 flex justify-center">
-              <img 
-                src="https://www.utm.mx/assets/img/biblioteca.jpg" 
-                alt="Biblioteca UTM" 
-                className="rounded-lg shadow-lg max-h-96 object-cover"
-              />
+              <img alt="Biblioteca UTM" className="rounded-lg shadow-lg max-h-96 object-cover" src="/lovable-uploads/f46b4744-0ea0-4e43-9ce3-2a800df2cc80.png" />
             </div>
           </div>
         </div>
@@ -132,18 +122,9 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {librosDestacados.map((libro) => (
-              <div key={libro.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+            {librosDestacados.map(libro => <div key={libro.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="h-40 bg-gray-200 flex items-center justify-center">
-                  {libro.imagen ? (
-                    <img 
-                      src={libro.imagen} 
-                      alt={libro.titulo} 
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <BookPlus className="h-16 w-16 text-gray-400" />
-                  )}
+                  {libro.imagen ? <img src={libro.imagen} alt={libro.titulo} className="h-full w-full object-cover" /> : <BookPlus className="h-16 w-16 text-gray-400" />}
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-2 line-clamp-1">{libro.titulo}</h3>
@@ -160,8 +141,7 @@ const Index = () => {
                     <Button variant="outline" className="w-full">Ver detalles</Button>
                   </Link>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
         </div>
       </section>
@@ -178,8 +158,6 @@ const Index = () => {
           </Button>
         </div>
       </section>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default Index;
