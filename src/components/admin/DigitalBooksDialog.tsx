@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -62,7 +61,7 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
             Libros digitales
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[650px]">
+        <DialogContent className="sm:max-w-[750px]">
           <DialogHeader>
             <DialogTitle>Versiones digitales de "{book.titulo}"</DialogTitle>
           </DialogHeader>
@@ -78,6 +77,7 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
                   <TableHead>Formato</TableHead>
                   <TableHead>Tamaño</TableHead>
                   <TableHead>Fecha subida</TableHead>
+                  <TableHead>Resumen</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -95,6 +95,11 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
                     <TableCell>{digitalBook.tamanioMb} MB</TableCell>
                     <TableCell>
                       {format(new Date(digitalBook.fechaSubida), 'PPP', { locale: es })}
+                    </TableCell>
+                    <TableCell className="max-w-[200px]">
+                      <div className="truncate" title={digitalBook.resumen}>
+                        {digitalBook.resumen || 'Sin resumen'}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-2">
