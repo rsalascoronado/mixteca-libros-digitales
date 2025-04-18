@@ -311,10 +311,10 @@ const GestionLibros = () => {
 
               <TabsContent value="digital">
                 <div className="flex justify-end mb-4">
-                  <Button onClick={handleAddBook}>
-                    <BookPlus className="mr-2 h-4 w-4" />
-                    Nuevo libro
-                  </Button>
+                  <NewDigitalBookDialog 
+                    categories={categories}
+                    onAddBook={handleAddBookDigital}
+                  />
                 </div>
                 <div className="rounded-md border">
                   <Table>

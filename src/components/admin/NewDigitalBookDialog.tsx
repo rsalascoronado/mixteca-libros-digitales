@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,14 +9,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { BookPlus } from 'lucide-react';
+import { BookPlus, Upload } from 'lucide-react';
 import { Book, BookCategory } from '@/types';
+import { useToast } from '@/components/ui/use-toast';
 
 const newBookSchema = z.object({
   titulo: z.string().min(1, 'El título es requerido'),
   autor: z.string().min(1, 'El autor es requerido'),
   categoria: z.string().min(1, 'La categoría es requerida'),
-  descripcion: z.string().min(1, 'El resumen es requerido'),
+  descripcion: z.string().min(1, 'El resumen es requerido').max(200, 'El resumen no debe exceder 200 caracteres'),
+  archivo: z.any().optional(),
 });
 
 type NewBookFormData = z.infer<typeof newBookSchema>;
@@ -28,6 +30,7 @@ interface NewDigitalBookDialogProps {
 
 export function NewDigitalBookDialog({ categories, onAddBook }: NewDigitalBookDialogProps) {
   const [open, setOpen] = React.useState(false);
+  const { toast } = useToast();
 
   const form = useForm<NewBookFormData>({
     resolver: zodResolver(newBookSchema),
@@ -39,8 +42,36 @@ export function NewDigitalBookDialog({ categories, onAddBook }: NewDigitalBookDi
     },
   });
 
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // Simular extracción de metadatos del archivo
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      
+      // En un caso real, aquí procesaríamos el archivo para extraer los metadatos
+      // Por ahora, extraemos información básica del nombre del archivo
+      const fileName = file.name.replace(`.${fileExtension}`, '');
+      const words = fileName.split('-').join(' ').split('_').join(' ');
+      
+      form.setValue('titulo', words);
+      
+      toast({
+        title: "Metadatos extraídos",
+        description: "Se ha extraído la información básica del archivo."
+      });
+    } catch (error) {
+      console.error('Error al procesar el archivo:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo extraer la información del archivo.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const onSubmit = (data: NewBookFormData) => {
-    // Creating a new Book object with all required properties explicitly defined
     const newBook: Book = {
       id: Math.random().toString(36).substr(2, 9),
       titulo: data.titulo,
@@ -58,6 +89,11 @@ export function NewDigitalBookDialog({ categories, onAddBook }: NewDigitalBookDi
     onAddBook(newBook);
     form.reset();
     setOpen(false);
+    
+    toast({
+      title: "Libro agregado",
+      description: "El libro digital ha sido agregado exitosamente."
+    });
   };
 
   return (
@@ -65,7 +101,7 @@ export function NewDigitalBookDialog({ categories, onAddBook }: NewDigitalBookDi
       <DialogTrigger asChild>
         <Button>
           <BookPlus className="mr-2 h-4 w-4" />
-          Nuevo libro
+          Nuevo libro digital
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -74,6 +110,16 @@ export function NewDigitalBookDialog({ categories, onAddBook }: NewDigitalBookDi
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="mb-4">
+              <FormLabel>Archivo digital</FormLabel>
+              <Input 
+                type="file" 
+                accept=".pdf,.epub,.mobi"
+                onChange={handleFileChange}
+                className="cursor-pointer"
+              />
+            </div>
+            
             <FormField
               control={form.control}
               name="titulo"
@@ -136,7 +182,7 @@ export function NewDigitalBookDialog({ categories, onAddBook }: NewDigitalBookDi
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="Ingrese un resumen del libro"
+                      placeholder="Ingrese un resumen del libro (máx. 200 caracteres)"
                       className="min-h-[100px]"
                     />
                   </FormControl>
@@ -147,7 +193,7 @@ export function NewDigitalBookDialog({ categories, onAddBook }: NewDigitalBookDi
             
             <Button type="submit" className="w-full">
               <BookPlus className="mr-2 h-4 w-4" />
-              Agregar libro
+              Agregar libro digital
             </Button>
           </form>
         </Form>
