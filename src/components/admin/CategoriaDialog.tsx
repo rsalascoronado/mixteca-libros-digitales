@@ -11,6 +11,7 @@ import { BookCategory } from '@/types';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+// Fix: Make sure the schema matches the BookCategory type requirements
 const categoriaSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido'),
   descripcion: z.string().optional(),
@@ -34,7 +35,13 @@ export function CategoriaDialog({ onAddCategoria }: CategoriaDialogProps) {
   });
 
   const onSubmit = (data: CategoriaFormData) => {
-    onAddCategoria(data);
+    // Fix: Ensure that the data being passed conforms to the expected type
+    // Since BookCategory requires nombre to be non-optional, and our form validates that nombre is provided,
+    // we can safely cast this to Omit<BookCategory, 'id'>
+    onAddCategoria({
+      nombre: data.nombre, // This is guaranteed to be non-empty due to validation
+      descripcion: data.descripcion || '' // Make sure this is always a string
+    });
     form.reset();
     setOpen(false);
   };
