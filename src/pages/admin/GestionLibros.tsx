@@ -170,34 +170,32 @@ const GestionLibros = () => {
                           <TableCell>{book.categoria}</TableCell>
                           <TableCell>{book.disponibles} / {book.copias}</TableCell>
                           <TableCell>
-                            <div className="flex gap-2">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="sm">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Acciones</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem>
-                                    <EditBookDialog
-                                      book={book}
-                                      categories={categories}
-                                      onEditBook={handleEditBook}
-                                    />
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleDeleteBook(book.id)}
-                                    className="text-red-500 focus:text-red-500"
-                                  >
-                                    <Trash className="mr-2 h-4 w-4" />
-                                    Eliminar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Acciones</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                  <EditBookDialog
+                                    book={book}
+                                    categories={categories}
+                                    onEditBook={handleEditBook}
+                                  />
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleDeleteBook(book.id)}
+                                  className="text-red-500 focus:text-red-500"
+                                >
+                                  <Trash className="mr-2 h-4 w-4" />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       ))}

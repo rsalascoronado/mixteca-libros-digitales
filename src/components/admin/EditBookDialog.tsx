@@ -51,12 +51,12 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="w-full justify-start">
+        <Button variant="ghost" className="flex w-full items-center justify-start">
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Editar libro</DialogTitle>
         </DialogHeader>
