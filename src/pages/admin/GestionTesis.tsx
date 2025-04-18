@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GraduationCap, Plus, Search, FilterX, AlertTriangle, Upload, Pencil } from 'lucide-react';
 import DataExport from '@/components/admin/DataExport';
 import DataImport from '@/components/admin/DataImport';
+import PDFViewer from '@/components/shared/PDFViewer';
 
 const GestionTesis = () => {
   const navigate = useNavigate();
@@ -394,15 +395,10 @@ const GestionTesis = () => {
                   </TableCell>
                   <TableCell>
                     {tesis.archivoPdf ? (
-                      <a
-                        href={tesis.archivoPdf}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-primary hover:underline"
-                      >
-                        <Upload className="h-4 w-4" />
-                        Ver PDF
-                      </a>
+                      <PDFViewer 
+                        url={tesis.archivoPdf}
+                        fileName={`${tesis.titulo}.pdf`}
+                      />
                     ) : (
                       <span className="text-gray-400">No disponible</span>
                     )}
