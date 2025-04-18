@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FilePdf } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -15,7 +15,7 @@ const PDFViewer = ({ url, fileName }: PDFViewerProps) => {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="flex items-center gap-2 text-primary hover:text-primary/80">
-          <FilePdf className="h-4 w-4" />
+          <FileText className="h-4 w-4" />
           {fileName ? fileName : 'Ver PDF'}
         </Button>
       </DialogTrigger>
