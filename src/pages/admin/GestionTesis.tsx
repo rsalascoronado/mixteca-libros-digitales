@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Thesis, mockTheses } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
-import { GraduationCap, Plus, Search, FilterX, AlertTriangle } from 'lucide-react';
+import { GraduationCap, Plus, Search, FilterX, AlertTriangle, Upload } from 'lucide-react';
 import DataExport from '@/components/admin/DataExport';
 import DataImport from '@/components/admin/DataImport';
 
@@ -22,7 +22,6 @@ const GestionTesis = () => {
   const [tesis, setTesis] = useState<Thesis[]>(mockTheses);
   const [busqueda, setBusqueda] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('');
-
   const [nuevaTesis, setNuevaTesis] = useState<Partial<Thesis>>({
     titulo: '',
     autor: '',
@@ -32,6 +31,7 @@ const GestionTesis = () => {
     tipo: 'Licenciatura',
     disponible: true
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   React.useEffect(() => {
     if (!hasRole(['bibliotecario', 'administrador'])) {
@@ -69,6 +69,19 @@ const GestionTesis = () => {
     }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setSelectedFile(file);
+    } else {
+      toast({
+        title: "Error",
+        description: "Por favor seleccione un archivo PDF válido",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleAgregarTesis = () => {
     if (!nuevaTesis.titulo || !nuevaTesis.autor || !nuevaTesis.carrera || !nuevaTesis.director) {
       toast({
@@ -78,7 +91,20 @@ const GestionTesis = () => {
       });
       return;
     }
+
+    if (!selectedFile) {
+      toast({
+        title: "Error",
+        description: "Por favor seleccione un archivo PDF de la tesis",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const newId = (Math.max(...tesis.map(t => parseInt(t.id))) + 1).toString();
+    
+    const mockPdfUrl = `/tesis/${selectedFile.name}`;
+    
     const nuevaTesisCompleta: Thesis = {
       id: newId,
       titulo: nuevaTesis.titulo,
@@ -88,8 +114,10 @@ const GestionTesis = () => {
       director: nuevaTesis.director,
       tipo: nuevaTesis.tipo as 'Licenciatura' | 'Maestría' | 'Doctorado',
       disponible: true,
-      resumen: nuevaTesis.resumen
+      resumen: nuevaTesis.resumen,
+      archivoPdf: mockPdfUrl
     };
+
     setTesis(prev => [...prev, nuevaTesisCompleta]);
     setNuevaTesis({
       titulo: '',
@@ -100,6 +128,7 @@ const GestionTesis = () => {
       tipo: 'Licenciatura',
       disponible: true
     });
+    setSelectedFile(null);
     toast({
       title: "Tesis agregada",
       description: "La tesis ha sido agregada correctamente al catálogo."
@@ -218,6 +247,27 @@ const GestionTesis = () => {
                     </Label>
                     <Textarea id="resumen" name="resumen" value={nuevaTesis.resumen} onChange={handleNuevaTesis} className="mt-1" rows={4} />
                   </div>
+                  
+                  <div className="col-span-2">
+                    <Label htmlFor="archivoPdf">
+                      Archivo PDF de la tesis <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="mt-1 flex items-center gap-4">
+                      <Input
+                        id="archivoPdf"
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileChange}
+                        className="flex-1"
+                      />
+                      {selectedFile && (
+                        <div className="flex items-center gap-2 text-sm text-green-600">
+                          <Upload className="h-4 w-4" />
+                          {selectedFile.name}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 
                 <DialogFooter>
@@ -277,6 +327,7 @@ const GestionTesis = () => {
                 <TableHead>Año</TableHead>
                 <TableHead>Director</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead>PDF</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -292,8 +343,23 @@ const GestionTesis = () => {
                         {tesis.disponible ? 'Disponible' : 'No disponible'}
                       </span>
                     </TableCell>
+                    <TableCell>
+                      {tesis.archivoPdf ? (
+                        <a
+                          href={tesis.archivoPdf}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-primary hover:underline"
+                        >
+                          <Upload className="h-4 w-4" />
+                          Ver PDF
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">No disponible</span>
+                      )}
+                    </TableCell>
                   </TableRow>) : <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <AlertTriangle className="h-8 w-8 text-gray-300 mb-2" />
                       <span className="text-gray-500">

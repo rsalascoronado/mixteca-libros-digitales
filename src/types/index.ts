@@ -84,8 +84,8 @@ export interface Thesis {
   director: string;
   tipo: 'Licenciatura' | 'Maestría' | 'Doctorado';
   disponible: boolean;
-  urlDocumento?: string;
   resumen?: string;
+  archivoPdf?: string;
 }
 
 export const mockUsers: User[] = [
@@ -270,7 +270,8 @@ export const mockTheses: Thesis[] = [
     director: "Dr. María Rodríguez López",
     tipo: "Maestría",
     disponible: true,
-    resumen: "Investigación sobre la implementación de algoritmos de deep learning para la detección temprana de patologías en imágenes médicas."
+    resumen: "Investigación sobre la implementación de algoritmos de deep learning para la detección temprana de patologías en imágenes médicas.",
+    archivoPdf: "/tesis/ejemplo1.pdf"
   },
   {
     id: "2",
