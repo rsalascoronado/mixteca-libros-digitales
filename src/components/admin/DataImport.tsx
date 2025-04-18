@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileInput } from 'lucide-react';
+import { FileUp } from 'lucide-react';
 
 interface DataImportProps {
   onImport: (data: any[]) => void;
@@ -64,7 +64,7 @@ const DataImport: React.FC<DataImportProps> = ({
     <div className="flex items-center space-x-2">
       <Label htmlFor="file-upload" className="cursor-pointer">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <FileInput className="h-4 w-4" />
+          <FileUp className="h-4 w-4" />
           <span>Importar datos</span>
         </div>
         <Input
