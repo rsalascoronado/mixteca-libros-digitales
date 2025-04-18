@@ -1,7 +1,8 @@
+
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockBooks } from '@/types';
+import { mockBooks, mockCategories } from '@/types';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -16,12 +17,15 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DataExport from '@/components/admin/DataExport';
 import DataImport from '@/components/admin/DataImport';
+import { CategoriaDialog } from '@/components/admin/CategoriaDialog';
 import { useToast } from '@/components/ui/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const GestionLibros = () => {
   const { hasRole } = useAuth();
   const [searchTerm, setSearchTerm] = React.useState('');
   const { toast } = useToast();
+  const [categories, setCategories] = React.useState(mockCategories);
   
   const filteredBooks = React.useMemo(() => {
     return mockBooks.filter(book => 
@@ -35,6 +39,18 @@ const GestionLibros = () => {
     toast({
       title: "Datos importados",
       description: `Se importaron ${data.length} libros correctamente.`
+    });
+  };
+
+  const handleAddCategoria = (categoria: { nombre: string; descripcion?: string }) => {
+    const newCategoria = {
+      id: Math.random().toString(36).substr(2, 9),
+      ...categoria
+    };
+    setCategories([...categories, newCategoria]);
+    toast({
+      title: "Categoría agregada",
+      description: `La categoría "${categoria.nombre}" ha sido agregada exitosamente.`
     });
   };
 
@@ -65,54 +81,98 @@ const GestionLibros = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center mb-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Buscar por título, autor o ISBN..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Autor</TableHead>
-                    <TableHead>ISBN</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Disponibles</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBooks.map((book) => (
-                    <TableRow key={book.id}>
-                      <TableCell className="font-medium">{book.titulo}</TableCell>
-                      <TableCell>{book.autor}</TableCell>
-                      <TableCell>{book.isbn}</TableCell>
-                      <TableCell>{book.categoria}</TableCell>
-                      <TableCell>{book.disponibles} / {book.copias}</TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
-                            Editar
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
-                            Eliminar
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <Tabs defaultValue="libros">
+              <TabsList className="mb-4">
+                <TabsTrigger value="libros">Libros</TabsTrigger>
+                <TabsTrigger value="categorias">Categorías</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="libros">
+                <div className="flex items-center mb-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder="Buscar por título, autor o ISBN..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Título</TableHead>
+                        <TableHead>Autor</TableHead>
+                        <TableHead>ISBN</TableHead>
+                        <TableHead>Categoría</TableHead>
+                        <TableHead>Disponibles</TableHead>
+                        <TableHead>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredBooks.map((book) => (
+                        <TableRow key={book.id}>
+                          <TableCell className="font-medium">{book.titulo}</TableCell>
+                          <TableCell>{book.autor}</TableCell>
+                          <TableCell>{book.isbn}</TableCell>
+                          <TableCell>{book.categoria}</TableCell>
+                          <TableCell>{book.disponibles} / {book.copias}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm">
+                                Editar
+                              </Button>
+                              <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
+                                Eliminar
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="categorias">
+                <div className="flex justify-end mb-4">
+                  <CategoriaDialog onAddCategoria={handleAddCategoria} />
+                </div>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Descripción</TableHead>
+                        <TableHead>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {categories.map((category) => (
+                        <TableRow key={category.id}>
+                          <TableCell className="font-medium">{category.nombre}</TableCell>
+                          <TableCell>{category.descripcion}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm">
+                                Editar
+                              </Button>
+                              <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
+                                Eliminar
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>

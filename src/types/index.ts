@@ -25,6 +25,35 @@ export interface Book {
   descripcion?: string;
 }
 
+export interface BookCategory {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+}
+
+export const mockCategories: BookCategory[] = [
+  {
+    id: '1',
+    nombre: 'Matemáticas',
+    descripcion: 'Libros de matemáticas, cálculo, álgebra y geometría'
+  },
+  {
+    id: '2',
+    nombre: 'Física',
+    descripcion: 'Libros de física, mecánica y termodinámica'
+  },
+  {
+    id: '3',
+    nombre: 'Informática',
+    descripcion: 'Libros de programación, redes y sistemas'
+  },
+  {
+    id: '4',
+    nombre: 'Química',
+    descripcion: 'Libros de química general y orgánica'
+  }
+];
+
 export interface PrestamoConfig {
   role: UserRole;
   diasPrestamo: number;
