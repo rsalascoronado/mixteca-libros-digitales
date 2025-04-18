@@ -119,7 +119,7 @@ const GestionLibros = () => {
   };
 
   const handleAddBook = () => {
-    const newBook = {
+    const newBook: Book = {
       id: Math.random().toString(36).substr(2, 9),
       titulo: "Nuevo libro",
       autor: "",
@@ -127,6 +127,10 @@ const GestionLibros = () => {
       categoria: categories[0]?.nombre || "",
       copias: 1,
       disponibles: 1,
+      editorial: "",
+      anioPublicacion: new Date().getFullYear(),
+      ubicacion: "",
+      descripcion: ""
     };
     setBooks([...books, newBook]);
     toast({
