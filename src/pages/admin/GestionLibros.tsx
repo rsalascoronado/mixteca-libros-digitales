@@ -18,6 +18,7 @@ import DataExport from '@/components/admin/DataExport';
 import DataImport from '@/components/admin/DataImport';
 import { CategoriaDialog } from '@/components/admin/CategoriaDialog';
 import { EditCategoriaDialog } from '@/components/admin/EditCategoriaDialog';
+import { EditBookDialog } from '@/components/admin/EditBookDialog';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
