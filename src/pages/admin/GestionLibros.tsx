@@ -1,10 +1,9 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockBooks, mockCategories, BookCategory, Book } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Search, Edit, Trash, MoreHorizontal, Database, Upload } from 'lucide-react';
+import { PlusCircle, Search, Edit, Trash, MoreHorizontal, Database, Upload, BookPlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -119,6 +118,23 @@ const GestionLibros = () => {
     });
   };
 
+  const handleAddBook = () => {
+    const newBook = {
+      id: Math.random().toString(36).substr(2, 9),
+      titulo: "Nuevo libro",
+      autor: "",
+      isbn: "",
+      categoria: categories[0]?.nombre || "",
+      copias: 1,
+      disponibles: 1,
+    };
+    setBooks([...books, newBook]);
+    toast({
+      title: "Libro agregado",
+      description: "Se ha agregado un nuevo libro al catálogo."
+    });
+  };
+
   const isAdmin = hasRole('administrador');
 
   return (
@@ -140,7 +156,7 @@ const GestionLibros = () => {
                   filename="libros-biblioteca" 
                   buttonLabel="Exportar libros"
                 />
-                <Button>
+                <Button onClick={handleAddBook}>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Nuevo libro
                 </Button>
