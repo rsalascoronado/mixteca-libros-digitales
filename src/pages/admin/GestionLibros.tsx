@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import DataExport from '@/components/admin/DataExport';
 import DataImport from '@/components/admin/DataImport';
 import { CategoriaDialog } from '@/components/admin/CategoriaDialog';
+import { EditCategoriaDialog } from '@/components/admin/EditCategoriaDialog';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -71,11 +71,13 @@ const GestionLibros = () => {
     });
   };
 
-  const handleEditCategory = (id: string) => {
-    // This would normally open a dialog to edit the category
+  const handleEditCategory = (id: string, categoria: Omit<BookCategory, 'id'>) => {
+    setCategories(categories.map(cat => 
+      cat.id === id ? { ...cat, ...categoria } : cat
+    ));
     toast({
-      title: "Editar categoría",
-      description: "Funcionalidad de edición en desarrollo."
+      title: "Categoría actualizada",
+      description: `La categoría "${categoria.nombre}" ha sido actualizada exitosamente.`
     });
   };
 
@@ -218,14 +220,10 @@ const GestionLibros = () => {
                           <TableCell>{category.descripcion}</TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleEditCategory(category.id)}
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                              </Button>
+                              <EditCategoriaDialog 
+                                categoria={category}
+                                onEditCategoria={handleEditCategory}
+                              />
                               <Button 
                                 variant="outline" 
                                 size="sm" 
