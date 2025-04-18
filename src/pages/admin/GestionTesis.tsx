@@ -10,8 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Thesis, mockTheses } from '@/types';
-import { useToast } from '@/components/ui/use-toast';
-import { GraduationCap, Plus, Search, FilterX, AlertTriangle, Upload } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { GraduationCap, Plus, Search, FilterX, AlertTriangle, Upload, Pencil } from 'lucide-react';
 import DataExport from '@/components/admin/DataExport';
 import DataImport from '@/components/admin/DataImport';
 
@@ -32,6 +32,8 @@ const GestionTesis = () => {
     disponible: true
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [editingTesis, setEditingTesis] = useState<Thesis | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   React.useEffect(() => {
     if (!hasRole(['bibliotecario', 'administrador'])) {
@@ -154,6 +156,51 @@ const GestionTesis = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleEditTesis = (tesis: Thesis) => {
+    setEditingTesis(tesis);
+    setSelectedFile(null);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingTesis) return;
+
+    const updatedTesis = {
+      ...editingTesis,
+      archivoPdf: selectedFile 
+        ? `/tesis/${selectedFile.name}`
+        : editingTesis.archivoPdf
+    };
+
+    setTesis(prev => 
+      prev.map(t => t.id === updatedTesis.id ? updatedTesis : t)
+    );
+
+    setEditingTesis(null);
+    setEditDialogOpen(false);
+    setSelectedFile(null);
+
+    toast({
+      title: "Tesis actualizada",
+      description: "Los cambios han sido guardados correctamente."
+    });
+  };
+
+  const handleEditChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    if (!editingTesis) return;
+
+    const { name, value } = e.target;
+    setEditingTesis(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        [name]: name === 'anio' ? parseInt(value) : value
+      };
+    });
   };
 
   return <MainLayout>
@@ -328,37 +375,50 @@ const GestionTesis = () => {
                 <TableHead>Director</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>PDF</TableHead>
+                <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tesisFiltradas.length > 0 ? tesisFiltradas.map(tesis => <TableRow key={tesis.id}>
-                    <TableCell className="font-medium">{tesis.titulo}</TableCell>
-                    <TableCell>{tesis.autor}</TableCell>
-                    <TableCell>{tesis.carrera}</TableCell>
-                    <TableCell>{tesis.tipo}</TableCell>
-                    <TableCell>{tesis.anio}</TableCell>
-                    <TableCell>{tesis.director}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${tesis.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {tesis.disponible ? 'Disponible' : 'No disponible'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {tesis.archivoPdf ? (
-                        <a
-                          href={tesis.archivoPdf}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-primary hover:underline"
-                        >
-                          <Upload className="h-4 w-4" />
-                          Ver PDF
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">No disponible</span>
-                      )}
-                    </TableCell>
-                  </TableRow>) : <TableRow>
+              {tesisFiltradas.length > 0 ? tesisFiltradas.map(tesis => (
+                <TableRow key={tesis.id}>
+                  <TableCell className="font-medium">{tesis.titulo}</TableCell>
+                  <TableCell>{tesis.autor}</TableCell>
+                  <TableCell>{tesis.carrera}</TableCell>
+                  <TableCell>{tesis.tipo}</TableCell>
+                  <TableCell>{tesis.anio}</TableCell>
+                  <TableCell>{tesis.director}</TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${tesis.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {tesis.disponible ? 'Disponible' : 'No disponible'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {tesis.archivoPdf ? (
+                      <a
+                        href={tesis.archivoPdf}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-primary hover:underline"
+                      >
+                        <Upload className="h-4 w-4" />
+                        Ver PDF
+                      </a>
+                    ) : (
+                      <span className="text-gray-400">No disponible</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEditTesis(tesis)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )) : (
+                <TableRow>
                   <TableCell colSpan={8} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <AlertTriangle className="h-8 w-8 text-gray-300 mb-2" />
@@ -367,10 +427,180 @@ const GestionTesis = () => {
                       </span>
                     </div>
                   </TableCell>
-                </TableRow>}
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </div>
+
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>Editar tesis</DialogTitle>
+              <DialogDescription>
+                Modifica la información de la tesis.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {editingTesis && (
+              <div className="grid grid-cols-2 gap-4 py-4">
+                <div className="col-span-2">
+                  <Label htmlFor="titulo">
+                    Título <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="titulo"
+                    name="titulo"
+                    value={editingTesis.titulo}
+                    onChange={handleEditChange}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="autor">
+                    Autor <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="autor"
+                    name="autor"
+                    value={editingTesis.autor}
+                    onChange={handleEditChange}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="carrera">
+                    Carrera <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="carrera"
+                    name="carrera"
+                    value={editingTesis.carrera}
+                    onChange={handleEditChange}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="director">
+                    Director de tesis <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="director"
+                    name="director"
+                    value={editingTesis.director}
+                    onChange={handleEditChange}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="tipo">
+                    Tipo de tesis <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    name="tipo"
+                    value={editingTesis.tipo}
+                    onValueChange={(value) =>
+                      setEditingTesis(prev => ({
+                        ...prev!,
+                        tipo: value as 'Licenciatura' | 'Maestría' | 'Doctorado'
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Selecciona el tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Licenciatura">Licenciatura</SelectItem>
+                      <SelectItem value="Maestría">Maestría</SelectItem>
+                      <SelectItem value="Doctorado">Doctorado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="anio">Año</Label>
+                  <Input
+                    id="anio"
+                    name="anio"
+                    type="number"
+                    value={editingTesis.anio}
+                    onChange={handleEditChange}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="disponible">Estado</Label>
+                  <Select
+                    name="disponible"
+                    value={editingTesis.disponible.toString()}
+                    onValueChange={(value) =>
+                      setEditingTesis(prev => ({
+                        ...prev!,
+                        disponible: value === 'true'
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Disponible</SelectItem>
+                      <SelectItem value="false">No disponible</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="col-span-2">
+                  <Label htmlFor="resumen">Resumen</Label>
+                  <Textarea
+                    id="resumen"
+                    name="resumen"
+                    value={editingTesis.resumen || ''}
+                    onChange={handleEditChange}
+                    className="mt-1"
+                    rows={4}
+                  />
+                </div>
+                
+                <div className="col-span-2">
+                  <Label htmlFor="archivoPdf">
+                    Archivo PDF de la tesis
+                  </Label>
+                  <div className="mt-1 flex items-center gap-4">
+                    <Input
+                      id="archivoPdf"
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="flex-1"
+                    />
+                    {selectedFile && (
+                      <div className="flex items-center gap-2 text-sm text-green-600">
+                        <Upload className="h-4 w-4" />
+                        {selectedFile.name}
+                      </div>
+                    )}
+                    {!selectedFile && editingTesis.archivoPdf && (
+                      <div className="flex items-center gap-2 text-sm text-blue-600">
+                        <Upload className="h-4 w-4" />
+                        PDF actual
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <DialogFooter>
+              <Button onClick={handleSaveEdit}>Guardar cambios</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>;
 };
