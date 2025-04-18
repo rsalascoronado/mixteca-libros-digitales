@@ -11,20 +11,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Thesis, mockTheses } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
-import { GraduationCap, Plus, Search, Pencil, Trash, FilterX, AlertTriangle } from 'lucide-react';
+import { GraduationCap, Plus, Search, FilterX, AlertTriangle } from 'lucide-react';
+import DataExport from '@/components/admin/DataExport';
+import DataImport from '@/components/admin/DataImport';
+
 const GestionTesis = () => {
   const navigate = useNavigate();
-  const {
-    hasRole
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
+  const { hasRole } = useAuth();
+  const { toast } = useToast();
   const [tesis, setTesis] = useState<Thesis[]>(mockTheses);
   const [busqueda, setBusqueda] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('');
 
-  // Nueva tesis
   const [nuevaTesis, setNuevaTesis] = useState<Partial<Thesis>>({
     titulo: '',
     autor: '',
@@ -34,16 +32,19 @@ const GestionTesis = () => {
     tipo: 'Licenciatura',
     disponible: true
   });
+
   React.useEffect(() => {
     if (!hasRole(['bibliotecario', 'administrador'])) {
       navigate('/');
       return;
     }
   }, [hasRole, navigate]);
+
   const limpiarFiltros = () => {
     setBusqueda('');
     setTipoFiltro('');
   };
+
   const tesisFiltradas = tesis.filter(tesis => {
     let cumpleBusqueda = true;
     let cumpleTipo = true;
@@ -56,6 +57,7 @@ const GestionTesis = () => {
     }
     return cumpleBusqueda && cumpleTipo;
   });
+
   const handleNuevaTesis = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const {
       name,
@@ -66,6 +68,7 @@ const GestionTesis = () => {
       [name]: name === 'anio' ? parseInt(value) : value
     }));
   };
+
   const handleAgregarTesis = () => {
     if (!nuevaTesis.titulo || !nuevaTesis.autor || !nuevaTesis.carrera || !nuevaTesis.director) {
       toast({
@@ -102,6 +105,28 @@ const GestionTesis = () => {
       description: "La tesis ha sido agregada correctamente al catálogo."
     });
   };
+
+  const handleImportTesis = (importedData: any[]) => {
+    try {
+      const newTesis = importedData.map((item: any) => ({
+        ...item,
+        anio: Number(item.anio),
+        disponible: item.disponible === 'true' || item.disponible === true
+      }));
+      setTesis(prev => [...prev, ...newTesis]);
+      toast({
+        title: "Tesis importadas",
+        description: `Se han importado ${newTesis.length} tesis correctamente.`
+      });
+    } catch (error) {
+      toast({
+        title: "Error al importar",
+        description: "Hubo un error al importar las tesis. Verifica el formato del archivo.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return <MainLayout>
       <div className="container mx-auto py-10 px-4">
         <div className="flex items-center justify-between mb-6">
@@ -110,89 +135,97 @@ const GestionTesis = () => {
             <h1 className="text-3xl font-bold">Gestión de Tesis</h1>
           </div>
           
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Agregar tesis
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl">
-              <DialogHeader>
-                <DialogTitle>Agregar nueva tesis</DialogTitle>
-                <DialogDescription>
-                  Ingresa la información de la nueva tesis.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="grid grid-cols-2 gap-4 py-4">
-                <div className="col-span-2">
-                  <Label htmlFor="titulo">
-                    Título <span className="text-red-500">*</span>
-                  </Label>
-                  <Input id="titulo" name="titulo" value={nuevaTesis.titulo} onChange={handleNuevaTesis} className="mt-1" />
+          <div className="flex items-center space-x-2">
+            <DataImport onImport={handleImportTesis} accept=".csv,.json,.xlsx" />
+            <DataExport 
+              data={tesisFiltradas} 
+              filename="tesis-export" 
+              buttonLabel="Exportar tesis"
+            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar tesis
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                  <DialogTitle>Agregar nueva tesis</DialogTitle>
+                  <DialogDescription>
+                    Ingresa la información de la nueva tesis.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="grid grid-cols-2 gap-4 py-4">
+                  <div className="col-span-2">
+                    <Label htmlFor="titulo">
+                      Título <span className="text-red-500">*</span>
+                    </Label>
+                    <Input id="titulo" name="titulo" value={nuevaTesis.titulo} onChange={handleNuevaTesis} className="mt-1" />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="autor">
+                      Autor <span className="text-red-500">*</span>
+                    </Label>
+                    <Input id="autor" name="autor" value={nuevaTesis.autor} onChange={handleNuevaTesis} className="mt-1" />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="carrera">
+                      Carrera <span className="text-red-500">*</span>
+                    </Label>
+                    <Input id="carrera" name="carrera" value={nuevaTesis.carrera} onChange={handleNuevaTesis} className="mt-1" />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="director">
+                      Director de tesis <span className="text-red-500">*</span>
+                    </Label>
+                    <Input id="director" name="director" value={nuevaTesis.director} onChange={handleNuevaTesis} className="mt-1" />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="tipo">
+                      Tipo de tesis <span className="text-red-500">*</span>
+                    </Label>
+                    <Select name="tipo" value={nuevaTesis.tipo} onValueChange={value => setNuevaTesis(prev => ({
+                      ...prev,
+                      tipo: value as 'Licenciatura' | 'Maestría' | 'Doctorado'
+                    }))}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Selecciona el tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Licenciatura">Licenciatura</SelectItem>
+                        <SelectItem value="Maestría">Maestría</SelectItem>
+                        <SelectItem value="Doctorado">Doctorado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="anio">
+                      Año
+                    </Label>
+                    <Input id="anio" name="anio" type="number" value={nuevaTesis.anio} onChange={handleNuevaTesis} className="mt-1" />
+                  </div>
+                  
+                  <div className="col-span-2">
+                    <Label htmlFor="resumen">
+                      Resumen
+                    </Label>
+                    <Textarea id="resumen" name="resumen" value={nuevaTesis.resumen} onChange={handleNuevaTesis} className="mt-1" rows={4} />
+                  </div>
                 </div>
                 
-                <div>
-                  <Label htmlFor="autor">
-                    Autor <span className="text-red-500">*</span>
-                  </Label>
-                  <Input id="autor" name="autor" value={nuevaTesis.autor} onChange={handleNuevaTesis} className="mt-1" />
-                </div>
-                
-                <div>
-                  <Label htmlFor="carrera">
-                    Carrera <span className="text-red-500">*</span>
-                  </Label>
-                  <Input id="carrera" name="carrera" value={nuevaTesis.carrera} onChange={handleNuevaTesis} className="mt-1" />
-                </div>
-                
-                <div>
-                  <Label htmlFor="director">
-                    Director de tesis <span className="text-red-500">*</span>
-                  </Label>
-                  <Input id="director" name="director" value={nuevaTesis.director} onChange={handleNuevaTesis} className="mt-1" />
-                </div>
-                
-                <div>
-                  <Label htmlFor="tipo">
-                    Tipo de tesis <span className="text-red-500">*</span>
-                  </Label>
-                  <Select name="tipo" value={nuevaTesis.tipo} onValueChange={value => setNuevaTesis(prev => ({
-                  ...prev,
-                  tipo: value as 'Licenciatura' | 'Maestría' | 'Doctorado'
-                }))}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Selecciona el tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Licenciatura">Licenciatura</SelectItem>
-                      <SelectItem value="Maestría">Maestría</SelectItem>
-                      <SelectItem value="Doctorado">Doctorado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <Label htmlFor="anio">
-                    Año
-                  </Label>
-                  <Input id="anio" name="anio" type="number" value={nuevaTesis.anio} onChange={handleNuevaTesis} className="mt-1" />
-                </div>
-                
-                <div className="col-span-2">
-                  <Label htmlFor="resumen">
-                    Resumen
-                  </Label>
-                  <Textarea id="resumen" name="resumen" value={nuevaTesis.resumen} onChange={handleNuevaTesis} className="mt-1" rows={4} />
-                </div>
-              </div>
-              
-              <DialogFooter>
-                <Button type="submit" onClick={handleAgregarTesis}>Agregar tesis</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button type="submit" onClick={handleAgregarTesis}>Agregar tesis</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -275,4 +308,5 @@ const GestionTesis = () => {
       </div>
     </MainLayout>;
 };
+
 export default GestionTesis;
