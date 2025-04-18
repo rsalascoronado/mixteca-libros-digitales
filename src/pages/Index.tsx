@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Search, BookOpen, Clock, BookPlus, FileDown, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockBooks } from '@/types';
+import ChatButton from '@/components/chat/ChatButton';
 
 const Index = () => {
   const {
@@ -187,6 +188,10 @@ const Index = () => {
           </Button>
         </div>
       </section>
-    </MainLayout>;
+    
+    {/* Add ChatButton at the end */}
+    <ChatButton />
+  </MainLayout>;
 };
+
 export default Index;
