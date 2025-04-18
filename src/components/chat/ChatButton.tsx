@@ -17,8 +17,8 @@ const ChatButton = () => {
           <span className="ml-2">Chat con bibliotecario</span>
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
-        <div className="p-4 h-[80vh]">
+      <DrawerContent className="h-[calc(100vh/8)] max-h-[400px]">
+        <div className="p-2 h-full">
           <ChatWindow />
         </div>
       </DrawerContent>
