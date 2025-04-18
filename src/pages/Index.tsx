@@ -2,12 +2,14 @@ import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Search, BookOpen, Clock, BookPlus } from 'lucide-react';
+import { Search, BookOpen, Clock, BookPlus, FileDown, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockBooks } from '@/types';
+
 const Index = () => {
   const {
-    user
+    user,
+    hasRole
   } = useAuth();
 
   // Seleccionar algunos libros destacados para mostrar
@@ -35,6 +37,14 @@ const Index = () => {
                       Mis préstamos
                     </Button>
                   </Link>
+                  {hasRole('administrador') && (
+                    <Link to="/admin/usuarios">
+                      <Button size="lg" variant="outline" className="border-white hover:bg-primary-foreground/10 text-blue-950">
+                        <Users className="mr-2 h-5 w-5" />
+                        Gestionar usuarios
+                      </Button>
+                    </Link>
+                  )}
                 </div> : <div className="flex flex-wrap gap-4">
                   <Link to="/login">
                     <Button size="lg" className="bg-white text-primary hover:bg-gray-100">
@@ -106,6 +116,25 @@ const Index = () => {
               </div>
             </div>
           </div>
+          {hasRole('administrador') && (
+            <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+              <div className="bg-primary/10 p-4 rounded-full mb-4">
+                <FileDown className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Exportación de Datos</h3>
+              <p className="text-gray-600 mb-4">
+                Como administrador, puedes exportar datos de libros y usuarios en varios formatos: CSV, JSON y Excel.
+              </p>
+              <div className="mt-auto flex gap-2">
+                <Link to="/admin/libros">
+                  <Button variant="outline" size="sm">Libros</Button>
+                </Link>
+                <Link to="/admin/usuarios">
+                  <Button variant="outline" size="sm">Usuarios</Button>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

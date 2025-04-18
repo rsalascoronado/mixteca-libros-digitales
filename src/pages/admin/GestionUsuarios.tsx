@@ -2,7 +2,7 @@
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockBooks } from '@/types';
+import { mockUsers } from '@/types';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -17,16 +17,16 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DataExport from '@/components/admin/DataExport';
 
-const GestionLibros = () => {
+const GestionUsuarios = () => {
   const { hasRole } = useAuth();
   const [searchTerm, setSearchTerm] = React.useState('');
   
-  // Filter books based on search term
-  const filteredBooks = React.useMemo(() => {
-    return mockBooks.filter(book => 
-      book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.isbn.includes(searchTerm)
+  // Filter users based on search term
+  const filteredUsers = React.useMemo(() => {
+    return mockUsers.filter(user => 
+      user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.apellidos.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm]);
 
@@ -37,20 +37,20 @@ const GestionLibros = () => {
           <CardHeader className="pb-3">
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>Gestión de Libros</CardTitle>
+                <CardTitle>Gestión de Usuarios</CardTitle>
                 <CardDescription>
-                  Administra el catálogo de libros de la biblioteca
+                  Administra los usuarios del sistema de biblioteca
                 </CardDescription>
               </div>
               <div className="flex gap-2">
                 <DataExport 
-                  data={mockBooks} 
-                  filename="libros-biblioteca" 
-                  buttonLabel="Exportar libros"
+                  data={mockUsers} 
+                  filename="usuarios-biblioteca" 
+                  buttonLabel="Exportar usuarios"
                 />
                 <Button>
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Nuevo libro
+                  Nuevo usuario
                 </Button>
               </div>
             </div>
@@ -61,7 +61,7 @@ const GestionLibros = () => {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Buscar por título, autor o ISBN..."
+                  placeholder="Buscar por nombre, apellidos o email..."
                   className="pl-8"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -73,22 +73,20 @@ const GestionLibros = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Título</TableHead>
-                    <TableHead>Autor</TableHead>
-                    <TableHead>ISBN</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Disponibles</TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Apellidos</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Rol</TableHead>
                     <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredBooks.map((book) => (
-                    <TableRow key={book.id}>
-                      <TableCell className="font-medium">{book.titulo}</TableCell>
-                      <TableCell>{book.autor}</TableCell>
-                      <TableCell>{book.isbn}</TableCell>
-                      <TableCell>{book.categoria}</TableCell>
-                      <TableCell>{book.disponibles} / {book.copias}</TableCell>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.nombre}</TableCell>
+                      <TableCell>{user.apellidos}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell className="capitalize">{user.role}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button variant="outline" size="sm">
@@ -111,4 +109,4 @@ const GestionLibros = () => {
   );
 };
 
-export default GestionLibros;
+export default GestionUsuarios;

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,7 @@ import Configuracion from "./pages/admin/Configuracion";
 import GestionPrestamos from "./pages/admin/GestionPrestamos";
 import GestionLibros from "./pages/admin/GestionLibros";
 import GestionTesis from "./pages/admin/GestionTesis";
+import GestionUsuarios from "./pages/admin/GestionUsuarios";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +88,11 @@ const App = () => (
             <Route path="/admin/libros" element={
               <AdminRoute>
                 <GestionLibros />
+              </AdminRoute>
+            } />
+            <Route path="/admin/usuarios" element={
+              <AdminRoute>
+                <GestionUsuarios />
               </AdminRoute>
             } />
             <Route path="/admin/tesis" element={

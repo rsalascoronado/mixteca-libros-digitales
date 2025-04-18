@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, BookOpen } from 'lucide-react';
+import { LogOut, User, BookOpen, Users } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const Header = () => {
@@ -40,9 +41,14 @@ const Header = () => {
               <Link to="/admin/tesis" className="text-primary-foreground hover:text-white transition-colors">
                 Gestionar tesis
               </Link>
-              {hasRole('administrador') && <Link to="/admin/configuracion" className="text-primary-foreground hover:text-white transition-colors">
+              {hasRole('administrador') && <>
+                <Link to="/admin/usuarios" className="text-primary-foreground hover:text-white transition-colors">
+                  Gestionar usuarios
+                </Link>
+                <Link to="/admin/configuracion" className="text-primary-foreground hover:text-white transition-colors">
                   Configuración
-                </Link>}
+                </Link>
+              </>}
             </>}
         </nav>
         
