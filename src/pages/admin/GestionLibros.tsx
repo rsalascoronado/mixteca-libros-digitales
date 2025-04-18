@@ -1,7 +1,7 @@
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockBooks, mockCategories } from '@/types';
+import { mockBooks, mockCategories, BookCategory } from '@/types';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Search, Edit, Trash, MoreHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -90,7 +90,6 @@ const GestionLibros = () => {
   };
 
   const handleEditBook = (id: string) => {
-    // This would normally open a dialog to edit the book
     toast({
       title: "Editar libro",
       description: "Funcionalidad de edición en desarrollo."
