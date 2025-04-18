@@ -40,7 +40,7 @@ const GestionPrestamos = () => {
   const { toast } = useToast();
   const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtroEstado, setFiltroEstado] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('all');
   const [busqueda, setBusqueda] = useState('');
 
   useEffect(() => {
@@ -79,7 +79,7 @@ const GestionPrestamos = () => {
     let cumpleBusqueda = true;
     
     // Filtro por estado
-    if (filtroEstado) {
+    if (filtroEstado && filtroEstado !== 'all') {
       if (filtroEstado === 'vencido') {
         cumpleFiltroEstado = prestamo.vencido || prestamo.estado === 'retrasado';
       } else {
@@ -116,7 +116,7 @@ const GestionPrestamos = () => {
   };
 
   const limpiarFiltros = () => {
-    setFiltroEstado('');
+    setFiltroEstado('all');
     setBusqueda('');
   };
 
