@@ -288,7 +288,7 @@ const GestionTesis = () => {
                     <SelectValue placeholder="Todos los tipos" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos los tipos</SelectItem>
+                    <SelectItem value="all">Todos los tipos</SelectItem>
                     <SelectItem value="Licenciatura">Licenciatura</SelectItem>
                     <SelectItem value="Maestría">Maestría</SelectItem>
                     <SelectItem value="Doctorado">Doctorado</SelectItem>
