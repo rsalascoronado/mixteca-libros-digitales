@@ -1,0 +1,221 @@
+
+export type UserRole = 'estudiante' | 'profesor' | 'tecnico' | 'administrativo' | 'operativo' | 'bibliotecario' | 'administrador';
+
+export interface User {
+  id: string;
+  email: string;
+  nombre: string;
+  apellidos: string;
+  role: UserRole;
+  avatar?: string;
+  createdAt: Date;
+}
+
+export interface Book {
+  id: string;
+  titulo: string;
+  autor: string;
+  isbn: string;
+  categoria: string;
+  editorial: string;
+  anioPublicacion: number;
+  copias: number;
+  disponibles: number;
+  imagen?: string;
+  ubicacion: string;
+  descripcion?: string;
+}
+
+export interface PrestamoConfig {
+  role: UserRole;
+  diasPrestamo: number;
+  maxLibros: number;
+}
+
+export interface Prestamo {
+  id: string;
+  userId: string;
+  bookId: string;
+  fechaPrestamo: Date;
+  fechaDevolucion: Date;
+  estado: 'prestado' | 'devuelto' | 'retrasado';
+  observaciones?: string;
+}
+
+// Mock data for demonstration purposes
+export const mockUsers: User[] = [
+  {
+    id: '1',
+    email: 'admin@mixteco.utm.mx',
+    nombre: 'Admin',
+    apellidos: 'Sistema',
+    role: 'administrador',
+    createdAt: new Date('2023-01-01'),
+  },
+  {
+    id: '2',
+    email: 'biblioteca@mixteco.utm.mx',
+    nombre: 'Bibliotecario',
+    apellidos: 'Principal',
+    role: 'bibliotecario',
+    createdAt: new Date('2023-01-02'),
+  },
+  {
+    id: '3',
+    email: 'profesor@mixteco.utm.mx',
+    nombre: 'Juan',
+    apellidos: 'Pérez López',
+    role: 'profesor',
+    createdAt: new Date('2023-01-03'),
+  },
+  {
+    id: '4',
+    email: 'alumno@mixteco.utm.mx',
+    nombre: 'María',
+    apellidos: 'García Sánchez',
+    role: 'estudiante',
+    createdAt: new Date('2023-01-04'),
+  },
+  {
+    id: '5',
+    email: 'tecnico@mixteco.utm.mx',
+    nombre: 'Roberto',
+    apellidos: 'Ramírez Torres',
+    role: 'tecnico',
+    createdAt: new Date('2023-01-05'),
+  },
+  {
+    id: '6',
+    email: 'admin@mixteco.utm.mx',
+    nombre: 'Carmen',
+    apellidos: 'Rodríguez Jiménez',
+    role: 'administrativo',
+    createdAt: new Date('2023-01-06'),
+  },
+];
+
+export const mockBooks: Book[] = [
+  {
+    id: '1',
+    titulo: 'Cálculo de una variable',
+    autor: 'James Stewart',
+    isbn: '9786075228280',
+    categoria: 'Matemáticas',
+    editorial: 'Cengage Learning',
+    anioPublicacion: 2018,
+    copias: 5,
+    disponibles: 3,
+    ubicacion: 'Estante A-1',
+    descripcion: 'Texto clásico para el estudio del cálculo diferencial e integral.',
+  },
+  {
+    id: '2',
+    titulo: 'Física para ciencias e ingeniería',
+    autor: 'Raymond A. Serway',
+    isbn: '9786075228426',
+    categoria: 'Física',
+    editorial: 'Cengage Learning',
+    anioPublicacion: 2019,
+    copias: 4,
+    disponibles: 2,
+    ubicacion: 'Estante B-3',
+    descripcion: 'Libro completo sobre física para estudiantes de ingeniería.',
+  },
+  {
+    id: '3',
+    titulo: 'Introducción a la Programación con Python',
+    autor: 'Arnaldo Pérez Castaño',
+    isbn: '9781683922193',
+    categoria: 'Informática',
+    editorial: 'Alfa Omega',
+    anioPublicacion: 2020,
+    copias: 8,
+    disponibles: 5,
+    ubicacion: 'Estante C-2',
+    descripcion: 'Guía práctica para aprender a programar en Python desde cero.',
+  },
+  {
+    id: '4',
+    titulo: 'Química General',
+    autor: 'Petrucci, Herring, Madura',
+    isbn: '9788490355336',
+    categoria: 'Química',
+    editorial: 'Pearson',
+    anioPublicacion: 2017,
+    copias: 3,
+    disponibles: 1,
+    ubicacion: 'Estante B-1',
+    descripcion: 'Principios esenciales de la química moderna explicados con claridad.',
+  },
+  {
+    id: '5',
+    titulo: 'Base de Datos',
+    autor: 'Abraham Silberschatz',
+    isbn: '9781260084504',
+    categoria: 'Informática',
+    editorial: 'McGraw-Hill',
+    anioPublicacion: 2019,
+    copias: 6,
+    disponibles: 4,
+    ubicacion: 'Estante C-3',
+    descripcion: 'Fundamentos de diseño e implementación de bases de datos.',
+  },
+  {
+    id: '6',
+    titulo: 'Álgebra Lineal y sus Aplicaciones',
+    autor: 'David C. Lay',
+    isbn: '9786073221412',
+    categoria: 'Matemáticas',
+    editorial: 'Pearson',
+    anioPublicacion: 2016,
+    copias: 7,
+    disponibles: 3,
+    ubicacion: 'Estante A-2',
+    descripcion: 'Estudio completo de algebra lineal con aplicaciones prácticas.',
+  },
+];
+
+export const mockPrestamos: Prestamo[] = [
+  {
+    id: '1',
+    userId: '4',
+    bookId: '1',
+    fechaPrestamo: new Date('2023-05-10'),
+    fechaDevolucion: new Date('2023-05-24'),
+    estado: 'prestado',
+  },
+  {
+    id: '2',
+    userId: '3',
+    bookId: '2',
+    fechaPrestamo: new Date('2023-05-05'),
+    fechaDevolucion: new Date('2023-06-05'),
+    estado: 'prestado',
+  },
+  {
+    id: '3',
+    userId: '5',
+    bookId: '3',
+    fechaPrestamo: new Date('2023-04-20'),
+    fechaDevolucion: new Date('2023-05-04'),
+    estado: 'retrasado',
+  },
+  {
+    id: '4',
+    userId: '4',
+    bookId: '6',
+    fechaPrestamo: new Date('2023-04-15'),
+    fechaDevolucion: new Date('2023-04-29'),
+    estado: 'devuelto',
+  },
+];
+
+export const defaultPrestamoConfig: PrestamoConfig[] = [
+  { role: 'estudiante', diasPrestamo: 14, maxLibros: 3 },
+  { role: 'profesor', diasPrestamo: 30, maxLibros: 5 },
+  { role: 'tecnico', diasPrestamo: 21, maxLibros: 3 },
+  { role: 'administrativo', diasPrestamo: 14, maxLibros: 2 },
+  { role: 'operativo', diasPrestamo: 7, maxLibros: 1 },
+  { role: 'bibliotecario', diasPrestamo: 30, maxLibros: 5 },
+  { role: 'administrador', diasPrestamo: 30, maxLibros: 5 },
+];
