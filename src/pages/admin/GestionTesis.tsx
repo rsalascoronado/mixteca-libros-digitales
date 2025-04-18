@@ -1,48 +1,29 @@
-
 import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Thesis, mockTheses } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import { GraduationCap, Plus, Search, Pencil, Trash, FilterX, AlertTriangle } from 'lucide-react';
-
 const GestionTesis = () => {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
-  const { toast } = useToast();
+  const {
+    hasRole
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const [tesis, setTesis] = useState<Thesis[]>(mockTheses);
   const [busqueda, setBusqueda] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('');
-  
+
   // Nueva tesis
   const [nuevaTesis, setNuevaTesis] = useState<Partial<Thesis>>({
     titulo: '',
@@ -53,56 +34,47 @@ const GestionTesis = () => {
     tipo: 'Licenciatura',
     disponible: true
   });
-
   React.useEffect(() => {
     if (!hasRole(['bibliotecario', 'administrador'])) {
       navigate('/');
       return;
     }
   }, [hasRole, navigate]);
-
   const limpiarFiltros = () => {
     setBusqueda('');
     setTipoFiltro('');
   };
-
   const tesisFiltradas = tesis.filter(tesis => {
     let cumpleBusqueda = true;
     let cumpleTipo = true;
-    
     if (busqueda) {
       const busquedaLower = busqueda.toLowerCase();
-      cumpleBusqueda = 
-        tesis.titulo.toLowerCase().includes(busquedaLower) ||
-        tesis.autor.toLowerCase().includes(busquedaLower) ||
-        tesis.director.toLowerCase().includes(busquedaLower);
+      cumpleBusqueda = tesis.titulo.toLowerCase().includes(busquedaLower) || tesis.autor.toLowerCase().includes(busquedaLower) || tesis.director.toLowerCase().includes(busquedaLower);
     }
-    
     if (tipoFiltro) {
       cumpleTipo = tesis.tipo === tipoFiltro;
     }
-    
     return cumpleBusqueda && cumpleTipo;
   });
-
   const handleNuevaTesis = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    const {
+      name,
+      value
+    } = e.target;
     setNuevaTesis(prev => ({
       ...prev,
       [name]: name === 'anio' ? parseInt(value) : value
     }));
   };
-
   const handleAgregarTesis = () => {
     if (!nuevaTesis.titulo || !nuevaTesis.autor || !nuevaTesis.carrera || !nuevaTesis.director) {
       toast({
         title: "Error",
         description: "Por favor completa los campos obligatorios",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     const newId = (Math.max(...tesis.map(t => parseInt(t.id))) + 1).toString();
     const nuevaTesisCompleta: Thesis = {
       id: newId,
@@ -115,7 +87,6 @@ const GestionTesis = () => {
       disponible: true,
       resumen: nuevaTesis.resumen
     };
-
     setTesis(prev => [...prev, nuevaTesisCompleta]);
     setNuevaTesis({
       titulo: '',
@@ -126,15 +97,12 @@ const GestionTesis = () => {
       tipo: 'Licenciatura',
       disponible: true
     });
-
     toast({
       title: "Tesis agregada",
-      description: "La tesis ha sido agregada correctamente al catálogo.",
+      description: "La tesis ha sido agregada correctamente al catálogo."
     });
   };
-
-  return (
-    <MainLayout>
+  return <MainLayout>
       <div className="container mx-auto py-10 px-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
@@ -162,63 +130,38 @@ const GestionTesis = () => {
                   <Label htmlFor="titulo">
                     Título <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="titulo"
-                    name="titulo"
-                    value={nuevaTesis.titulo}
-                    onChange={handleNuevaTesis}
-                    className="mt-1"
-                  />
+                  <Input id="titulo" name="titulo" value={nuevaTesis.titulo} onChange={handleNuevaTesis} className="mt-1" />
                 </div>
                 
                 <div>
                   <Label htmlFor="autor">
                     Autor <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="autor"
-                    name="autor"
-                    value={nuevaTesis.autor}
-                    onChange={handleNuevaTesis}
-                    className="mt-1"
-                  />
+                  <Input id="autor" name="autor" value={nuevaTesis.autor} onChange={handleNuevaTesis} className="mt-1" />
                 </div>
                 
                 <div>
                   <Label htmlFor="carrera">
                     Carrera <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="carrera"
-                    name="carrera"
-                    value={nuevaTesis.carrera}
-                    onChange={handleNuevaTesis}
-                    className="mt-1"
-                  />
+                  <Input id="carrera" name="carrera" value={nuevaTesis.carrera} onChange={handleNuevaTesis} className="mt-1" />
                 </div>
                 
                 <div>
                   <Label htmlFor="director">
                     Director de tesis <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="director"
-                    name="director"
-                    value={nuevaTesis.director}
-                    onChange={handleNuevaTesis}
-                    className="mt-1"
-                  />
+                  <Input id="director" name="director" value={nuevaTesis.director} onChange={handleNuevaTesis} className="mt-1" />
                 </div>
                 
                 <div>
                   <Label htmlFor="tipo">
                     Tipo de tesis <span className="text-red-500">*</span>
                   </Label>
-                  <Select 
-                    name="tipo" 
-                    value={nuevaTesis.tipo} 
-                    onValueChange={(value) => setNuevaTesis(prev => ({ ...prev, tipo: value as 'Licenciatura' | 'Maestría' | 'Doctorado' }))}
-                  >
+                  <Select name="tipo" value={nuevaTesis.tipo} onValueChange={value => setNuevaTesis(prev => ({
+                  ...prev,
+                  tipo: value as 'Licenciatura' | 'Maestría' | 'Doctorado'
+                }))}>
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Selecciona el tipo" />
                     </SelectTrigger>
@@ -234,28 +177,14 @@ const GestionTesis = () => {
                   <Label htmlFor="anio">
                     Año
                   </Label>
-                  <Input
-                    id="anio"
-                    name="anio"
-                    type="number"
-                    value={nuevaTesis.anio}
-                    onChange={handleNuevaTesis}
-                    className="mt-1"
-                  />
+                  <Input id="anio" name="anio" type="number" value={nuevaTesis.anio} onChange={handleNuevaTesis} className="mt-1" />
                 </div>
                 
                 <div className="col-span-2">
                   <Label htmlFor="resumen">
                     Resumen
                   </Label>
-                  <Textarea
-                    id="resumen"
-                    name="resumen"
-                    value={nuevaTesis.resumen}
-                    onChange={handleNuevaTesis}
-                    className="mt-1"
-                    rows={4}
-                  />
+                  <Textarea id="resumen" name="resumen" value={nuevaTesis.resumen} onChange={handleNuevaTesis} className="mt-1" rows={4} />
                 </div>
               </div>
               
@@ -271,13 +200,7 @@ const GestionTesis = () => {
             <div className="md:col-span-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  type="text"
-                  placeholder="Buscar por título, autor o director..."
-                  className="pl-8"
-                  value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
-                />
+                <Input type="text" placeholder="Buscar por título, autor o director..." className="pl-8" value={busqueda} onChange={e => setBusqueda(e.target.value)} />
               </div>
             </div>
             
@@ -316,7 +239,7 @@ const GestionTesis = () => {
               <TableRow>
                 <TableHead>Título</TableHead>
                 <TableHead>Autor</TableHead>
-                <TableHead>Carrera</TableHead>
+                <TableHead>Carrera/posgrado</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Año</TableHead>
                 <TableHead>Director</TableHead>
@@ -324,9 +247,7 @@ const GestionTesis = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tesisFiltradas.length > 0 ? (
-                tesisFiltradas.map((tesis) => (
-                  <TableRow key={tesis.id}>
+              {tesisFiltradas.length > 0 ? tesisFiltradas.map(tesis => <TableRow key={tesis.id}>
                     <TableCell className="font-medium">{tesis.titulo}</TableCell>
                     <TableCell>{tesis.autor}</TableCell>
                     <TableCell>{tesis.carrera}</TableCell>
@@ -334,16 +255,11 @@ const GestionTesis = () => {
                     <TableCell>{tesis.anio}</TableCell>
                     <TableCell>{tesis.director}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        tesis.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${tesis.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {tesis.disponible ? 'Disponible' : 'No disponible'}
                       </span>
                     </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
+                  </TableRow>) : <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <AlertTriangle className="h-8 w-8 text-gray-300 mb-2" />
@@ -352,14 +268,11 @@ const GestionTesis = () => {
                       </span>
                     </div>
                   </TableCell>
-                </TableRow>
-              )}
+                </TableRow>}
             </TableBody>
           </Table>
         </div>
       </div>
-    </MainLayout>
-  );
+    </MainLayout>;
 };
-
 export default GestionTesis;
