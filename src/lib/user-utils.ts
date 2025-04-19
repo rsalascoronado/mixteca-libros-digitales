@@ -4,7 +4,7 @@ import { User } from '@/types';
 export const isLibrarian = (user: User | null): boolean => {
   if (!user) return false;
   
-  return user.email === 'bibliobiblioteca@mixteco.utm.mx' || 
+  return user.email === 'biblioteca@mixteco.utm.mx' || 
          user.email === 'admin@mixteco.utm.mx' || 
          user.role === 'bibliotecario' ||
          user.role === 'administrador';

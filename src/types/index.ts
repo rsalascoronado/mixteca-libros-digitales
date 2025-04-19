@@ -121,7 +121,7 @@ export const mockUsers: User[] = [
   },
   {
     id: '2',
-    email: 'bibliobiblioteca@mixteco.utm.mx',
+    email: 'biblioteca@mixteco.utm.mx',
     nombre: 'Bibliotecario',
     apellidos: 'Principal',
     role: 'bibliotecario',
