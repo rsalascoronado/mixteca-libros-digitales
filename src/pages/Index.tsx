@@ -2,20 +2,46 @@ import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Search, BookOpen, Clock, BookPlus, FileDown, Users } from 'lucide-react';
+import { Search, BookOpen, Clock, BookPlus, FileDown, Users, Mail } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockBooks } from '@/types';
 import ChatButton from '@/components/chat/ChatButton';
 import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
-  const {
-    user,
-    hasRole
-  } = useAuth();
+  const { user, hasRole } = useAuth();
+  const { toast } = useToast();
 
   // Seleccionar algunos libros destacados para mostrar
   const librosDestacados = mockBooks.slice(0, 3);
+
+  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    
+    // Prepare email parameters
+    const subject = encodeURIComponent('Consulta Biblioteca UTM');
+    const body = encodeURIComponent('Hola, quisiera realizar una consulta sobre...');
+    const mailtoLink = `mailto:biblioteca@mixteco.utm.mx?subject=${subject}&body=${body}`;
+    
+    // Open email client
+    window.location.href = mailtoLink;
+    
+    // Show confirmation toast
+    toast({
+      title: "Contacto iniciado",
+      description: "Se está abriendo tu cliente de correo electrónico para contactar a la biblioteca.",
+    });
+
+    // For librarians, show additional notification
+    if (hasRole('bibliotecario')) {
+      toast({
+        title: "Notificación de correo",
+        description: "Se ha iniciado una nueva consulta a través del sistema de biblioteca.",
+      });
+    }
+  };
+
   return <MainLayout>
       {/* Hero Section */}
       <section className="bg-primary py-16 text-primary-foreground">
@@ -187,19 +213,11 @@ const Index = () => {
           <Button 
             size="lg" 
             className="bg-white text-secondary hover:bg-gray-100"
+            onClick={handleContactClick}
             asChild
           >
-            <a 
-              href="mailto:biblioteca@mixteco.utm.mx?subject=Consulta%20Biblioteca%20UTM"
-              onClick={() => {
-                if (hasRole('bibliotecario')) {
-                  toast({
-                    title: "Notificación de correo",
-                    description: "Se ha enviado una consulta a través del sistema de biblioteca.",
-                  });
-                }
-              }}
-            >
+            <a href="#">
+              <Mail className="mr-2 h-5 w-5" />
               Contactar a la biblioteca
             </a>
           </Button>
