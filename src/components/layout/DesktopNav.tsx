@@ -31,13 +31,13 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-white">
-            <DropdownMenuItem asChild>
-              <Link to="/admin/libros" className="flex items-center gap-2">
+            <DropdownMenuItem>
+              <Link to="/admin/libros" className="flex w-full items-center gap-2">
                 Gestionar libros
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/admin/tesis" className="flex items-center gap-2">
+            <DropdownMenuItem>
+              <Link to="/admin/tesis" className="flex w-full items-center gap-2">
                 Gestionar tesis
               </Link>
             </DropdownMenuItem>
