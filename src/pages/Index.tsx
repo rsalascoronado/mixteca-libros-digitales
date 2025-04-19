@@ -1,3 +1,4 @@
+
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ const Index = () => {
   // Seleccionar algunos libros destacados para mostrar
   const librosDestacados = mockBooks.slice(0, 3);
 
-  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleContactClick = (e: React.MouseEvent) => {
     e.preventDefault();
     
     // Prepare email parameters
