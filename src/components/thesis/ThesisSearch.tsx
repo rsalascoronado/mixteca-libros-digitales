@@ -36,7 +36,7 @@ const ThesisSearch = ({
           </div>
         </div>
         
-        <div className="flex items-end space-x-2">
+        <div className="flex items-center space-x-2">
           <div className="flex-1">
             <Select value={tipoFiltro || "all"} onValueChange={onTipoFiltroChange}>
               <SelectTrigger>

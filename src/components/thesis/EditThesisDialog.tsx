@@ -67,10 +67,14 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
         const fileExt = selectedFile.name.split('.').pop();
         const fileName = `thesis-edit-${editingThesis.id}-${Date.now()}.${fileExt}`;
         
-        // Upload the new file
+        // Upload the new file with public access settings
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('thesis-files')
-          .upload(fileName, selectedFile);
+          .upload(fileName, selectedFile, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: 'application/pdf'
+          });
 
         if (uploadError) {
           console.error('Upload error:', uploadError);

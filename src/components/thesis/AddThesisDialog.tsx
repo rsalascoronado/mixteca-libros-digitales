@@ -78,10 +78,14 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `thesis-${Date.now()}.${fileExt}`;
       
-      // Upload file to Supabase Storage
+      // Upload file to Supabase Storage with public access (no authorization)
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('thesis-files')
-        .upload(fileName, selectedFile);
+        .upload(fileName, selectedFile, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: 'application/pdf'
+        });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
