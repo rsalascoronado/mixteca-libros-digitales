@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +21,33 @@ export const useThesisFileUpload = () => {
     }
   };
 
-  const uploadThesisFile = async (file: File, thesisId?: string) => {
+  const deleteThesisFile = async (filePath: string) => {
+    try {
+      if (!user) {
+        throw new Error('Debe iniciar sesión para eliminar archivos');
+      }
+
+      const fileName = filePath.split('/').pop();
+      if (!fileName) {
+        throw new Error('Ruta de archivo inválida');
+      }
+
+      const { error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .remove([fileName]);
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Archivo eliminado exitosamente:', fileName);
+    } catch (error) {
+      console.error('Error al eliminar archivo:', error);
+      throw error;
+    }
+  };
+
+  const uploadThesisFile = async (file: File, thesisId?: string, oldFilePath?: string) => {
     try {
       if (!user) {
         throw new Error('Debe iniciar sesión para subir archivos');
@@ -32,12 +57,19 @@ export const useThesisFileUpload = () => {
       setIsUploading(true);
       setUploadProgress(0);
       
+      if (oldFilePath) {
+        try {
+          await deleteThesisFile(oldFilePath);
+        } catch (error) {
+          console.error('Error al eliminar archivo anterior:', error);
+        }
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `thesis-${thesisId ? `${thesisId}-` : ''}${Date.now()}.${fileExt}`;
       
       console.log('Iniciando carga de archivo:', fileName);
       
-      // Definimos una función para simular el progreso mientras se carga el archivo
       const startProgressSimulation = () => {
         let progress = 0;
         const interval = setInterval(() => {
@@ -53,7 +85,6 @@ export const useThesisFileUpload = () => {
       
       const progressInterval = startProgressSimulation();
 
-      // Subimos el archivo con opción upsert para sobrescribir si ya existe
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
         .upload(fileName, file, {
@@ -96,5 +127,5 @@ export const useThesisFileUpload = () => {
     }
   };
 
-  return { uploadThesisFile, isUploading, uploadProgress };
+  return { uploadThesisFile, deleteThesisFile, isUploading, uploadProgress };
 };

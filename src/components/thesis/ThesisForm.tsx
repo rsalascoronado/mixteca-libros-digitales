@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, FileX } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { Thesis } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -52,6 +53,28 @@ export const ThesisForm = ({
     }
 
     onFileChange(file);
+  };
+
+  const handleDeleteFile = () => {
+    onFileChange(null);
+    onChange('archivoPdf', null);
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileNameFromUrl = (url: string): string => {
+    try {
+      const urlParts = url.split('/');
+      return urlParts[urlParts.length - 1];
+    } catch (error) {
+      return 'archivo.pdf';
+    }
   };
 
   return (
@@ -169,9 +192,23 @@ export const ThesisForm = ({
           />
           {selectedFile && (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-green-600">
-                <Upload className="h-4 w-4" />
-                {selectedFile.name}
+              <div className="flex items-center justify-between p-2 bg-muted rounded-md">
+                <div className="flex items-center gap-2 text-sm">
+                  <Upload className="h-4 w-4 text-green-600" />
+                  <span>{selectedFile.name}</span>
+                  <span className="text-muted-foreground">
+                    ({formatFileSize(selectedFile.size)})
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onFileChange(null)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <FileX className="h-4 w-4" />
+                  <span className="sr-only">Eliminar archivo</span>
+                </Button>
               </div>
               {uploadProgress > 0 && uploadProgress < 100 && (
                 <div className="space-y-1">
@@ -184,9 +221,20 @@ export const ThesisForm = ({
             </div>
           )}
           {!selectedFile && thesis?.archivoPdf && (
-            <div className="flex items-center gap-2 text-sm text-blue-600">
-              <Upload className="h-4 w-4" />
-              PDF actual
+            <div className="flex items-center justify-between p-2 bg-muted rounded-md">
+              <div className="flex items-center gap-2 text-sm">
+                <Upload className="h-4 w-4 text-blue-600" />
+                <span>{getFileNameFromUrl(thesis.archivoPdf)}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeleteFile}
+                className="text-destructive hover:text-destructive"
+              >
+                <FileX className="h-4 w-4" />
+                <span className="sr-only">Eliminar archivo</span>
+              </Button>
             </div>
           )}
         </div>
