@@ -20,7 +20,7 @@ import { CategoriaDialog } from '@/components/admin/CategoriaDialog';
 import { EditCategoriaDialog } from '@/components/admin/EditCategoriaDialog';
 import { EditBookDialog } from '@/components/admin/EditBookDialog';
 import { DigitalBooksDialog } from '@/components/admin/digital-books/DigitalBooksDialog';
-import { UploadDigitalBookDialog } from '@/components/admin/UploadDigitalBookDialog';
+import { UploadDigitalBookDialog } from '@/components/admin/digital-books/UploadDigitalBookDialog';
 import { mockDigitalBooks, DigitalBook } from '@/types/digitalBook';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

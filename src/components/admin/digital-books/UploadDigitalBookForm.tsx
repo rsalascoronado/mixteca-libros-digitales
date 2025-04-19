@@ -1,0 +1,119 @@
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Upload, Save } from 'lucide-react';
+import { digitalBookSchema, type DigitalBookFormData } from './schema';
+import React from 'react';
+
+interface UploadDigitalBookFormProps {
+  onSubmit: (data: DigitalBookFormData) => Promise<void>;
+  isUploading: boolean;
+}
+
+export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBookFormProps) {
+  const [isFileSelected, setIsFileSelected] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const form = useForm<DigitalBookFormData>({
+    resolver: zodResolver(digitalBookSchema),
+    defaultValues: {
+      formato: 'PDF',
+    },
+  });
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      form.setValue('file', file);
+      setIsFileSelected(true);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="formato"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Formato</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar formato" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="PDF">PDF</SelectItem>
+                  <SelectItem value="EPUB">EPUB</SelectItem>
+                  <SelectItem value="MOBI">MOBI</SelectItem>
+                  <SelectItem value="HTML">HTML</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="file"
+          render={({ field: { onChange, ...field } }) => (
+            <FormItem>
+              <FormLabel>Archivo</FormLabel>
+              <FormControl>
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleFileSelect}
+                    accept=".pdf,.epub,.mobi,.html"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={triggerFileInput}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Seleccionar archivo
+                  </Button>
+                </div>
+              </FormControl>
+              <FormMessage />
+              {isFileSelected && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Archivo seleccionado: {fileInputRef.current?.files?.[0]?.name}
+                </p>
+              )}
+            </FormItem>
+          )}
+        />
+        
+        <Button 
+          type="submit" 
+          className="w-full"
+          disabled={!isFileSelected || isUploading}
+        >
+          {isUploading ? (
+            <>Subiendo archivo...</>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Guardar archivo
+            </>
+          )}
+        </Button>
+      </form>
+    </Form>
+  );
+}
