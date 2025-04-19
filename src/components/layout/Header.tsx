@@ -12,8 +12,12 @@ const Header = () => {
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   
+  // Permissions check for admin/librarian access
+  const isStaff = hasRole(['bibliotecario', 'administrador']);
+  
   return <header className="bg-primary text-primary-foreground py-2 px-4 shadow-md">
     <div className="container mx-auto flex items-center justify-between">
+      {/* Logo and home section */}
       <div className="flex items-center space-x-2">
         {/* Home Button - Always visible for all roles, responsive */}
         <Link to="/" className="flex items-center">
@@ -61,8 +65,8 @@ const Header = () => {
           </Link>}
       </nav>
 
-      {/* Admin links in dropdown on desktop */}
-      {hasRole(['bibliotecario', 'administrador']) && !isMobile && (
+      {/* Admin dropdown - only shown for staff roles */}
+      {isStaff && !isMobile && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/20 hover:text-white ml-2">
@@ -94,9 +98,10 @@ const Header = () => {
         </DropdownMenu>
       )}
       
-      {/* User account button - always visible */}
+      {/* User account section */}
       <div className="flex items-center">
-        {user ? <DropdownMenu>
+        {user ? (
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="bg-white text-primary">
                 <User className="h-4 w-4 mr-2" />
@@ -116,8 +121,8 @@ const Header = () => {
                   <span>Mis préstamos</span>
                 </Link>
               </DropdownMenuItem>
-              {/* Mobile admin links in user dropdown */}
-              {isMobile && hasRole(['bibliotecario', 'administrador']) && (
+              {/* Mobile admin menu - only shown for staff roles */}
+              {isMobile && isStaff && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Administración</DropdownMenuLabel>
@@ -148,15 +153,18 @@ const Header = () => {
                 <span>Cerrar sesión</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu> : <Link to="/login">
+          </DropdownMenu>
+        ) : (
+          <Link to="/login">
             <Button variant="outline" size="sm" className="bg-white text-primary">
               Iniciar sesión
             </Button>
-          </Link>}
+          </Link>
+        )}
       </div>
     </div>
 
-    {/* Mobile menu - slides in when open */}
+    {/* Mobile menu */}
     {isMobile && mobileMenuOpen && (
       <div className="md:hidden bg-primary border-t border-primary-foreground/20 mt-2 py-2">
         <nav className="flex flex-col space-y-2 px-4">
