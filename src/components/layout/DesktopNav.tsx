@@ -74,3 +74,4 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
     </nav>
   );
 };
+
