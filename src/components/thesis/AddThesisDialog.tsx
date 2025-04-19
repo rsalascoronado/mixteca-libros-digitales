@@ -1,15 +1,11 @@
 
 import React, { useState } from 'react';
-import { Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Thesis } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { ThesisForm } from './ThesisForm';
+import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
 
 interface AddThesisDialogProps {
   open: boolean;
@@ -19,6 +15,7 @@ interface AddThesisDialogProps {
 
 const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogProps) => {
   const { toast } = useToast();
+  const { uploadThesisFile, isUploading } = useThesisFileUpload();
   const [nuevaTesis, setNuevaTesis] = useState<Partial<Thesis>>({
     titulo: '',
     autor: '',
@@ -29,27 +26,12 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
     disponible: true
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const handleChange = (field: string, value: any) => {
     setNuevaTesis(prev => ({
       ...prev,
-      [name]: name === 'anio' ? parseInt(value) : value
+      [field]: value
     }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      setSelectedFile(file);
-    } else {
-      toast({
-        title: "Error",
-        description: "Por favor seleccione un archivo PDF válido",
-        variant: "destructive"
-      });
-    }
   };
 
   const handleSubmit = async () => {
@@ -72,55 +54,9 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
     }
 
     try {
-      setIsUploading(true);
+      const publicUrl = await uploadThesisFile(selectedFile);
       
-      // Verificar si el bucket existe antes de intentar subir el archivo
-      const { data: buckets, error: bucketError } = await supabase
-        .storage
-        .listBuckets();
-      
-      if (bucketError) {
-        console.error('Error al verificar buckets:', bucketError);
-        throw new Error(`Error al verificar almacenamiento: ${bucketError.message}`);
-      }
-
-      const bucketExists = buckets.some(bucket => bucket.id === 'thesis-files');
-      if (!bucketExists) {
-        throw new Error(`El bucket 'thesis-files' no existe. Por favor, contacte al administrador.`);
-      }
-      
-      // Generate a unique filename
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `thesis-${Date.now()}.${fileExt}`;
-      
-      console.log('Iniciando carga de archivo:', fileName);
-      
-      // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('thesis-files')
-        .upload(fileName, selectedFile, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: 'application/pdf'
-        });
-
-      if (uploadError) {
-        console.error('Error de carga:', uploadError);
-        throw new Error(`Error al subir archivo: ${uploadError.message}`);
-      }
-
-      console.log('Archivo subido exitosamente:', uploadData);
-
-      // Get public URL for the uploaded file
-      const { data: { publicUrl } } = supabase.storage
-        .from('thesis-files')
-        .getPublicUrl(fileName);
-
-      console.log('URL pública generada:', publicUrl);
-
-      // Create a new thesis with the PDF URL
       const newId = Date.now().toString();
-      
       const nuevaTesisCompleta: Thesis = {
         id: newId,
         titulo: nuevaTesis.titulo || '',
@@ -137,7 +73,6 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
       onThesisAdded(nuevaTesisCompleta);
       onOpenChange(false);
       
-      // Reset form
       setNuevaTesis({
         titulo: '',
         autor: '',
@@ -160,8 +95,6 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
         description: error instanceof Error ? error.message : "No se pudo guardar la tesis.",
         variant: "destructive"
       });
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -175,106 +108,12 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid grid-cols-2 gap-4 py-4">
-          <div className="col-span-2">
-            <Label htmlFor="titulo">
-              Título <span className="text-red-500">*</span>
-            </Label>
-            <Input id="titulo" name="titulo" value={nuevaTesis.titulo} onChange={handleChange} className="mt-1" />
-          </div>
-          
-          <div>
-            <Label htmlFor="autor">
-              Autor <span className="text-red-500">*</span>
-            </Label>
-            <Input id="autor" name="autor" value={nuevaTesis.autor} onChange={handleChange} className="mt-1" />
-          </div>
-          
-          <div>
-            <Label htmlFor="carrera">
-              Carrera <span className="text-red-500">*</span>
-            </Label>
-            <Input id="carrera" name="carrera" value={nuevaTesis.carrera} onChange={handleChange} className="mt-1" />
-          </div>
-          
-          <div>
-            <Label htmlFor="director">
-              Director de tesis <span className="text-red-500">*</span>
-            </Label>
-            <Input id="director" name="director" value={nuevaTesis.director} onChange={handleChange} className="mt-1" />
-          </div>
-          
-          <div>
-            <Label htmlFor="tipo">
-              Tipo de tesis <span className="text-red-500">*</span>
-            </Label>
-            <Select 
-              value={nuevaTesis.tipo} 
-              onValueChange={value => setNuevaTesis(prev => ({
-                ...prev,
-                tipo: value as 'Licenciatura' | 'Maestría' | 'Doctorado'
-              }))}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Selecciona el tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Licenciatura">Licenciatura</SelectItem>
-                <SelectItem value="Maestría">Maestría</SelectItem>
-                <SelectItem value="Doctorado">Doctorado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label htmlFor="anio">
-              Año
-            </Label>
-            <Input 
-              id="anio" 
-              name="anio" 
-              type="number" 
-              value={nuevaTesis.anio} 
-              onChange={handleChange} 
-              className="mt-1" 
-            />
-          </div>
-          
-          <div className="col-span-2">
-            <Label htmlFor="resumen">
-              Resumen
-            </Label>
-            <Textarea 
-              id="resumen" 
-              name="resumen" 
-              value={nuevaTesis.resumen} 
-              onChange={handleChange} 
-              className="mt-1" 
-              rows={4} 
-            />
-          </div>
-          
-          <div className="col-span-2">
-            <Label htmlFor="archivoPdf">
-              Archivo PDF de la tesis <span className="text-red-500">*</span>
-            </Label>
-            <div className="mt-1 flex items-center gap-4">
-              <Input
-                id="archivoPdf"
-                type="file"
-                accept=".pdf"
-                onChange={handleFileChange}
-                className="flex-1"
-              />
-              {selectedFile && (
-                <div className="flex items-center gap-2 text-sm text-green-600">
-                  <Upload className="h-4 w-4" />
-                  {selectedFile.name}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <ThesisForm
+          thesis={nuevaTesis}
+          onFileChange={setSelectedFile}
+          onChange={handleChange}
+          selectedFile={selectedFile}
+        />
         
         <DialogFooter>
           <Button 
