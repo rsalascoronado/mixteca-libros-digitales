@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -65,16 +66,19 @@ export const useThesisFileUpload = () => {
       
       console.log('Iniciando carga de archivo:', fileName);
 
+      // Get the signed URL outside the Promise
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .createSignedUploadUrl(fileName);
+
+      if (error || !data.signedUrl) {
+        throw new Error('No se pudo obtener la URL de carga');
+      }
+
+      const signedUrl = data.signedUrl;
+
       const uploadPromise = new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        
-        const { data: { signedUrl } } = await supabase.storage
-          .from(BUCKET_NAME)
-          .createSignedUploadUrl(fileName);
-
-        if (!signedUrl) {
-          throw new Error('No se pudo obtener la URL de carga');
-        }
 
         xhr.upload.addEventListener('progress', (event) => {
           if (event.lengthComputable) {
