@@ -74,11 +74,28 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
     try {
       setIsUploading(true);
       
+      // Verificar si el bucket existe antes de intentar subir el archivo
+      const { data: buckets, error: bucketError } = await supabase
+        .storage
+        .listBuckets();
+      
+      if (bucketError) {
+        console.error('Error al verificar buckets:', bucketError);
+        throw new Error(`Error al verificar almacenamiento: ${bucketError.message}`);
+      }
+
+      const bucketExists = buckets.some(bucket => bucket.id === 'thesis-files');
+      if (!bucketExists) {
+        throw new Error(`El bucket 'thesis-files' no existe. Por favor, contacte al administrador.`);
+      }
+      
       // Generate a unique filename
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `thesis-${Date.now()}.${fileExt}`;
       
-      // Upload file to Supabase Storage with public access (no authorization)
+      console.log('Iniciando carga de archivo:', fileName);
+      
+      // Upload file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('thesis-files')
         .upload(fileName, selectedFile, {
@@ -88,14 +105,18 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
         });
 
       if (uploadError) {
-        console.error('Upload error:', uploadError);
+        console.error('Error de carga:', uploadError);
         throw new Error(`Error al subir archivo: ${uploadError.message}`);
       }
+
+      console.log('Archivo subido exitosamente:', uploadData);
 
       // Get public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('thesis-files')
         .getPublicUrl(fileName);
+
+      console.log('URL pública generada:', publicUrl);
 
       // Create a new thesis with the PDF URL
       const newId = Date.now().toString();
@@ -133,7 +154,7 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
         description: "La tesis ha sido agregada correctamente al catálogo."
       });
     } catch (error) {
-      console.error('Error uploading thesis:', error);
+      console.error('Error al subir tesis:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "No se pudo guardar la tesis.",

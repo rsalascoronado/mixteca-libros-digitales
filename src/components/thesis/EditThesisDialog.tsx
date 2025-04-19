@@ -63,9 +63,26 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
       let publicUrl = editingThesis.archivoPdf;
 
       if (selectedFile) {
+        // Verificar si el bucket existe antes de intentar subir el archivo
+        const { data: buckets, error: bucketError } = await supabase
+          .storage
+          .listBuckets();
+        
+        if (bucketError) {
+          console.error('Error al verificar buckets:', bucketError);
+          throw new Error(`Error al verificar almacenamiento: ${bucketError.message}`);
+        }
+
+        const bucketExists = buckets.some(bucket => bucket.id === 'thesis-files');
+        if (!bucketExists) {
+          throw new Error(`El bucket 'thesis-files' no existe. Por favor, contacte al administrador.`);
+        }
+        
         // Generate a unique filename for the updated file
         const fileExt = selectedFile.name.split('.').pop();
         const fileName = `thesis-edit-${editingThesis.id}-${Date.now()}.${fileExt}`;
+        
+        console.log('Iniciando carga de archivo actualizado:', fileName);
         
         // Upload the new file with public access settings
         const { data: uploadData, error: uploadError } = await supabase.storage
@@ -77,15 +94,19 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
           });
 
         if (uploadError) {
-          console.error('Upload error:', uploadError);
+          console.error('Error de carga:', uploadError);
           throw new Error(`Error al subir archivo: ${uploadError.message}`);
         }
+
+        console.log('Archivo actualizado subido exitosamente:', uploadData);
 
         // Get the public URL for the new file
         const { data: { publicUrl: newPublicUrl } } = supabase.storage
           .from('thesis-files')
           .getPublicUrl(fileName);
 
+        console.log('URL pública generada para archivo actualizado:', newPublicUrl);
+        
         publicUrl = newPublicUrl;
       }
 
