@@ -2,11 +2,10 @@ import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Search, BookOpen, Clock, BookPlus, FileDown, Users, Mail } from 'lucide-react';
+import { Search, BookOpen, Clock, BookPlus, FileDown, Users, Mail, Folder } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockBooks } from '@/types';
 import ChatButton from '@/components/chat/ChatButton';
-import { toast } from '@/hooks/use-toast';
 import { useToast } from '@/hooks/use-toast';
 import RecentAdditions from '@/components/shared/RecentAdditions';
 
@@ -167,6 +166,28 @@ const Index = () => {
                 </Link>
                 <Link to="/admin/usuarios">
                   <Button variant="outline" size="sm">Usuarios</Button>
+                </Link>
+              </div>
+            </div>
+          )}
+          {hasRole('bibliotecario') && (
+            <div className="mt-8 bg-white p-6 rounded-lg shadow-md flex flex-col items-center text-center">
+              <div className="bg-primary/10 p-4 rounded-full mb-4">
+                <Folder className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Gestión de Recursos</h3>
+              <p className="text-gray-600 mb-4">
+                Administra libros, libros digitales y tesis del sistema bibliotecario.
+              </p>
+              <div className="mt-auto flex gap-2">
+                <Link to="/admin/libros">
+                  <Button variant="outline" size="sm">Libros</Button>
+                </Link>
+                <Link to="/admin/ebooks">
+                  <Button variant="outline" size="sm">Libros Digitales</Button>
+                </Link>
+                <Link to="/admin/tesis">
+                  <Button variant="outline" size="sm">Tesis</Button>
                 </Link>
               </div>
             </div>
