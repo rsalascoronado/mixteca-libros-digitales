@@ -1,4 +1,8 @@
 
+import { Database } from '@/integrations/supabase/types';
+
+export type DbThesis = Database['public']['Tables']['theses']['Row'];
+
 export interface Thesis {
   id: string;
   titulo: string;

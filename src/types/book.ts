@@ -1,4 +1,9 @@
 
+import { Database } from '@/integrations/supabase/types';
+
+export type DbBook = Database['public']['Tables']['books']['Row'];
+export type DbBookCategory = Database['public']['Tables']['book_categories']['Row'];
+
 export interface Book {
   id: string;
   titulo: string;
