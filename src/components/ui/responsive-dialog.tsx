@@ -1,6 +1,6 @@
 
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 interface ResponsiveDialogProps {
@@ -11,6 +11,7 @@ interface ResponsiveDialogProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  trigger?: React.ReactNode;
 }
 
 export function ResponsiveDialog({
@@ -20,12 +21,14 @@ export function ResponsiveDialog({
   description,
   children,
   footer,
-  className
+  className,
+  trigger
 }: ResponsiveDialogProps) {
   const isMobile = useIsMobile();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className={cn(
         'w-[95vw] max-h-[90vh] overflow-y-auto',
         isMobile ? 'p-4' : 'p-6',
