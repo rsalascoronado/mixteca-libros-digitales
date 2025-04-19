@@ -7,3 +7,15 @@ export const isLibrarian = (user: User | null): boolean => {
          user?.role === 'bibliotecario' ||
          user?.role === 'administrador';
 };
+
+export const canManageDigitalBooks = (user: User | null): boolean => {
+  return isLibrarian(user);
+};
+
+export const canManageBooks = (user: User | null): boolean => {
+  return isLibrarian(user);
+};
+
+export const canManageTheses = (user: User | null): boolean => {
+  return isLibrarian(user);
+};

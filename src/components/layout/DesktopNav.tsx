@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
+import { canManageBooks, canManageTheses, canManageDigitalBooks } from '@/lib/user-utils';
 
 interface DesktopNavProps {
   user: User | null;
@@ -36,31 +36,37 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-white">
-            <DropdownMenuItem>
-              <Link 
-                to="/admin/libros" 
-                className="flex w-full items-center gap-2 w-full"
-              >
-                Gestionar libros
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link 
-                to="/admin/tesis" 
-                className="flex w-full items-center gap-2 w-full"
-              >
-                Gestionar tesis
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link 
-                to="/admin/ebooks" 
-                className="flex w-full items-center gap-2 w-full"
-              >
-                <FileText className="h-4 w-4" />
-                Gestionar libros electrónicos
-              </Link>
-            </DropdownMenuItem>
+            {canManageBooks(user) && (
+              <DropdownMenuItem>
+                <Link 
+                  to="/admin/libros" 
+                  className="flex w-full items-center gap-2"
+                >
+                  Gestionar libros
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {canManageTheses(user) && (
+              <DropdownMenuItem>
+                <Link 
+                  to="/admin/tesis" 
+                  className="flex w-full items-center gap-2"
+                >
+                  Gestionar tesis
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {canManageDigitalBooks(user) && (
+              <DropdownMenuItem>
+                <Link 
+                  to="/admin/ebooks" 
+                  className="flex w-full items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Gestionar libros electrónicos
+                </Link>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )}

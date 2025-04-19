@@ -38,9 +38,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Proteger rutas solo para administradores y bibliotecarios
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { hasRole } = useAuth();
+  const { hasRole, user } = useAuth();
+  const isStaff = hasRole(['administrador', 'bibliotecario']);
   
-  if (!hasRole(['administrador', 'bibliotecario'])) {
+  if (!isStaff) {
     return <Navigate to="/" replace />;
   }
   
