@@ -101,6 +101,11 @@ const App = () => (
                 <GestionTesis />
               </AdminRoute>
             } />
+            <Route path="/admin/ebooks" element={
+              <AdminRoute>
+                <GestionLibros defaultTab="digital" />
+              </AdminRoute>
+            } />
             <Route path="/admin/configuracion" element={
               <AdminOnlyRoute>
                 <Configuracion />

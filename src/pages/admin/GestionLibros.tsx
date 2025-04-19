@@ -35,7 +35,11 @@ import {
 import { NewDigitalBookDialog } from '@/components/admin/NewDigitalBookDialog';
 import { NewBookDialog } from '@/components/admin/NewBookDialog';
 
-const GestionLibros = () => {
+interface GestionLibrosProps {
+  defaultTab?: 'libros' | 'categorias' | 'digital';
+}
+
+const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
   const { hasRole } = useAuth();
   const [searchTerm, setSearchTerm] = React.useState('');
   const { toast } = useToast();
@@ -173,7 +177,7 @@ const GestionLibros = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="libros">
+            <Tabs defaultValue={defaultTab}>
               <TabsList className="mb-4">
                 <TabsTrigger value="libros">Libros</TabsTrigger>
                 <TabsTrigger value="categorias">Categorías</TabsTrigger>
