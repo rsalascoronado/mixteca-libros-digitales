@@ -1,7 +1,12 @@
+
 import { ILoan, IPrestamoConfig } from './interfaces';
 import { UserRole } from './user';
 
-export type PrestamoConfig = IPrestamoConfig;
+// Create a type that extends IPrestamoConfig but uses UserRole
+export interface PrestamoConfig extends Omit<IPrestamoConfig, 'role'> {
+  role: UserRole;
+}
+
 export type Prestamo = ILoan;
 
 export const mockPrestamos: Prestamo[] = [

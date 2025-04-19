@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -42,26 +43,32 @@ const Configuracion = () => {
     }, 500);
   }, [hasRole, navigate]);
 
-  const handleUpdateDias = (role: UserRole, value: string) => {
+  const handleUpdateDias = (role: string, value: string) => {
     const dias = parseInt(value, 10);
     if (isNaN(dias) || dias < 1) return;
 
+    // Safely cast to UserRole since we know it's coming from our configs
+    const userRole = role as UserRole;
+
     setConfiguraciones(prev => 
       prev.map(config => 
-        config.role === role 
+        config.role === userRole 
           ? { ...config, diasPrestamo: dias } 
           : config
       )
     );
   };
 
-  const handleUpdateMaxLibros = (role: UserRole, value: string) => {
+  const handleUpdateMaxLibros = (role: string, value: string) => {
     const maxLibros = parseInt(value, 10);
     if (isNaN(maxLibros) || maxLibros < 1) return;
 
+    // Safely cast to UserRole since we know it's coming from our configs
+    const userRole = role as UserRole;
+
     setConfiguraciones(prev => 
       prev.map(config => 
-        config.role === role 
+        config.role === userRole 
           ? { ...config, maxLibros: maxLibros } 
           : config
       )

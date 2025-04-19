@@ -65,7 +65,7 @@ export interface ILoan {
 }
 
 export interface IPrestamoConfig {
-  role: string;
+  role: string; // Using string instead of UserRole to avoid circular dependencies
   diasPrestamo: number;
   maxLibros: number;
 }
