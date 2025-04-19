@@ -155,6 +155,14 @@ export const mockUsers: User[] = [
     role: 'administrativo',
     createdAt: new Date('2023-01-06'),
   },
+  {
+    id: '7',
+    email: 'estudiante@gs.utm.mx',
+    nombre: 'Juan',
+    apellidos: 'Méndez López',
+    role: 'estudiante',
+    createdAt: new Date('2024-04-19'),
+  },
 ];
 
 export const mockBooks: Book[] = [
