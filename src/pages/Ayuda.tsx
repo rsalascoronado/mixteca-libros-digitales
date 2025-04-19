@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +8,7 @@ import { FileText, Download, BookOpen, Search, User, Users, Settings, BookMarked
 import PDFViewer from '@/components/shared/PDFViewer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { saveAs } from 'file-saver';
+import UserCounter from '@/components/stats/UserCounter';
 
 interface HelpSection {
   title: string;
@@ -181,7 +181,6 @@ const Ayuda = () => {
   const currentRole = user?.role || 'estudiante';
 
   const downloadPDF = useCallback((role: UserRole) => {
-    // Generación simplificada del PDF para demo
     const blob = new Blob(['Manual detallado para ' + role], { type: 'application/pdf' });
     saveAs(blob, `manual_${role}.pdf`);
   }, []);
@@ -189,7 +188,12 @@ const Ayuda = () => {
   return (
     <MainLayout>
       <div className="container mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold mb-6">Centro de Ayuda</h1>
+        <div className="flex flex-col md:flex-row justify-between items-start mb-8">
+          <h1 className="text-3xl font-bold">Centro de Ayuda</h1>
+          <div className="mt-4 md:mt-0">
+            <UserCounter />
+          </div>
+        </div>
         
         <Tabs defaultValue={currentRole} className="w-full">
           <TabsList className="mb-4">
