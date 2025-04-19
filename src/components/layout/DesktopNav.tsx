@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
-import { canManageBooks, canManageTheses, canManageDigitalBooks, isLibrarian } from '@/lib/user-utils';
+import { canManageBooks, canManageTheses, canManageDigitalBooks, isLibrarian as checkIsLibrarian } from '@/lib/user-utils';
 
 interface DesktopNavProps {
   user: User | null;
@@ -18,6 +18,11 @@ interface DesktopNavProps {
 }
 
 export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
+  // Check permissions directly using the user object
+  const userCanManageBooks = user && canManageBooks(user);
+  const userCanManageTheses = user && canManageTheses(user);
+  const userCanManageDigitalBooks = user && canManageDigitalBooks(user);
+  
   return (
     <nav className="hidden md:flex items-center space-x-4">
       <Link to="/" className="text-primary-foreground hover:text-white transition-colors">Inicio</Link>
@@ -28,7 +33,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
           Mis préstamos
         </Link>
       )}
-      {user && (isLibrarian || canManageBooks(user) || canManageTheses(user) || canManageDigitalBooks(user)) && (
+      {user && (isLibrarian || userCanManageBooks || userCanManageTheses || userCanManageDigitalBooks) && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/20 hover:text-white">
@@ -48,7 +53,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
                 </Link>
               </DropdownMenuItem>
             )}
-            {canManageBooks(user) && (
+            {userCanManageBooks && (
               <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/libros" 
@@ -59,7 +64,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
                 </Link>
               </DropdownMenuItem>
             )}
-            {canManageTheses(user) && (
+            {userCanManageTheses && (
               <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/tesis" 
@@ -70,7 +75,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
                 </Link>
               </DropdownMenuItem>
             )}
-            {canManageDigitalBooks(user) && (
+            {userCanManageDigitalBooks && (
               <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/ebooks" 

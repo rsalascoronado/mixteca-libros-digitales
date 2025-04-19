@@ -17,6 +17,14 @@ interface UserMenuProps {
 }
 
 export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, hasRole }: UserMenuProps) => {
+  // Pre-calculate permission flags
+  const userIsLibrarian = user ? isLibrarian(user) : false;
+  const userCanManageBooks = user ? canManageBooks(user) : false;
+  const userCanManageTheses = user ? canManageTheses(user) : false;
+  const userCanManageDigitalBooks = user ? canManageDigitalBooks(user) : false;
+  
+  const showAdminSection = userIsLibrarian || userCanManageBooks || userCanManageTheses || userCanManageDigitalBooks || hasRole('administrador');
+
   return (
     <div className="flex items-center">
       {user ? (
@@ -40,11 +48,11 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
                 <span>Mis préstamos</span>
               </Link>
             </DropdownMenuItem>
-            {isMobile && (isStaff || isLibrarian(user) || canManageBooks(user) || canManageTheses(user) || canManageDigitalBooks(user)) && (
+            {isMobile && showAdminSection && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Administración</DropdownMenuLabel>
-                {isLibrarian(user) && (
+                {userIsLibrarian && (
                   <DropdownMenuItem asChild>
                     <Link to="/admin/prestamos">
                       <Calendar className="h-4 w-4 mr-2" />
@@ -52,7 +60,7 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {canManageBooks(user) && (
+                {userCanManageBooks && (
                   <DropdownMenuItem asChild>
                     <Link to="/admin/libros">
                       <BookOpen className="h-4 w-4 mr-2" />
@@ -60,7 +68,7 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {canManageTheses(user) && (
+                {userCanManageTheses && (
                   <DropdownMenuItem asChild>
                     <Link to="/admin/tesis">
                       <GraduationCap className="h-4 w-4 mr-2" />
@@ -68,7 +76,7 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {canManageDigitalBooks(user) && (
+                {userCanManageDigitalBooks && (
                   <DropdownMenuItem asChild>
                     <Link to="/admin/ebooks">
                       <FileText className="h-4 w-4 mr-2" />

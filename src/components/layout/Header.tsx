@@ -21,7 +21,7 @@ const Header = () => {
     return user.nombre;
   };
 
-  const isLibrarianUser = isLibrarian(user);
+  const isLibrarianUser = user ? isLibrarian(user) : false;
 
   return (
     <header className="bg-primary text-primary-foreground py-2 px-4 shadow-md">
