@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, File, BookOpen, Eye, Trash2 } from 'lucide-react';
+import { FileText, File, BookOpen, Eye, Trash2, FileBox } from 'lucide-react';
 import { DigitalBook } from '@/types/digitalBook';
 import { Book } from '@/types';
 import { Badge } from '@/components/ui/badge';
@@ -50,8 +51,16 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
       case 'PDF': return <FileText className="h-4 w-4 text-red-500" />;
       case 'EPUB': return <BookOpen className="h-4 w-4 text-blue-500" />;
       case 'MOBI': return <BookOpen className="h-4 w-4 text-green-500" />;
+      case 'HTML': return <FileBox className="h-4 w-4 text-purple-500" />;
       default: return <File className="h-4 w-4" />;
     }
+  };
+
+  const formatFileSize = (size: number) => {
+    if (size < 1) {
+      return `${(size * 1024).toFixed(2)} KB`;
+    }
+    return `${size.toFixed(2)} MB`;
   };
 
   return (
@@ -64,73 +73,85 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
             onClick={handleOpenDialog}
           >
             <FileText className="mr-2 h-4 w-4" />
-            Libros digitales
+            Archivos digitales
           </Button>
         </DialogTrigger>
         {isAuthenticated && (
-          <DialogContent className="sm:max-w-[750px]">
+          <DialogContent className="sm:max-w-[850px]">
             <DialogHeader>
-              <DialogTitle>Versiones digitales de "{book.titulo}"</DialogTitle>
+              <DialogTitle>Archivos digitales de "{book.titulo}"</DialogTitle>
             </DialogHeader>
             
             {bookDigitalVersions.length === 0 ? (
               <div className="py-6 text-center text-muted-foreground">
-                No hay versiones digitales disponibles para este libro.
+                No hay archivos digitales disponibles para este libro.
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Formato</TableHead>
-                    <TableHead>Tamaño</TableHead>
-                    <TableHead>Fecha subida</TableHead>
-                    <TableHead>Resumen</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {bookDigitalVersions.map((digitalBook) => (
-                    <TableRow key={digitalBook.id}>
-                      <TableCell>
-                        <div className="flex items-center">
-                          {getFormatIcon(digitalBook.formato)}
-                          <Badge variant="outline" className="ml-2">
-                            {digitalBook.formato}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell>{digitalBook.tamanioMb} MB</TableCell>
-                      <TableCell>
-                        {format(new Date(digitalBook.fechaSubida), 'PPP', { locale: es })}
-                      </TableCell>
-                      <TableCell className="max-w-[200px]">
-                        <div className="truncate" title={digitalBook.resumen}>
-                          {digitalBook.resumen || 'Sin resumen'}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex justify-end gap-2">
-                          <PDFViewer 
-                            url={digitalBook.url} 
-                            fileName={`${book.titulo} - ${digitalBook.formato}`} 
-                          />
-                          {isStaff && onDeleteDigitalBook && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDeleteVersion(digitalBook.id)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Eliminar</span>
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Formato</TableHead>
+                      <TableHead>Archivo</TableHead>
+                      <TableHead>Tamaño</TableHead>
+                      <TableHead>Fecha subida</TableHead>
+                      <TableHead>Resumen</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {bookDigitalVersions.map((digitalBook) => (
+                      <TableRow key={digitalBook.id}>
+                        <TableCell>
+                          <div className="flex items-center">
+                            {getFormatIcon(digitalBook.formato)}
+                            <Badge variant="outline" className="ml-2">
+                              {digitalBook.formato}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[200px]">
+                          <div className="truncate" title={digitalBook.url}>
+                            {new URL(digitalBook.url).pathname.split('/').pop()}
+                          </div>
+                        </TableCell>
+                        <TableCell>{formatFileSize(digitalBook.tamanioMb)}</TableCell>
+                        <TableCell>
+                          {format(new Date(digitalBook.fechaSubida), 'PPP', { locale: es })}
+                        </TableCell>
+                        <TableCell className="max-w-[200px]">
+                          <div className="truncate" title={digitalBook.resumen}>
+                            {digitalBook.resumen || 'Sin resumen'}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-end gap-2">
+                            <PDFViewer 
+                              url={digitalBook.url} 
+                              fileName={`${book.titulo} - ${digitalBook.formato}`} 
+                            />
+                            {isStaff && onDeleteDigitalBook && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteVersion(digitalBook.id)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Eliminar</span>
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+
+                <div className="text-sm text-muted-foreground">
+                  Total de archivos: {bookDigitalVersions.length}
+                </div>
+              </div>
             )}
           </DialogContent>
         )}
