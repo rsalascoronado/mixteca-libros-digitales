@@ -2,10 +2,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, BookOpen, FileText, GraduationCap } from 'lucide-react';
+import { LogOut, User, BookOpen, FileText, GraduationCap, Calendar } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { User as UserType, UserRole } from '@/types';
-import { canManageBooks, canManageTheses, canManageDigitalBooks } from '@/lib/user-utils';
+import { canManageBooks, canManageTheses, canManageDigitalBooks, isLibrarian } from '@/lib/user-utils';
 
 interface UserMenuProps {
   user: UserType | null;
@@ -44,6 +44,14 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Administración</DropdownMenuLabel>
+                {isLibrarian(user) && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/prestamos">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Gestionar préstamos
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 {canManageBooks(user) && (
                   <DropdownMenuItem asChild>
                     <Link to="/admin/libros">

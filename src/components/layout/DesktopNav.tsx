@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Library, FileText, BookOpen, GraduationCap } from 'lucide-react';
+import { Library, FileText, BookOpen, GraduationCap, Calendar } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
-import { canManageBooks, canManageTheses, canManageDigitalBooks } from '@/lib/user-utils';
+import { canManageBooks, canManageTheses, canManageDigitalBooks, isLibrarian } from '@/lib/user-utils';
 
 interface DesktopNavProps {
   user: User | null;
@@ -37,6 +37,17 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-white">
+            {isLibrarian && (
+              <DropdownMenuItem>
+                <Link 
+                  to="/admin/prestamos" 
+                  className="flex w-full items-center gap-2"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Gestionar préstamos
+                </Link>
+              </DropdownMenuItem>
+            )}
             {canManageBooks(user) && (
               <DropdownMenuItem>
                 <Link 
