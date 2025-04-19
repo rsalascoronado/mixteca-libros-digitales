@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const BUCKET_NAME = 'thesis-files';
@@ -10,6 +11,8 @@ export const useThesisFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole(['administrador']);
 
   const validateFile = (file: File) => {
     if (!file.type.includes('pdf')) {
@@ -35,6 +38,34 @@ export const useThesisFileUpload = () => {
     }
   };
 
+  const createBucket = async () => {
+    try {
+      console.log(`Intentando crear bucket '${BUCKET_NAME}'...`);
+      
+      const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
+        public: true, // Hacemos el bucket público para que los archivos sean accesibles
+        fileSizeLimit: MAX_FILE_SIZE
+      });
+      
+      if (error) {
+        // Si el error es porque el bucket ya existe, podemos continuar
+        if (error.message.includes('already exists')) {
+          console.log(`El bucket '${BUCKET_NAME}' ya existe, continuando...`);
+          return true;
+        }
+        
+        console.error('Error al crear bucket:', error);
+        throw new Error(`No se pudo crear el almacenamiento. ${error.message}`);
+      }
+      
+      console.log(`Bucket '${BUCKET_NAME}' creado exitosamente:`, data);
+      return true;
+    } catch (error) {
+      console.error('Error al crear bucket:', error);
+      throw error;
+    }
+  };
+
   const uploadThesisFile = async (file: File, thesisId?: string) => {
     try {
       validateFile(file);
@@ -45,9 +76,17 @@ export const useThesisFileUpload = () => {
       const bucketExists = await checkBucketExists();
       
       if (!bucketExists) {
-        // Si el bucket no existe, en lugar de intentar crearlo (lo cual puede fallar por RLS),
-        // informamos al usuario que debe contactar al administrador
-        throw new Error('El sistema de almacenamiento de tesis no está disponible. Por favor contacte al administrador.');
+        // Intentamos crear el bucket si el usuario es administrador
+        if (isAdmin) {
+          console.log('Usuario es administrador, intentando crear el bucket...');
+          const bucketCreated = await createBucket();
+          if (!bucketCreated) {
+            throw new Error('No se pudo crear el almacenamiento de tesis. Por favor intente más tarde o contacte al soporte técnico.');
+          }
+        } else {
+          // Si no es administrador, mostramos mensaje para contactar al administrador
+          throw new Error('El sistema de almacenamiento de tesis no está disponible. Por favor contacte al administrador.');
+        }
       }
       
       const fileExt = file.name.split('.').pop();
