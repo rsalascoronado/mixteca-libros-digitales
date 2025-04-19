@@ -1,28 +1,7 @@
-import { Database } from '@/integrations/supabase/types';
+import { IBook, IBookCategory } from './interfaces';
 
-export type DbBook = Database['public']['Tables']['books']['Row'];
-export type DbBookCategory = Database['public']['Tables']['book_categories']['Row'];
-
-export interface Book {
-  id: string;
-  titulo: string;
-  autor: string;
-  isbn: string;
-  categoria: string;
-  editorial: string;
-  anioPublicacion: number;
-  copias: number;
-  disponibles: number;
-  imagen?: string;
-  ubicacion: string;
-  descripcion?: string;
-}
-
-export interface BookCategory {
-  id: string;
-  nombre: string;
-  descripcion?: string;
-}
+export type Book = IBook;
+export type BookCategory = IBookCategory;
 
 export const mockCategories: BookCategory[] = [
   {

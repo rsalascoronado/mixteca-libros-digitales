@@ -1,25 +1,8 @@
+import { ILoan, IPrestamoConfig } from './interfaces';
 import { UserRole } from './user';
 
-export interface PrestamoConfig {
-  role: UserRole;
-  diasPrestamo: number;
-  maxLibros: number;
-}
-
-export interface Prestamo {
-  id: string;
-  userId: string;
-  bookId: string;
-  fechaPrestamo: Date;
-  fechaDevolucion: Date;
-  estado: 'prestado' | 'devuelto' | 'retrasado';
-  observaciones?: string;
-  penalizacion?: {
-    dias: number;
-    razon: string;
-    fechaAplicacion: Date;
-  };
-}
+export type PrestamoConfig = IPrestamoConfig;
+export type Prestamo = ILoan;
 
 export const mockPrestamos: Prestamo[] = [
   {

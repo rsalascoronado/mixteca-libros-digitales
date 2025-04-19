@@ -1,19 +1,7 @@
-import { Database } from '@/integrations/supabase/types';
+import { IThesis } from './interfaces';
 
-export type DbThesis = Database['public']['Tables']['theses']['Row'];
-
-export interface Thesis {
-  id: string;
-  titulo: string;
-  autor: string;
-  carrera: string;
-  anio: number;
-  director: string;
-  tipo: 'Licenciatura' | 'Maestría' | 'Doctorado';
-  disponible: boolean;
-  resumen?: string;
-  archivoPdf?: string;
-}
+// Use the interface instead of the database type
+export type Thesis = IThesis;
 
 export const mockTheses: Thesis[] = [
   {

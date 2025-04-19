@@ -1,12 +1,6 @@
-export interface DigitalBook {
-  id: string;
-  bookId: string;
-  formato: 'PDF' | 'EPUB' | 'MOBI' | 'HTML';
-  url: string;
-  tamanioMb: number;
-  fechaSubida: Date;
-  resumen?: string;
-}
+import { IDigitalBook } from './interfaces';
+
+export type DigitalBook = IDigitalBook;
 
 export const mockDigitalBooks: DigitalBook[] = [
   {
