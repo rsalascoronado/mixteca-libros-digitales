@@ -1,4 +1,3 @@
-
 import { Database } from '@/integrations/supabase/types';
 
 export type DbBook = Database['public']['Tables']['books']['Row'];

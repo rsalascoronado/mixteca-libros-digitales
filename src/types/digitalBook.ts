@@ -1,8 +1,3 @@
-
-import { Database } from '@/integrations/supabase/types';
-
-export type DbDigitalBook = Database['public']['Tables']['digital_books']['Row'];
-
 export interface DigitalBook {
   id: string;
   bookId: string;

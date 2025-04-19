@@ -1,8 +1,4 @@
-
-import { Database } from '@/integrations/supabase/types';
 import { UserRole } from './user';
-
-export type DbLoan = Database['public']['Tables']['loans']['Row'];
 
 export interface PrestamoConfig {
   role: UserRole;
