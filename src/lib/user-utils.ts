@@ -19,4 +19,3 @@ export const canManageBooks = (user: User | null): boolean => {
 export const canManageTheses = (user: User | null): boolean => {
   return isLibrarian(user);
 };
-

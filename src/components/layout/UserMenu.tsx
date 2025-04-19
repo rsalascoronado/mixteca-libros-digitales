@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, BookOpen, FileText } from 'lucide-react';
+import { LogOut, User, BookOpen, FileText, GraduationCap } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { User as UserType, UserRole } from '@/types';
+import { canManageBooks, canManageTheses, canManageDigitalBooks } from '@/lib/user-utils';
 
 interface UserMenuProps {
   user: UserType | null;
@@ -42,21 +44,30 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Administración</DropdownMenuLabel>
-                <DropdownMenuItem asChild>
-                  <Link to="/admin/prestamos">Gestionar préstamos</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/admin/libros">Gestionar libros</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/admin/tesis">Gestionar tesis</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/admin/ebooks">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Gestionar libros digitales
-                  </Link>
-                </DropdownMenuItem>
+                {canManageBooks(user) && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/libros">
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Gestionar libros
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {canManageTheses(user) && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/tesis">
+                      <GraduationCap className="h-4 w-4 mr-2" />
+                      Gestionar tesis
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {canManageDigitalBooks(user) && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/ebooks">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Gestionar libros digitales
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 {hasRole('administrador') && (
                   <>
                     <DropdownMenuItem asChild>

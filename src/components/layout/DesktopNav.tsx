@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Library, FileText } from 'lucide-react';
+import { Library, FileText, BookOpen, GraduationCap } from 'lucide-react';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -43,6 +43,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
                   to="/admin/libros" 
                   className="flex w-full items-center gap-2"
                 >
+                  <BookOpen className="h-4 w-4 mr-2" />
                   Gestionar libros
                 </Link>
               </DropdownMenuItem>
@@ -53,6 +54,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
                   to="/admin/tesis" 
                   className="flex w-full items-center gap-2"
                 >
+                  <GraduationCap className="h-4 w-4 mr-2" />
                   Gestionar tesis
                 </Link>
               </DropdownMenuItem>
@@ -74,4 +76,3 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
     </nav>
   );
 };
-
