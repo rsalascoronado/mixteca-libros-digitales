@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, mockUsers, UserRole } from '@/types';
 
@@ -35,8 +34,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Validate email format
-    if (!email.endsWith('@mixteco.utm.mx')) {
+    // Updated email validation logic
+    const isStudentEmail = email.endsWith('@gs.utm.mx');
+    const isInstitutionalEmail = email.endsWith('@mixteco.utm.mx');
+    
+    // Students must use gs.utm.mx, others must use mixteco.utm.mx
+    if ((!isStudentEmail && !isInstitutionalEmail) || 
+        (email.includes('alumno') && !isStudentEmail)) {
       setIsLoading(false);
       return false;
     }
