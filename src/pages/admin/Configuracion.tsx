@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -14,7 +13,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Shield, Settings, Save, AlertCircle } from 'lucide-react';
+import { Shield, Settings, Save, AlertCircle, Users, BookOpen, GraduationCap } from 'lucide-react';
 import { UserRole, PrestamoConfig, defaultPrestamoConfig } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -31,13 +30,11 @@ const Configuracion = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar permisos de administrador
     if (!hasRole('administrador')) {
       navigate('/');
       return;
     }
 
-    // Cargar configuraciones
     setLoading(true);
     setTimeout(() => {
       setConfiguraciones([...defaultPrestamoConfig]);
@@ -72,11 +69,14 @@ const Configuracion = () => {
   };
 
   const handleGuardarCambios = () => {
-    // Aquí iría la lógica para guardar los cambios en la base de datos
     toast({
       title: "Configuraciones guardadas",
       description: "Las configuraciones de préstamos han sido actualizadas correctamente.",
     });
+  };
+
+  const navigateToSection = (path: string) => {
+    navigate(path);
   };
 
   if (loading) {
@@ -164,19 +164,35 @@ const Configuracion = () => {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>Opciones de administración</CardTitle>
+                <CardTitle>Configuración avanzada</CardTitle>
                 <CardDescription>
-                  Otras opciones de configuración del sistema.
+                  Gestiona usuarios, libros y tesis del sistema.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-start">
-                  <Shield className="h-4 w-4 mr-2" />
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => navigateToSection('/admin/usuarios')}
+                >
+                  <Users className="h-4 w-4 mr-2" />
                   Gestionar usuarios
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Configuración avanzada
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => navigateToSection('/admin/libros')}
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Gestionar libros
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => navigateToSection('/admin/tesis')}
+                >
+                  <GraduationCap className="h-4 w-4 mr-2" />
+                  Gestionar tesis
                 </Button>
               </CardContent>
             </Card>
