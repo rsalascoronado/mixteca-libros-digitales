@@ -35,67 +35,19 @@ export const useThesisFileUpload = () => {
     }
   };
 
-  const createBucket = async () => {
-    try {
-      console.log(`Intentando crear bucket '${BUCKET_NAME}'...`);
-      
-      const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
-        public: true, // Hacemos el bucket público para que los archivos sean accesibles
-        fileSizeLimit: MAX_FILE_SIZE
-      });
-      
-      if (error) {
-        // Si el error es porque el bucket ya existe, podemos continuar
-        if (error.message.includes('already exists')) {
-          console.log(`El bucket '${BUCKET_NAME}' ya existe, continuando...`);
-          return true;
-        }
-        
-        console.error('Error al crear bucket:', error);
-        throw new Error(`No se pudo crear el almacenamiento. ${error.message}`);
-      }
-      
-      console.log(`Bucket '${BUCKET_NAME}' creado exitosamente:`, data);
-      return true;
-    } catch (error) {
-      console.error('Error al crear bucket:', error);
-      throw error;
-    }
-  };
-
-  const ensureBucketExists = async () => {
-    try {
-      const bucketExists = await checkBucketExists();
-      
-      if (!bucketExists) {
-        return await createBucket();
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error al verificar/crear bucket:', error);
-      
-      // Verificamos si el error es de tipo "permission denied" o similar
-      if (error instanceof Error && 
-          (error.message.includes('permission') || 
-           error.message.includes('not authorized'))) {
-        throw new Error('No tiene permisos suficientes para acceder al almacenamiento. Contacte al administrador.');
-      }
-      
-      throw error;
-    }
-  };
-
   const uploadThesisFile = async (file: File, thesisId?: string) => {
     try {
       validateFile(file);
       setIsUploading(true);
       setUploadProgress(0);
       
-      // Aseguramos que el bucket exista antes de subir el archivo
-      const bucketReady = await ensureBucketExists();
-      if (!bucketReady) {
-        throw new Error('No se pudo preparar el almacenamiento para subir archivos.');
+      // Verificamos si el bucket existe antes de intentar cargar el archivo
+      const bucketExists = await checkBucketExists();
+      
+      if (!bucketExists) {
+        // Si el bucket no existe, en lugar de intentar crearlo (lo cual puede fallar por RLS),
+        // informamos al usuario que debe contactar al administrador
+        throw new Error('El sistema de almacenamiento de tesis no está disponible. Por favor contacte al administrador.');
       }
       
       const fileExt = file.name.split('.').pop();
@@ -130,6 +82,12 @@ export const useThesisFileUpload = () => {
 
       if (error) {
         console.error('Error al cargar archivo:', error);
+        
+        // Manejamos específicamente el error de RLS policy
+        if (error.message.includes('row-level security')) {
+          throw new Error('No tiene permisos para subir archivos. Contacte al administrador del sistema.');
+        }
+        
         throw new Error(`Error al subir el archivo: ${error.message}`);
       }
 
