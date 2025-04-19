@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Thesis } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { ThesisForm } from './ThesisForm';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
+import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 
 interface EditThesisDialogProps {
   thesis: Thesis | null;
@@ -73,32 +72,27 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
   if (!editingThesis) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>Editar tesis</DialogTitle>
-          <DialogDescription>
-            Modifica la información de la tesis.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <ThesisForm
-          thesis={editingThesis}
-          onFileChange={setSelectedFile}
-          onChange={handleChange}
-          selectedFile={selectedFile}
-        />
-        
-        <DialogFooter>
-          <Button 
-            onClick={handleSave}
-            disabled={isUploading}
-          >
-            {isUploading ? 'Guardando...' : 'Guardar cambios'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Editar tesis"
+      description="Modifica la información de la tesis."
+      footer={
+        <Button 
+          onClick={handleSave}
+          disabled={isUploading}
+        >
+          {isUploading ? 'Guardando...' : 'Guardar cambios'}
+        </Button>
+      }
+    >
+      <ThesisForm
+        thesis={editingThesis}
+        onFileChange={setSelectedFile}
+        onChange={handleChange}
+        selectedFile={selectedFile}
+      />
+    </ResponsiveDialog>
   );
 };
 

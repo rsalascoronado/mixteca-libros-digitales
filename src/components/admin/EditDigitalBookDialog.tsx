@@ -1,6 +1,4 @@
-
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { DigitalBook } from '@/types/digitalBook';
 import { Textarea } from '@/components/ui/textarea';
+import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 
 const editDigitalBookSchema = z.object({
   formato: z.enum(['PDF', 'EPUB', 'MOBI', 'HTML'], {
@@ -29,7 +28,6 @@ interface EditDigitalBookDialogProps {
 
 export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDialogProps) {
   const [open, setOpen] = useState(false);
-  
   const form = useForm<EditDigitalBookFormData>({
     resolver: zodResolver(editDigitalBookSchema),
     defaultValues: {
@@ -45,19 +43,24 @@ export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDi
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <PencilIcon className="h-4 w-4" />
-          <span className="sr-only">Editar</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Editar archivo digital</DialogTitle>
-        </DialogHeader>
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <PencilIcon className="h-4 w-4" />
+        <span className="sr-only">Editar</span>
+      </Button>
+
+      <ResponsiveDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Editar archivo digital"
+        footer={
+          <Button type="submit" form="edit-digital-book-form" className="w-full sm:w-auto">
+            Guardar cambios
+          </Button>
+        }
+      >
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form id="edit-digital-book-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="formato"
@@ -113,13 +116,9 @@ export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDi
                 </FormItem>
               )}
             />
-            
-            <Button type="submit" className="w-full">
-              Guardar cambios
-            </Button>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialog>
+    </>
   );
 }
