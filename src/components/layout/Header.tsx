@@ -12,11 +12,9 @@ const Header = () => {
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   
-  // Check for admin/librarian access AND ensure user is not from gs.utm.mx domain
-  const isStaff = hasRole(['bibliotecario', 'administrador']) && user?.email && !user.email.endsWith('@gs.utm.mx');
-  const isLibrarian = user?.email === 'biblioteca@mixteco.utm.mx';
+  // Specifically check for biblioteca@mixteco.utm.mx OR bibliotecario role
+  const isLibrarian = user?.email === 'biblioteca@mixteco.utm.mx' || hasRole('bibliotecario');
   
-  // Get display name based on domain
   const getUserDisplayName = () => {
     if (!user) return '';
     if (user.email.endsWith('@gs.utm.mx')) {
@@ -30,7 +28,10 @@ const Header = () => {
       <div className="container mx-auto flex items-center justify-between">
         <HeaderLogo />
         
-        <DesktopNav user={user} isLibrarian={isLibrarian} />
+        <DesktopNav 
+          user={user} 
+          isLibrarian={isLibrarian}  // Pass the updated librarian check
+        />
 
         <MobileMenu 
           isMobile={isMobile} 
@@ -44,7 +45,7 @@ const Header = () => {
           logout={logout}
           getUserDisplayName={getUserDisplayName}
           isMobile={isMobile}
-          isStaff={isStaff}
+          isStaff={hasRole(['bibliotecario', 'administrador'])}
           hasRole={hasRole}
         />
       </div>
@@ -53,3 +54,4 @@ const Header = () => {
 };
 
 export default Header;
+
