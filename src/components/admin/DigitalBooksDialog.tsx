@@ -1,8 +1,8 @@
+
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, File, BookOpen, Eye, Trash2, FileBox, PencilIcon } from 'lucide-react';
+import { FileText, File, BookOpen, Trash2, FileBox, PencilIcon } from 'lucide-react';
 import { DigitalBook } from '@/types/digitalBook';
 import { Book } from '@/types';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import PDFViewer from '../shared/PDFViewer';
 import { useToast } from '@/hooks/use-toast';
 import { EditDigitalBookDialog } from './EditDigitalBookDialog';
+import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 
 interface DigitalBooksDialogProps {
   book: Book;
@@ -78,8 +79,11 @@ export function DigitalBooksDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
+      <ResponsiveDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={`Archivos digitales de "${book.titulo}"`}
+        trigger={
           <Button 
             variant="ghost" 
             className="flex w-full items-center justify-start"
@@ -88,95 +92,95 @@ export function DigitalBooksDialog({
             <FileText className="mr-2 h-4 w-4" />
             Archivos digitales
           </Button>
-        </DialogTrigger>
-        {isAuthenticated && (
-          <DialogContent className="sm:max-w-[850px]">
-            <DialogHeader>
-              <DialogTitle>Archivos digitales de "{book.titulo}"</DialogTitle>
-            </DialogHeader>
-            
-            {bookDigitalVersions.length === 0 ? (
-              <div className="py-6 text-center text-muted-foreground">
-                No hay archivos digitales disponibles para este libro.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Formato</TableHead>
-                      <TableHead>Archivo</TableHead>
-                      <TableHead>Tamaño</TableHead>
-                      <TableHead>Fecha subida</TableHead>
-                      <TableHead>Resumen</TableHead>
-                      <TableHead className="text-right">Acciones</TableHead>
+        }
+        className="sm:max-w-[850px]"
+      >
+        {!isAuthenticated ? (
+          <div className="py-6 text-center text-muted-foreground">
+            Debe iniciar sesión para ver los archivos digitales.
+          </div>
+        ) : bookDigitalVersions.length === 0 ? (
+          <div className="py-6 text-center text-muted-foreground">
+            No hay archivos digitales disponibles para este libro.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Formato</TableHead>
+                    <TableHead className="hidden sm:table-cell">Archivo</TableHead>
+                    <TableHead className="hidden md:table-cell">Tamaño</TableHead>
+                    <TableHead className="hidden md:table-cell">Fecha subida</TableHead>
+                    <TableHead className="hidden lg:table-cell">Resumen</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bookDigitalVersions.map((digitalBook) => (
+                    <TableRow key={digitalBook.id}>
+                      <TableCell>
+                        <div className="flex items-center">
+                          {getFormatIcon(digitalBook.formato)}
+                          <Badge variant="outline" className="ml-2">
+                            {digitalBook.formato}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell max-w-[120px] lg:max-w-[200px]">
+                        <div className="truncate" title={digitalBook.url}>
+                          {new URL(digitalBook.url).pathname.split('/').pop()}
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{formatFileSize(digitalBook.tamanioMb)}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {format(new Date(digitalBook.fechaSubida), 'PPP', { locale: es })}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell max-w-[200px]">
+                        <div className="truncate" title={digitalBook.resumen}>
+                          {digitalBook.resumen || 'Sin resumen'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-2">
+                          <PDFViewer 
+                            url={digitalBook.url} 
+                            fileName={`${book.titulo} - ${digitalBook.formato}`} 
+                          />
+                          {isStaff && (
+                            <>
+                              <EditDigitalBookDialog
+                                digitalBook={digitalBook}
+                                onEdit={(data) => handleEditVersion(digitalBook.id, data)}
+                              />
+                              {onDeleteDigitalBook && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteVersion(digitalBook.id)}
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="sr-only">Eliminar</span>
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {bookDigitalVersions.map((digitalBook) => (
-                      <TableRow key={digitalBook.id}>
-                        <TableCell>
-                          <div className="flex items-center">
-                            {getFormatIcon(digitalBook.formato)}
-                            <Badge variant="outline" className="ml-2">
-                              {digitalBook.formato}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell className="max-w-[200px]">
-                          <div className="truncate" title={digitalBook.url}>
-                            {new URL(digitalBook.url).pathname.split('/').pop()}
-                          </div>
-                        </TableCell>
-                        <TableCell>{formatFileSize(digitalBook.tamanioMb)}</TableCell>
-                        <TableCell>
-                          {format(new Date(digitalBook.fechaSubida), 'PPP', { locale: es })}
-                        </TableCell>
-                        <TableCell className="max-w-[200px]">
-                          <div className="truncate" title={digitalBook.resumen}>
-                            {digitalBook.resumen || 'Sin resumen'}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex justify-end gap-2">
-                            <PDFViewer 
-                              url={digitalBook.url} 
-                              fileName={`${book.titulo} - ${digitalBook.formato}`} 
-                            />
-                            {isStaff && (
-                              <>
-                                <EditDigitalBookDialog
-                                  digitalBook={digitalBook}
-                                  onEdit={(data) => handleEditVersion(digitalBook.id, data)}
-                                />
-                                {onDeleteDigitalBook && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDeleteVersion(digitalBook.id)}
-                                    className="text-red-500 hover:text-red-700"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                    <span className="sr-only">Eliminar</span>
-                                  </Button>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-                <div className="text-sm text-muted-foreground">
-                  Total de archivos: {bookDigitalVersions.length}
-                </div>
-              </div>
-            )}
-          </DialogContent>
+            <div className="text-sm text-muted-foreground">
+              Total de archivos: {bookDigitalVersions.length}
+            </div>
+          </div>
         )}
-      </Dialog>
+      </ResponsiveDialog>
     </>
   );
 }

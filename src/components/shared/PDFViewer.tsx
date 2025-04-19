@@ -1,11 +1,11 @@
 
 import React from 'react';
 import { FileText } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 
 interface PDFViewerProps {
   url: string;
@@ -15,6 +15,7 @@ interface PDFViewerProps {
 const PDFViewer = ({ url, fileName }: PDFViewerProps) => {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const [open, setOpen] = React.useState(false);
 
   const handleOpenPDF = () => {
     if (!isAuthenticated) {
@@ -25,11 +26,16 @@ const PDFViewer = ({ url, fileName }: PDFViewerProps) => {
       });
       return;
     }
+    setOpen(true);
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <ResponsiveDialog
+      open={open}
+      onOpenChange={setOpen}
+      title={fileName ? fileName : 'Visualización de PDF'}
+      className="max-w-4xl h-[80vh]"
+      trigger={
         <Button 
           variant="ghost" 
           size="sm" 
@@ -37,24 +43,26 @@ const PDFViewer = ({ url, fileName }: PDFViewerProps) => {
           onClick={handleOpenPDF}
         >
           <FileText className="h-4 w-4" />
-          {fileName ? fileName : 'Ver PDF'}
+          <span className="sr-only sm:not-sr-only sm:ml-1">
+            {fileName ? 'Ver' : 'Ver PDF'}
+          </span>
         </Button>
-      </DialogTrigger>
-      {isAuthenticated && (
-        <DialogContent className="max-w-4xl h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>{fileName ? fileName : 'Visualización de PDF'}</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="h-full w-full rounded-md">
-            <iframe
-              src={url}
-              className="w-full h-[calc(80vh-80px)]"
-              title="PDF Viewer"
-            />
-          </ScrollArea>
-        </DialogContent>
+      }
+    >
+      {isAuthenticated ? (
+        <ScrollArea className="h-full w-full rounded-md">
+          <iframe
+            src={url}
+            className="w-full h-[calc(80vh-80px)]"
+            title="PDF Viewer"
+          />
+        </ScrollArea>
+      ) : (
+        <div className="py-6 text-center text-muted-foreground">
+          Debe iniciar sesión para ver los documentos digitales.
+        </div>
       )}
-    </Dialog>
+    </ResponsiveDialog>
   );
 };
 
