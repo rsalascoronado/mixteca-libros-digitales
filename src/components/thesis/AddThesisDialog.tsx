@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ interface AddThesisDialogProps {
 
 const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogProps) => {
   const { toast } = useToast();
-  const { uploadThesisFile, isUploading } = useThesisFileUpload();
+  const { uploadThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
   const [nuevaTesis, setNuevaTesis] = useState<Partial<Thesis>>({
     titulo: '',
     autor: '',
@@ -113,6 +112,7 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
           onFileChange={setSelectedFile}
           onChange={handleChange}
           selectedFile={selectedFile}
+          uploadProgress={isUploading ? uploadProgress : 0}
         />
         
         <DialogFooter>

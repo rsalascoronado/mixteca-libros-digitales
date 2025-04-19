@@ -15,7 +15,7 @@ interface EditThesisDialogProps {
 
 const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditThesisDialogProps) => {
   const { toast } = useToast();
-  const { uploadThesisFile, isUploading } = useThesisFileUpload();
+  const { uploadThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingThesis, setEditingThesis] = useState<Thesis | null>(thesis);
 
@@ -91,6 +91,7 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
         onFileChange={setSelectedFile}
         onChange={handleChange}
         selectedFile={selectedFile}
+        uploadProgress={isUploading ? uploadProgress : 0}
       />
     </ResponsiveDialog>
   );
