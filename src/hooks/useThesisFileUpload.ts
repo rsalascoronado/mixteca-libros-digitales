@@ -11,8 +11,7 @@ export const useThesisFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
-  const { hasRole } = useAuth();
-  const isAdmin = hasRole(['administrador']);
+  const { user } = useAuth();
 
   const validateFile = (file: File) => {
     if (!file.type.includes('pdf')) {
@@ -23,90 +22,18 @@ export const useThesisFileUpload = () => {
     }
   };
 
-  const checkBucketExists = async () => {
-    try {
-      const { data, error } = await supabase.storage.listBuckets();
-      
-      if (error) throw error;
-      
-      const bucketExists = data.some(bucket => bucket.name === BUCKET_NAME);
-      console.log(`Bucket '${BUCKET_NAME}' existe: ${bucketExists}`);
-      return bucketExists;
-    } catch (error) {
-      console.error('Error al verificar bucket:', error);
-      return false;
-    }
-  };
-
-  const createBucket = async () => {
-    try {
-      console.log(`Intentando crear bucket '${BUCKET_NAME}'...`);
-      
-      // Primero creamos el bucket
-      const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
-        public: true,
-        fileSizeLimit: MAX_FILE_SIZE
-      });
-      
-      if (error) {
-        // Si el error es porque el bucket ya existe, podemos continuar
-        if (error.message.includes('already exists')) {
-          console.log(`El bucket '${BUCKET_NAME}' ya existe, continuando...`);
-          return true;
-        }
-        
-        console.error('Error al crear bucket:', error);
-        throw new Error(`No se pudo crear el almacenamiento. ${error.message}`);
-      }
-      
-      console.log(`Bucket '${BUCKET_NAME}' creado exitosamente:`, data);
-      
-      // Configuramos políticas de acceso público para el bucket
-      // No podemos usar createPolicy directamente - usamos la API correcta
-      try {
-        // Establecemos permisos públicos de lectura usando el método updateBucket
-        await supabase.storage.updateBucket(BUCKET_NAME, {
-          public: true
-        });
-        
-        console.log('Permisos públicos de lectura establecidos correctamente');
-      } catch (policyError) {
-        console.error('Error al configurar permisos públicos:', policyError);
-        // No lanzamos error para no detener el flujo
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error al crear bucket:', error);
-      throw error;
-    }
-  };
-
   const uploadThesisFile = async (file: File, thesisId?: string) => {
     try {
+      if (!user) {
+        throw new Error('Debe iniciar sesión para subir archivos');
+      }
+
       validateFile(file);
       setIsUploading(true);
       setUploadProgress(0);
       
-      // Verificamos si el bucket existe antes de intentar cargar el archivo
-      const bucketExists = await checkBucketExists();
-      
-      if (!bucketExists) {
-        // Intentamos crear el bucket si el usuario es administrador
-        if (isAdmin) {
-          console.log('Usuario es administrador, intentando crear el bucket...');
-          const bucketCreated = await createBucket();
-          if (!bucketCreated) {
-            throw new Error('No se pudo crear el almacenamiento de tesis. Por favor intente más tarde o contacte al soporte técnico.');
-          }
-        } else {
-          // Si no es administrador, mostramos mensaje para contactar al administrador
-          throw new Error('El sistema de almacenamiento de tesis no está disponible. Por favor contacte al administrador.');
-        }
-      }
-      
       const fileExt = file.name.split('.').pop();
-      const fileName = `thesis-${thesisId ? `edit-${thesisId}-` : ''}${Date.now()}.${fileExt}`;
+      const fileName = `thesis-${thesisId ? `${thesisId}-` : ''}${Date.now()}.${fileExt}`;
       
       console.log('Iniciando carga de archivo:', fileName);
       
@@ -138,19 +65,12 @@ export const useThesisFileUpload = () => {
 
       if (error) {
         console.error('Error al cargar archivo:', error);
-        
-        // Manejamos específicamente el error de RLS policy
-        if (error.message.includes('row-level security')) {
-          throw new Error('No tiene permisos para subir archivos. Contacte al administrador del sistema.');
-        }
-        
         throw new Error(`Error al subir el archivo: ${error.message}`);
       }
 
       setUploadProgress(100);
       console.log(`Archivo subido completamente (100%)`);
 
-      // Verificamos y obtenemos la URL pública - usando la sintaxis correcta
       const { data: publicUrlData } = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(fileName);
