@@ -241,7 +241,7 @@ const Catalogo = () => {
                     <SelectValue placeholder="Todas las categorías" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas las categorías</SelectItem>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
                     {categorias.map((cat) => (
                       <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
@@ -256,7 +256,7 @@ const Catalogo = () => {
                     <SelectValue placeholder="Cualquier disponibilidad" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Cualquier disponibilidad</SelectItem>
+                    <SelectItem value="all">Cualquier disponibilidad</SelectItem>
                     <SelectItem value="disponible">Disponible físicamente</SelectItem>
                     <SelectItem value="no-disponible">No disponible</SelectItem>
                     <SelectItem value="digital">Disponible en digital</SelectItem>
