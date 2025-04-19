@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -12,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Book } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
@@ -32,6 +32,7 @@ interface UploadDigitalBookDialogProps {
 export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigitalBookDialogProps) {
   const [open, setOpen] = useState(false);
   const [isFileSelected, setIsFileSelected] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
@@ -44,11 +45,24 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
 
   const onSubmit = async (data: DigitalBookFormData) => {
     try {
-      const url = URL.createObjectURL(data.file);
+      setIsUploading(true);
+      
+      const fileExt = data.file.name.split('.').pop();
+      const fileName = `${book.id}-${Date.now()}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('digital-books')
+        .upload(fileName, data.file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('digital-books')
+        .getPublicUrl(fileName);
       
       onAddDigitalBook(book.id, {
         formato: data.formato,
-        url: url,
+        url: publicUrl,
         tamanioMb: Number((data.file.size / (1024 * 1024)).toFixed(2)),
       });
       
@@ -67,6 +81,8 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
         description: "No se pudo guardar el archivo digital.",
         variant: "destructive"
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -165,10 +181,16 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
             <Button 
               type="submit" 
               className="w-full"
-              disabled={!isFileSelected}
+              disabled={!isFileSelected || isUploading}
             >
-              <Save className="mr-2 h-4 w-4" />
-              Guardar archivo
+              {isUploading ? (
+                <>Subiendo archivo...</>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Guardar archivo
+                </>
+              )}
             </Button>
           </form>
         </Form>
