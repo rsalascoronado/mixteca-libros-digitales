@@ -2,85 +2,18 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Book, BookCategory, Thesis, Prestamo } from '@/types';
 import type { DigitalBook } from '@/types/digitalBook';
-
-// Define empty tables interface for type safety (these will be expanded as tables are created in Supabase)
-interface Database {
-  public: {
-    Tables: {
-      books: {
-        Row: {
-          id: string;
-          titulo: string;
-          autor: string;
-          isbn: string;
-          editorial: string;
-          anio_publicacion: number;
-          copias: number;
-          disponibles: number;
-          imagen?: string;
-          ubicacion: string;
-          descripcion?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      book_categories: {
-        Row: {
-          id: string;
-          nombre: string;
-          descripcion?: string;
-          created_at?: string;
-        };
-      };
-      theses: {
-        Row: {
-          id: string;
-          titulo: string;
-          autor: string;
-          carrera: string;
-          anio: number;
-          director: string;
-          tipo: string;
-          disponible: boolean;
-          resumen?: string;
-          archivo_pdf?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      loans: {
-        Row: {
-          id: string;
-          user_id: string;
-          book_id: string;
-          fecha_prestamo: string;
-          fecha_devolucion: string;
-          estado: string;
-          observaciones?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      digital_books: {
-        Row: {
-          id: string;
-          book_id: string;
-          formato: string;
-          url: string;
-          tamanio_mb: number;
-          fecha_subida: string;
-          resumen?: string;
-        };
-      };
-    };
-  };
-}
+import { mockBooks, mockCategories } from '@/types/book';
+import { mockTheses } from '@/types/thesis';
+import { mockPrestamos } from '@/types/prestamo';
+import { mockDigitalBooks } from '@/types/digitalBook';
 
 // Use mock data until Supabase tables are properly set up
-export async function fetchBooks() {
+export async function fetchBooks(): Promise<Book[]> {
   try {
-    // @ts-ignore - Suppress all TypeScript errors related to table access
-    // This is necessary until the actual tables are created in Supabase
+    console.log("Fetching books...");
+    // For now, return mock data
+    // Later, when the database is set up, uncomment and use the supabase query
+    /*
     const { data, error } = await supabase
       .from('books')
       .select(`
@@ -90,10 +23,9 @@ export async function fetchBooks() {
     
     if (error) throw error;
     
-    // Make sure we return the correct structure even if data is empty or malformed
     if (!data || data.length === 0) return [];
     
-    return data.map((book: any) => ({
+    return data.map((book) => ({
       id: book.id || '',
       titulo: book.titulo || '',
       autor: book.autor || '',
@@ -107,15 +39,22 @@ export async function fetchBooks() {
       ubicacion: book.ubicacion || '',
       descripcion: book.descripcion
     }));
+    */
+    
+    // Return mock data
+    return Promise.resolve([...mockBooks]);
   } catch (error) {
     console.error('Error fetching books:', error);
     return [];
   }
 }
 
-export async function fetchCategories() {
+export async function fetchCategories(): Promise<BookCategory[]> {
   try {
-    // @ts-ignore - Suppress all TypeScript errors related to table access
+    console.log("Fetching categories...");
+    // For now, return mock data
+    // Later, when the database is set up, uncomment and use the supabase query
+    /*
     const { data, error } = await supabase
       .from('book_categories')
       .select('*');
@@ -124,20 +63,27 @@ export async function fetchCategories() {
     
     if (!data || data.length === 0) return [];
     
-    return data.map((category: any) => ({
+    return data.map((category) => ({
       id: category.id || '',
       nombre: category.nombre || '',
       descripcion: category.descripcion
     }));
+    */
+    
+    // Return mock data
+    return Promise.resolve([...mockCategories]);
   } catch (error) {
     console.error('Error fetching categories:', error);
     return [];
   }
 }
 
-export async function fetchTheses() {
+export async function fetchTheses(): Promise<Thesis[]> {
   try {
-    // @ts-ignore - Suppress all TypeScript errors related to table access
+    console.log("Fetching theses...");
+    // For now, return mock data
+    // Later, when the database is set up, uncomment and use the supabase query
+    /*
     const { data, error } = await supabase
       .from('theses')
       .select('*');
@@ -146,7 +92,7 @@ export async function fetchTheses() {
     
     if (!data || data.length === 0) return [];
     
-    return data.map((thesis: any) => ({
+    return data.map((thesis) => ({
       id: thesis.id || '',
       titulo: thesis.titulo || '',
       autor: thesis.autor || '',
@@ -158,15 +104,22 @@ export async function fetchTheses() {
       resumen: thesis.resumen,
       archivoPdf: thesis.archivo_pdf
     }));
+    */
+    
+    // Return mock data
+    return Promise.resolve([...mockTheses]);
   } catch (error) {
     console.error('Error fetching theses:', error);
     return [];
   }
 }
 
-export async function fetchLoans() {
+export async function fetchLoans(): Promise<Prestamo[]> {
   try {
-    // @ts-ignore - Suppress all TypeScript errors related to table access
+    console.log("Fetching loans...");
+    // For now, return mock data
+    // Later, when the database is set up, uncomment and use the supabase query
+    /*
     const { data, error } = await supabase
       .from('loans')
       .select(`
@@ -179,7 +132,7 @@ export async function fetchLoans() {
     
     if (!data || data.length === 0) return [];
     
-    return data.map((loan: any) => ({
+    return data.map((loan) => ({
       id: loan.id || '',
       userId: loan.user_id || '',
       bookId: loan.book_id || '',
@@ -188,15 +141,22 @@ export async function fetchLoans() {
       estado: (loan.estado as 'prestado' | 'devuelto' | 'retrasado') || 'prestado',
       observaciones: loan.observaciones
     }));
+    */
+    
+    // Return mock data
+    return Promise.resolve([...mockPrestamos]);
   } catch (error) {
     console.error('Error fetching loans:', error);
     return [];
   }
 }
 
-export async function fetchDigitalBooks() {
+export async function fetchDigitalBooks(): Promise<DigitalBook[]> {
   try {
-    // @ts-ignore - Suppress all TypeScript errors related to table access
+    console.log("Fetching digital books...");
+    // For now, return mock data
+    // Later, when the database is set up, uncomment and use the supabase query
+    /*
     const { data, error } = await supabase
       .from('digital_books')
       .select(`
@@ -208,7 +168,7 @@ export async function fetchDigitalBooks() {
     
     if (!data || data.length === 0) return [];
     
-    return data.map((digitalBook: any) => ({
+    return data.map((digitalBook) => ({
       id: digitalBook.id || '',
       bookId: digitalBook.book_id || '',
       formato: (digitalBook.formato as 'PDF' | 'EPUB' | 'MOBI' | 'HTML') || 'PDF',
@@ -217,6 +177,10 @@ export async function fetchDigitalBooks() {
       fechaSubida: new Date(digitalBook.fecha_subida),
       resumen: digitalBook.resumen
     }));
+    */
+    
+    // Return mock data
+    return Promise.resolve([...mockDigitalBooks]);
   } catch (error) {
     console.error('Error fetching digital books:', error);
     return [];
