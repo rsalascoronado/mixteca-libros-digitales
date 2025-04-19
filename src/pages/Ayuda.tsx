@@ -5,13 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserRole } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { FileText, Download } from 'lucide-react';
+import { FileText, Download, BookOpen, Search, User, Users, Settings, BookMarked, Clock, CalendarCheck, Library, BookCopy } from 'lucide-react';
 import PDFViewer from '@/components/shared/PDFViewer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { saveAs } from 'file-saver';
 
 interface HelpSection {
   title: string;
+  icon: React.ReactNode;
   content: string[];
 }
 
@@ -25,19 +26,36 @@ const helpContent: RoleHelp[] = [
     role: 'estudiante',
     sections: [
       {
-        title: 'Préstamos',
+        title: 'Búsqueda en el Catálogo',
+        icon: <Search className="h-5 w-5" />,
         content: [
-          'Puedes solicitar hasta 3 libros por un período de 14 días.',
-          'Debes presentar tu credencial vigente para realizar préstamos.',
-          'Puedes renovar tus préstamos hasta 2 veces si no hay reservas.'
+          'Utiliza la barra de búsqueda para encontrar libros por título, autor o materia',
+          'Aplica filtros por categoría, año de publicación o disponibilidad',
+          'Visualiza la información detallada de cada libro incluyendo su ubicación en la biblioteca',
+          'Revisa la disponibilidad en tiempo real de los materiales',
+          'Guarda tus búsquedas favoritas para consultas futuras'
         ]
       },
       {
-        title: 'Catálogo',
+        title: 'Gestión de Préstamos',
+        icon: <BookOpen className="h-5 w-5" />,
         content: [
-          'Accede al catálogo completo de libros y tesis.',
-          'Utiliza los filtros para encontrar material específico.',
-          'Puedes ver la disponibilidad en tiempo real.'
+          'Puedes solicitar hasta 3 libros simultáneamente',
+          'El período de préstamo estándar es de 14 días',
+          'Las renovaciones están disponibles hasta 2 veces si no hay reservas pendientes',
+          'Recibirás notificaciones antes del vencimiento de tus préstamos',
+          'Verifica el estado de tus préstamos activos en la sección "Mis Préstamos"'
+        ]
+      },
+      {
+        title: 'Servicios Adicionales',
+        icon: <Library className="h-5 w-5" />,
+        content: [
+          'Acceso a la sala de lectura en horario de biblioteca',
+          'Servicio de fotocopiado con límite de páginas según reglamento',
+          'Reserva de cubículos de estudio individual o grupal',
+          'Acceso a bases de datos académicas desde la red universitaria',
+          'Asesoría bibliotecaria presencial y en línea'
         ]
       }
     ]
@@ -46,19 +64,36 @@ const helpContent: RoleHelp[] = [
     role: 'profesor',
     sections: [
       {
-        title: 'Préstamos',
+        title: 'Préstamos Extendidos',
+        icon: <Clock className="h-5 w-5" />,
         content: [
-          'Puede solicitar hasta 5 libros por un período de 30 días.',
-          'Tiene prioridad en las reservas de material.',
-          'Puede solicitar material especial para clases.'
+          'Beneficio de préstamo de hasta 5 libros por 30 días',
+          'Posibilidad de renovación hasta 3 veces',
+          'Prioridad en reservas de material bibliográfico',
+          'Solicitud de material para clases con anticipación',
+          'Gestión de préstamos especiales para material de investigación'
         ]
       },
       {
-        title: 'Recursos adicionales',
+        title: 'Recursos Académicos',
+        icon: <BookMarked className="h-5 w-5" />,
         content: [
-          'Acceso a bases de datos especializadas.',
-          'Solicitud de material bibliográfico nuevo.',
-          'Reserva de espacios de estudio.'
+          'Acceso completo a bases de datos especializadas',
+          'Solicitud de compra de nuevo material bibliográfico',
+          'Gestión de bibliografía para programas académicos',
+          'Recursos digitales para apoyo a la docencia',
+          'Asesoría en búsqueda de recursos especializados'
+        ]
+      },
+      {
+        title: 'Servicios Especializados',
+        icon: <BookCopy className="h-5 w-5" />,
+        content: [
+          'Reserva de material para cursos completos',
+          'Digitalización de materiales para uso académico',
+          'Préstamo interbibliotecario con otras instituciones',
+          'Talleres de capacitación en recursos bibliográficos',
+          'Soporte para investigación académica'
         ]
       }
     ]
@@ -67,19 +102,36 @@ const helpContent: RoleHelp[] = [
     role: 'bibliotecario',
     sections: [
       {
-        title: 'Gestión de préstamos',
+        title: 'Gestión de Préstamos',
+        icon: <CalendarCheck className="h-5 w-5" />,
         content: [
-          'Registro y control de préstamos y devoluciones.',
-          'Gestión de multas y sanciones.',
-          'Seguimiento de material no devuelto.'
+          'Proceso de registro y devolución de materiales',
+          'Gestión de multas y sanciones según reglamento',
+          'Control de renovaciones y reservas',
+          'Manejo de préstamos especiales',
+          'Seguimiento de material no devuelto'
         ]
       },
       {
-        title: 'Administración',
+        title: 'Administración del Catálogo',
+        icon: <BookMarked className="h-5 w-5" />,
         content: [
-          'Actualización del catálogo.',
-          'Gestión de usuarios.',
-          'Generación de reportes.'
+          'Actualización y mantenimiento del catálogo',
+          'Proceso de catalogación de nuevos materiales',
+          'Gestión de donaciones y adquisiciones',
+          'Control de inventario y ubicación de materiales',
+          'Mantenimiento de la base de datos bibliográfica'
+        ]
+      },
+      {
+        title: 'Atención a Usuarios',
+        icon: <Users className="h-5 w-5" />,
+        content: [
+          'Orientación en búsqueda de materiales',
+          'Resolución de conflictos y dudas',
+          'Capacitación a usuarios nuevos',
+          'Gestión de credenciales y accesos',
+          'Apoyo en servicios especializados'
         ]
       }
     ]
@@ -88,19 +140,36 @@ const helpContent: RoleHelp[] = [
     role: 'administrador',
     sections: [
       {
-        title: 'Configuración del sistema',
+        title: 'Gestión del Sistema',
+        icon: <Settings className="h-5 w-5" />,
         content: [
-          'Gestión de roles y permisos.',
-          'Configuración de políticas de préstamo.',
-          'Administración de usuarios del sistema.'
+          'Configuración general del sistema',
+          'Gestión de roles y permisos',
+          'Administración de políticas de préstamo',
+          'Configuración de notificaciones automáticas',
+          'Mantenimiento de la base de datos'
         ]
       },
       {
-        title: 'Reportes y estadísticas',
+        title: 'Administración de Usuarios',
+        icon: <User className="h-5 w-5" />,
         content: [
-          'Generación de reportes detallados.',
-          'Análisis de uso de la biblioteca.',
-          'Estadísticas de préstamos y usuarios.'
+          'Creación y gestión de cuentas de usuario',
+          'Asignación de roles y privilegios',
+          'Control de acceso y seguridad',
+          'Gestión de personal bibliotecario',
+          'Supervisión de actividades de usuarios'
+        ]
+      },
+      {
+        title: 'Reportes y Estadísticas',
+        icon: <FileText className="h-5 w-5" />,
+        content: [
+          'Generación de informes de uso',
+          'Estadísticas de préstamos y devoluciones',
+          'Análisis de colecciones más utilizadas',
+          'Reportes de inventario y adquisiciones',
+          'Métricas de rendimiento del sistema'
         ]
       }
     ]
@@ -112,8 +181,8 @@ const Ayuda = () => {
   const currentRole = user?.role || 'estudiante';
 
   const downloadPDF = useCallback((role: UserRole) => {
-    // En una implementación real, esto descargaría el PDF correspondiente
-    const blob = new Blob(['Contenido del PDF para ' + role], { type: 'application/pdf' });
+    // Generación simplificada del PDF para demo
+    const blob = new Blob(['Manual detallado para ' + role], { type: 'application/pdf' });
     saveAs(blob, `manual_${role}.pdf`);
   }, []);
 
@@ -157,11 +226,18 @@ const Ayuda = () => {
                 <Accordion type="single" collapsible className="w-full">
                   {sections.map((section, index) => (
                     <AccordionItem key={index} value={`section-${index}`}>
-                      <AccordionTrigger>{section.title}</AccordionTrigger>
+                      <AccordionTrigger>
+                        <div className="flex items-center gap-2">
+                          {section.icon}
+                          {section.title}
+                        </div>
+                      </AccordionTrigger>
                       <AccordionContent>
                         <ul className="list-disc pl-6 space-y-2">
                           {section.content.map((item, itemIndex) => (
-                            <li key={itemIndex}>{item}</li>
+                            <li key={itemIndex} className="text-muted-foreground">
+                              {item}
+                            </li>
                           ))}
                         </ul>
                       </AccordionContent>
