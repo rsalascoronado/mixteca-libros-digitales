@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -28,30 +27,44 @@ export const DesktopNav = ({ user }: DesktopNavProps) => {
   
   return (
     <nav className="hidden md:flex items-center space-x-4">
-      <Link to="/" className="text-primary-foreground hover:text-white transition-colors">Inicio</Link>
-      <Link to="/catalogo" className="text-primary-foreground hover:text-white transition-colors">Catálogo</Link>
-      <Link to="/ayuda" className="text-primary-foreground hover:text-white transition-colors">Ayuda</Link>
+      <Link to="/" className="text-primary-foreground hover:text-white transition-colors text-sm lg:text-base">
+        Inicio
+      </Link>
+      <Link to="/catalogo" className="text-primary-foreground hover:text-white transition-colors text-sm lg:text-base">
+        Catálogo
+      </Link>
+      <Link to="/ayuda" className="text-primary-foreground hover:text-white transition-colors text-sm lg:text-base">
+        Ayuda
+      </Link>
       {user && (
-        <Link to="/mis-prestamos" className="text-primary-foreground hover:text-white transition-colors">
+        <Link to="/mis-prestamos" className="text-primary-foreground hover:text-white transition-colors text-sm lg:text-base">
           Mis préstamos
         </Link>
       )}
       {user && showAdminMenu && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/20 hover:text-white">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-primary-foreground hover:bg-primary/20 hover:text-white text-sm lg:text-base transition-all duration-200 ease-in-out"
+            >
               <Library className="h-4 w-4 mr-2" />
               Gestionar recursos
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-white z-50">
+          <DropdownMenuContent 
+            className="bg-white z-50 w-56 lg:w-64 p-2"
+            align="end"
+            sideOffset={5}
+          >
             {userIsLibrarian && (
               <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/prestamos" 
-                  className="flex w-full items-center gap-2"
+                  className="flex w-full items-center gap-2 text-sm lg:text-base p-2 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <Calendar className="h-4 w-4 mr-2" />
+                  <Calendar className="h-4 w-4" />
                   Gestionar préstamos
                 </Link>
               </DropdownMenuItem>
@@ -60,9 +73,9 @@ export const DesktopNav = ({ user }: DesktopNavProps) => {
               <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/libros" 
-                  className="flex w-full items-center gap-2"
+                  className="flex w-full items-center gap-2 text-sm lg:text-base p-2 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <BookOpen className="h-4 w-4 mr-2" />
+                  <BookOpen className="h-4 w-4" />
                   Gestionar libros
                 </Link>
               </DropdownMenuItem>
@@ -71,9 +84,9 @@ export const DesktopNav = ({ user }: DesktopNavProps) => {
               <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/tesis" 
-                  className="flex w-full items-center gap-2"
+                  className="flex w-full items-center gap-2 text-sm lg:text-base p-2 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <GraduationCap className="h-4 w-4 mr-2" />
+                  <GraduationCap className="h-4 w-4" />
                   Gestionar tesis
                 </Link>
               </DropdownMenuItem>
@@ -82,9 +95,9 @@ export const DesktopNav = ({ user }: DesktopNavProps) => {
               <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/ebooks" 
-                  className="flex w-full items-center gap-2"
+                  className="flex w-full items-center gap-2 text-sm lg:text-base p-2 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  <FileText className="h-4 w-4 mr-2" />
+                  <FileText className="h-4 w-4" />
                   Gestionar libros digitales
                 </Link>
               </DropdownMenuItem>
