@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, BookOpen, Users } from 'lucide-react';
+import { LogOut, User, BookOpen, Users, Home } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const Header = () => {
@@ -11,6 +12,18 @@ const Header = () => {
   return <header className="bg-primary text-primary-foreground py-2 px-4 shadow-md">
     <div className="container mx-auto flex items-center justify-between">
       <div className="flex items-center space-x-2">
+        {/* Home Button */}
+        <Link to="/">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="text-primary-foreground hover:bg-primary/20 hover:text-white"
+          >
+            <Home className="h-5 w-5" />
+            <span className="sr-only">Inicio</span>
+          </Button>
+        </Link>
+
         <Link to="/" className="flex items-center">
           {/* Logo UTM */}
           <img alt="Universidad Tecnológica de la Mixteca" className="h-12 mr-3" src="/lovable-uploads/da5d1cb5-c9ee-4a74-8eee-4ca375d69604.jpg" />
