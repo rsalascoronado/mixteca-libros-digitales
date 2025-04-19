@@ -1,19 +1,18 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, User, BookOpen, Users, Home, Menu } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useIsMobile } from '@/hooks/use-mobile';  // Importing mobile hook for responsiveness
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
   const { user, logout, hasRole } = useAuth();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   
-  // Permissions check for admin/librarian access
-  const isStaff = hasRole(['bibliotecario', 'administrador']);
+  // Check for admin/librarian access AND ensure user is not from gs.utm.mx domain
+  const isStaff = hasRole(['bibliotecario', 'administrador']) && user?.email && !user.email.endsWith('@gs.utm.mx');
   
   return <header className="bg-primary text-primary-foreground py-2 px-4 shadow-md">
     <div className="container mx-auto flex items-center justify-between">
@@ -65,7 +64,7 @@ const Header = () => {
           </Link>}
       </nav>
 
-      {/* Admin dropdown - only shown for staff roles */}
+      {/* Admin dropdown - only shown for staff roles and non-student emails */}
       {isStaff && !isMobile && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -121,7 +120,7 @@ const Header = () => {
                   <span>Mis préstamos</span>
                 </Link>
               </DropdownMenuItem>
-              {/* Mobile admin menu - only shown for staff roles */}
+              {/* Mobile admin menu - only shown for staff roles and non-student emails */}
               {isMobile && isStaff && (
                 <>
                   <DropdownMenuSeparator />
