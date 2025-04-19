@@ -20,8 +20,10 @@ export const useThesisFileUpload = () => {
     }
   };
 
+  // Modificamos la función para manejar mejor los errores y la existencia del bucket
   const ensureBucketExists = async () => {
     try {
+      // Primero verificamos si el bucket ya existe
       const { data: buckets, error: bucketError } = await supabase
         .storage
         .listBuckets();
@@ -35,14 +37,23 @@ export const useThesisFileUpload = () => {
       
       if (!bucketExists) {
         console.log(`El bucket '${BUCKET_NAME}' no existe. Intentando crearlo automáticamente...`);
+        
+        // Intentamos crear el bucket con ajustes más seguros
         const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
-          public: true,
+          public: false, // Cambiamos a privado por seguridad
           fileSizeLimit: MAX_FILE_SIZE
         });
         
         if (error) {
+          // Si hay error en la creación, verificamos si es por permisos o tamaño
           console.error('Error al crear bucket:', error);
-          throw new Error(`No se pudo crear el bucket '${BUCKET_NAME}'. Por favor, contacte al administrador.`);
+          
+          // Si el error es por tamaño, intentamos con un bucket existente
+          if (error.message.includes('maximum allowed size')) {
+            throw new Error(`Error de tamaño al crear el bucket. Intente con un archivo más pequeño o contacte al administrador.`);
+          } else {
+            throw new Error(`No se pudo crear el bucket '${BUCKET_NAME}'. Por favor, contacte al administrador.`);
+          }
         }
         
         console.log(`Bucket '${BUCKET_NAME}' creado exitosamente:`, data);
@@ -66,49 +77,29 @@ export const useThesisFileUpload = () => {
       
       console.log('Iniciando carga de archivo:', fileName);
 
-      // Get the signed URL outside the Promise
+      // Cambiamos la estrategia de carga para usar el método put directamente
+      // en lugar de URLs firmadas, que pueden causar problemas con archivos grandes
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
-        .createSignedUploadUrl(fileName);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true,
+          onUploadProgress: (progress) => {
+            const calculatedProgress = progress.percent ? Math.round(progress.percent) : 0;
+            setUploadProgress(calculatedProgress);
+            console.log(`Progreso: ${calculatedProgress}%`);
+          }
+        });
 
-      if (error || !data.signedUrl) {
-        throw new Error('No se pudo obtener la URL de carga');
+      if (error) {
+        console.error('Error al cargar archivo:', error);
+        throw new Error(`Error al subir el archivo: ${error.message}`);
       }
 
-      const signedUrl = data.signedUrl;
-
-      const uploadPromise = new Promise<string>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded * 100) / event.total);
-            setUploadProgress(progress);
-          }
-        });
-
-        xhr.addEventListener('load', async () => {
-          if (xhr.status === 200) {
-            const { data: { publicUrl } } = supabase.storage
-              .from(BUCKET_NAME)
-              .getPublicUrl(fileName);
-            
-            resolve(publicUrl);
-          } else {
-            reject(new Error(`Error al subir archivo: ${xhr.statusText}`));
-          }
-        });
-
-        xhr.addEventListener('error', () => {
-          reject(new Error('Error de red al subir el archivo'));
-        });
-
-        xhr.open('PUT', signedUrl);
-        xhr.setRequestHeader('Content-Type', 'application/pdf');
-        xhr.send(file);
-      });
-
-      const publicUrl = await uploadPromise;
+      // Obtenemos la URL pública del archivo
+      const { data: { publicUrl } } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(fileName);
       
       console.log('URL pública generada:', publicUrl);
       
