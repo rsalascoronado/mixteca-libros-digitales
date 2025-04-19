@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, BookOpen } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { User as UserType } from '@/types';
+import { User as UserType, UserRole } from '@/types';
 
 interface UserMenuProps {
   user: UserType | null;
@@ -12,7 +12,7 @@ interface UserMenuProps {
   getUserDisplayName: () => string;
   isMobile: boolean;
   isStaff: boolean;
-  hasRole: (role: string) => boolean;
+  hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
 
 export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, hasRole }: UserMenuProps) => {
