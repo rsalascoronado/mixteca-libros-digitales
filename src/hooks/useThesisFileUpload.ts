@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const BUCKET_NAME = 'thesis-files';
 
 export const useThesisFileUpload = () => {
@@ -16,14 +15,12 @@ export const useThesisFileUpload = () => {
       throw new Error('Solo se permiten archivos PDF');
     }
     if (file.size > MAX_FILE_SIZE) {
-      throw new Error('El archivo no debe exceder 100MB');
+      throw new Error('El archivo no debe exceder 50MB');
     }
   };
 
-  // Modificamos la función para manejar mejor los errores y la existencia del bucket
   const ensureBucketExists = async () => {
     try {
-      // Primero verificamos si el bucket ya existe
       const { data: buckets, error: bucketError } = await supabase
         .storage
         .listBuckets();
@@ -38,17 +35,14 @@ export const useThesisFileUpload = () => {
       if (!bucketExists) {
         console.log(`El bucket '${BUCKET_NAME}' no existe. Intentando crearlo automáticamente...`);
         
-        // Intentamos crear el bucket con ajustes más seguros
         const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
-          public: false, // Cambiamos a privado por seguridad
+          public: false,
           fileSizeLimit: MAX_FILE_SIZE
         });
         
         if (error) {
-          // Si hay error en la creación, verificamos si es por permisos o tamaño
           console.error('Error al crear bucket:', error);
           
-          // Si el error es por tamaño, intentamos con un bucket existente
           if (error.message.includes('maximum allowed size')) {
             throw new Error(`Error de tamaño al crear el bucket. Intente con un archivo más pequeño o contacte al administrador.`);
           } else {
@@ -77,8 +71,6 @@ export const useThesisFileUpload = () => {
       
       console.log('Iniciando carga de archivo:', fileName);
 
-      // Cambiamos la estrategia de carga para usar el método put directamente
-      // en lugar de URLs firmadas, que pueden causar problemas con archivos grandes
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
         .upload(fileName, file, {
@@ -91,11 +83,9 @@ export const useThesisFileUpload = () => {
         throw new Error(`Error al subir el archivo: ${error.message}`);
       }
 
-      // Configuramos un sistema manual de seguimiento de progreso
       setUploadProgress(100);
       console.log(`Archivo subido completamente (100%)`);
 
-      // Obtenemos la URL pública del archivo
       const { data: { publicUrl } } = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(fileName);
