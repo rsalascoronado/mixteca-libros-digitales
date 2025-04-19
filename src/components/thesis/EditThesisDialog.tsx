@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -20,11 +20,13 @@ interface EditThesisDialogProps {
 
 const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditThesisDialogProps) => {
   const { toast } = useToast();
-  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
-  const [editingThesis, setEditingThesis] = React.useState<Thesis | null>(thesis);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [editingThesis, setEditingThesis] = useState<Thesis | null>(thesis);
+  const [isUploading, setIsUploading] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setEditingThesis(thesis);
+    setSelectedFile(null);
   }, [thesis]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -44,7 +46,7 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
     const file = e.target.files?.[0];
     if (file && file.type === 'application/pdf') {
       setSelectedFile(file);
-    } else {
+    } else if (file) {
       toast({
         title: "Error",
         description: "Por favor seleccione un archivo PDF válido",
@@ -55,20 +57,27 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
 
   const handleSave = async () => {
     if (!editingThesis) return;
-
+    
     try {
+      setIsUploading(true);
       let publicUrl = editingThesis.archivoPdf;
 
       if (selectedFile) {
+        // Generate a unique filename for the updated file
         const fileExt = selectedFile.name.split('.').pop();
         const fileName = `thesis-edit-${editingThesis.id}-${Date.now()}.${fileExt}`;
         
+        // Upload the new file
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('thesis-files')
           .upload(fileName, selectedFile);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error(`Error al subir archivo: ${uploadError.message}`);
+        }
 
+        // Get the public URL for the new file
         const { data: { publicUrl: newPublicUrl } } = supabase.storage
           .from('thesis-files')
           .getPublicUrl(fileName);
@@ -93,9 +102,11 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
       console.error('Error updating thesis:', error);
       toast({
         title: "Error",
-        description: "No se pudieron guardar los cambios.",
+        description: error instanceof Error ? error.message : "No se pudieron guardar los cambios.",
         variant: "destructive"
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -262,7 +273,12 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
         </div>
         
         <DialogFooter>
-          <Button onClick={handleSave}>Guardar cambios</Button>
+          <Button 
+            onClick={handleSave}
+            disabled={isUploading}
+          >
+            {isUploading ? 'Guardando...' : 'Guardar cambios'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

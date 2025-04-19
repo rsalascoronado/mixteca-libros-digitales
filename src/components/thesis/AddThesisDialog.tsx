@@ -29,6 +29,7 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
     disponible: true
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -71,28 +72,37 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
     }
 
     try {
+      setIsUploading(true);
+      
+      // Generate a unique filename
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `thesis-${Date.now()}.${fileExt}`;
       
+      // Upload file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('thesis-files')
         .upload(fileName, selectedFile);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Error al subir archivo: ${uploadError.message}`);
+      }
 
+      // Get public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('thesis-files')
         .getPublicUrl(fileName);
 
+      // Create a new thesis with the PDF URL
       const newId = Date.now().toString();
       
       const nuevaTesisCompleta: Thesis = {
         id: newId,
-        titulo: nuevaTesis.titulo,
-        autor: nuevaTesis.autor,
-        carrera: nuevaTesis.carrera,
+        titulo: nuevaTesis.titulo || '',
+        autor: nuevaTesis.autor || '',
+        carrera: nuevaTesis.carrera || '',
         anio: nuevaTesis.anio || new Date().getFullYear(),
-        director: nuevaTesis.director,
+        director: nuevaTesis.director || '',
         tipo: nuevaTesis.tipo as 'Licenciatura' | 'Maestría' | 'Doctorado',
         disponible: true,
         resumen: nuevaTesis.resumen,
@@ -120,9 +130,11 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
       console.error('Error uploading thesis:', error);
       toast({
         title: "Error",
-        description: "No se pudo guardar la tesis.",
+        description: error instanceof Error ? error.message : "No se pudo guardar la tesis.",
         variant: "destructive"
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -238,7 +250,13 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
         </div>
         
         <DialogFooter>
-          <Button type="submit" onClick={handleSubmit}>Agregar tesis</Button>
+          <Button 
+            type="submit" 
+            onClick={handleSubmit}
+            disabled={isUploading}
+          >
+            {isUploading ? 'Subiendo...' : 'Agregar tesis'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
