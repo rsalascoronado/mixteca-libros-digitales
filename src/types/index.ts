@@ -89,6 +89,11 @@ export interface Thesis {
 }
 
 export function assignRoleBasedOnEmail(email: string): UserRole {
+  // Explicitly handle admin email
+  if (email === 'admin@mixteco.utm.mx') {
+    return 'administrador';
+  }
+
   // Automatically assign 'estudiante' role to gs.utm.mx domain users
   if (email.endsWith('@gs.utm.mx')) {
     return 'estudiante';
