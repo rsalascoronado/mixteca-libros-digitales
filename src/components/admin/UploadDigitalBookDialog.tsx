@@ -6,11 +6,12 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, FileUp } from 'lucide-react';
+import { Upload, FileUp, Save } from 'lucide-react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Book } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
+import { useToast } from '@/hooks/use-toast';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
@@ -30,7 +31,9 @@ interface UploadDigitalBookDialogProps {
 
 export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigitalBookDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isFileSelected, setIsFileSelected] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
   const form = useForm<DigitalBookFormData>({
     resolver: zodResolver(digitalBookSchema),
@@ -41,8 +44,6 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
 
   const onSubmit = async (data: DigitalBookFormData) => {
     try {
-      // Here we would typically upload to a server
-      // For now, we'll create an object URL
       const url = URL.createObjectURL(data.file);
       
       onAddDigitalBook(book.id, {
@@ -52,9 +53,20 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
       });
       
       form.reset();
+      setIsFileSelected(false);
       setOpen(false);
+      
+      toast({
+        title: "Archivo digital guardado",
+        description: "Se ha guardado el archivo digital correctamente."
+      });
     } catch (error) {
       console.error('Error al subir el archivo:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo guardar el archivo digital.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -62,6 +74,7 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
     const file = e.target.files?.[0];
     if (file) {
       form.setValue('file', file);
+      setIsFileSelected(true);
     }
   };
 
@@ -69,11 +82,17 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
     fileInputRef.current?.click();
   };
 
+  const handleDialogClose = () => {
+    form.reset();
+    setIsFileSelected(false);
+    setOpen(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <FileUp className="mr-2 h-4 w-4" />
+          <FileUp className="h-4 w-4 mr-2" />
           Subir versión digital
         </Button>
       </DialogTrigger>
@@ -134,13 +153,22 @@ export function UploadDigitalBookDialog({ book, onAddDigitalBook }: UploadDigita
                     </div>
                   </FormControl>
                   <FormMessage />
+                  {isFileSelected && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Archivo seleccionado: {fileInputRef.current?.files?.[0]?.name}
+                    </p>
+                  )}
                 </FormItem>
               )}
             />
             
-            <Button type="submit" className="w-full">
-              <FileUp className="mr-2 h-4 w-4" />
-              Subir archivo
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={!isFileSelected}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Guardar archivo
             </Button>
           </form>
         </Form>
