@@ -30,7 +30,7 @@ const Login = () => {
 
   // Check if email is admin
   useEffect(() => {
-    setIsAdmin(email.toLowerCase() === 'admin@mixteco.utm.mx');
+    setIsAdmin(email.toLowerCase() === 'admin@mixteco.utm.mx' || email.toLowerCase() === 'adminadmin@mixteco.utm.mx');
   }, [email]);
 
   // Redirect if already logged in
@@ -45,7 +45,24 @@ const Login = () => {
     setError('');
     setIsLoading(true);
 
-    // Updated email validation logic
+    // Skip email validation for admin accounts
+    if (isAdmin) {
+      try {
+        const success = await login(email, password);
+        if (success) {
+          navigate('/');
+        } else {
+          setError('Credenciales incorrectas. Inténtalo de nuevo.');
+        }
+      } catch (error) {
+        setError('Error al iniciar sesión. Inténtalo de nuevo más tarde.');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // For non-admin users, enforce email validation
     if (selectedRole === 'estudiante') {
       if (!email.endsWith('@gs.utm.mx')) {
         setError('Los estudiantes deben usar su correo institucional (@gs.utm.mx)');

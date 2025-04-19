@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, mockUsers, UserRole, assignRoleBasedOnEmail } from '@/types';
 
@@ -33,7 +34,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    const isValidDomain = email.endsWith('@gs.utm.mx') || email.endsWith('@mixteco.utm.mx');
+    // Special handling for admin accounts - don't validate domain
+    const isAdminEmail = email === 'admin@mixteco.utm.mx' || email === 'adminadmin@mixteco.utm.mx';
+    
+    // For non-admin users, validate domain
+    const isValidDomain = isAdminEmail || email.endsWith('@gs.utm.mx') || email.endsWith('@mixteco.utm.mx');
     
     if (!isValidDomain) {
       setIsLoading(false);
@@ -45,10 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       let foundUser = mockUsers.find(u => u.email === email);
       
-      if (!foundUser && email === 'admin@mixteco.utm.mx') {
+      // Handle admin accounts
+      if (!foundUser && (email === 'admin@mixteco.utm.mx' || email === 'adminadmin@mixteco.utm.mx')) {
         foundUser = {
           id: 'admin-1',
-          email: 'admin@mixteco.utm.mx',
+          email: email,
           nombre: 'Administrador',
           apellidos: 'Sistema',
           role: 'administrador',
@@ -59,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (foundUser) {
         const userWithAssignedRole: User = {
           ...foundUser,
-          role: email === 'admin@mixteco.utm.mx' ? 'administrador' : assignRoleBasedOnEmail(email)
+          role: isAdminEmail ? 'administrador' : assignRoleBasedOnEmail(email)
         };
         
         setUser(userWithAssignedRole);
