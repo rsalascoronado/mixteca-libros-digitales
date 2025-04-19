@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User, BookOpen, Users, Home, Menu } from 'lucide-react';
+import { LogOut, User, BookOpen, Users, Home, Menu, Library } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -13,6 +14,7 @@ const Header = () => {
   
   // Check for admin/librarian access AND ensure user is not from gs.utm.mx domain
   const isStaff = hasRole(['bibliotecario', 'administrador']) && user?.email && !user.email.endsWith('@gs.utm.mx');
+  const isLibrarian = user?.email === 'biblioteca@mixteco.utm.mx';
   
   // Get display name based on domain
   const getUserDisplayName = () => {
@@ -70,7 +72,25 @@ const Header = () => {
         <Link to="/ayuda" className="text-primary-foreground hover:text-white transition-colors">Ayuda</Link>
         {user && <Link to="/mis-prestamos" className="text-primary-foreground hover:text-white transition-colors">
             Mis préstamos
-          </Link>}
+        </Link>}
+        {isLibrarian && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/20 hover:text-white">
+                <Library className="h-4 w-4 mr-2" />
+                Gestionar recursos
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem asChild>
+                <Link to="/admin/libros">Gestionar libros</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/admin/tesis">Gestionar tesis</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </nav>
 
       {/* Admin dropdown - only shown for staff roles and non-student emails */}
