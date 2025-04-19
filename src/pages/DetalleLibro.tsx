@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -32,6 +31,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ReservationButton } from '@/components/books/ReservationButton';
 
 const DetalleLibro = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,7 +42,6 @@ const DetalleLibro = () => {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Simular la carga del libro
     setLoading(true);
     setTimeout(() => {
       const foundBook = mockBooks.find(book => book.id === id);
@@ -52,7 +51,6 @@ const DetalleLibro = () => {
   }, [id]);
 
   const handleSolicitar = () => {
-    // Aquí iría la lógica para solicitar un préstamo
     toast({
       title: "Préstamo solicitado",
       description: `Has solicitado el libro "${libro?.titulo}". Pasa por la biblioteca para recogerlo.`,
@@ -96,7 +94,6 @@ const DetalleLibro = () => {
     <MainLayout>
       <div className="container mx-auto py-10 px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Imagen y acciones */}
           <div className="md:col-span-1">
             <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
               <div className="h-80 bg-gray-200 flex items-center justify-center">
@@ -119,37 +116,40 @@ const DetalleLibro = () => {
                 </div>
                 
                 {isAuthenticated ? (
-                  libro.disponibles > 0 ? (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button className="w-full">
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          Solicitar préstamo
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Confirmar solicitud de préstamo</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            ¿Estás seguro que deseas solicitar el préstamo de "{libro.titulo}"?
-                            <br /><br />
-                            Recuerda que deberás pasar a la biblioteca para confirmar el préstamo.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleSolicitar}>
-                            Confirmar
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  ) : (
-                    <Button className="w-full" disabled>
-                      <AlertTriangle className="mr-2 h-4 w-4" />
-                      No disponible
-                    </Button>
-                  )
+                  <div className="space-y-2">
+                    <ReservationButton 
+                      bookId={libro.id}
+                      bookTitle={libro.titulo}
+                      isAvailable={libro.disponibles > 0}
+                    />
+                    
+                    {libro.disponibles > 0 && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button className="w-full">
+                            <BookOpen className="mr-2 h-4 w-4" />
+                            Solicitar préstamo
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar solicitud de préstamo</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              ¿Estás seguro que deseas solicitar el préstamo de "{libro.titulo}"?
+                              <br /><br />
+                              Recuerda que deberás pasar a la biblioteca para confirmar el préstamo.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleSolicitar}>
+                              Confirmar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
                 ) : (
                   <Button 
                     className="w-full" 
@@ -187,7 +187,6 @@ const DetalleLibro = () => {
             </Card>
           </div>
           
-          {/* Información del libro */}
           <div className="md:col-span-2">
             <div className="mb-2">
               <a 
