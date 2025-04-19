@@ -28,7 +28,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
           Mis préstamos
         </Link>
       )}
-      {user && (isLibrarian(user) || canManageBooks(user) || canManageTheses(user) || canManageDigitalBooks(user)) && (
+      {user && (isLibrarian || canManageBooks(user) || canManageTheses(user) || canManageDigitalBooks(user)) && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/20 hover:text-white">
@@ -37,7 +37,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-white z-50">
-            {isLibrarian(user) && (
+            {isLibrarian && (
               <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/prestamos" 
