@@ -2,8 +2,7 @@ import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { mockUsers } from '@/types';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Table,
@@ -16,14 +15,15 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DataExport from '@/components/admin/DataExport';
 import DataImport from '@/components/admin/DataImport';
-import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { NewUserDialog } from '@/components/admin/NewUserDialog';
 
 const GestionUsuarios = () => {
   const { hasRole } = useAuth();
   const [searchTerm, setSearchTerm] = React.useState('');
   const { toast } = useToast();
   
-  // Filter users based on search term
   const filteredUsers = React.useMemo(() => {
     return mockUsers.filter(user => 
       user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -33,8 +33,6 @@ const GestionUsuarios = () => {
   }, [searchTerm]);
 
   const handleImportData = (data: any[]) => {
-    // Here you would typically send this data to your backend
-    // For now, we'll just show a toast notification
     toast({
       title: "Datos importados",
       description: `Se importaron ${data.length} usuarios correctamente.`
@@ -60,10 +58,7 @@ const GestionUsuarios = () => {
                   filename="usuarios-biblioteca" 
                   buttonLabel="Exportar usuarios"
                 />
-                <Button>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Nuevo usuario
-                </Button>
+                <NewUserDialog />
               </div>
             </div>
           </CardHeader>
