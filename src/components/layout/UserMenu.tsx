@@ -27,7 +27,7 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
               {!isMobile && getUserDisplayName()}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="z-50">
             <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
@@ -40,7 +40,7 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
                 <span>Mis préstamos</span>
               </Link>
             </DropdownMenuItem>
-            {isMobile && isStaff && (
+            {isMobile && (isStaff || isLibrarian(user) || canManageBooks(user) || canManageTheses(user) || canManageDigitalBooks(user)) && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Administración</DropdownMenuLabel>

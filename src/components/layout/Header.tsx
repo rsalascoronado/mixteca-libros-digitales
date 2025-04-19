@@ -21,6 +21,8 @@ const Header = () => {
     return user.nombre;
   };
 
+  const isLibrarianUser = isLibrarian(user);
+
   return (
     <header className="bg-primary text-primary-foreground py-2 px-4 shadow-md">
       <div className="container mx-auto flex items-center justify-between">
@@ -28,7 +30,7 @@ const Header = () => {
         
         <DesktopNav 
           user={user} 
-          isLibrarian={isLibrarian(user)}
+          isLibrarian={isLibrarianUser}
         />
 
         <MobileMenu 

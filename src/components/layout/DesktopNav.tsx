@@ -28,7 +28,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
           Mis préstamos
         </Link>
       )}
-      {isLibrarian && (
+      {user && (isLibrarian(user) || canManageBooks(user) || canManageTheses(user) || canManageDigitalBooks(user)) && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/20 hover:text-white">
@@ -36,9 +36,9 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
               Gestionar recursos
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-white">
-            {isLibrarian && (
-              <DropdownMenuItem>
+          <DropdownMenuContent className="bg-white z-50">
+            {isLibrarian(user) && (
+              <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/prestamos" 
                   className="flex w-full items-center gap-2"
@@ -49,7 +49,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
               </DropdownMenuItem>
             )}
             {canManageBooks(user) && (
-              <DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/libros" 
                   className="flex w-full items-center gap-2"
@@ -60,7 +60,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
               </DropdownMenuItem>
             )}
             {canManageTheses(user) && (
-              <DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/tesis" 
                   className="flex w-full items-center gap-2"
@@ -71,7 +71,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
               </DropdownMenuItem>
             )}
             {canManageDigitalBooks(user) && (
-              <DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/ebooks" 
                   className="flex w-full items-center gap-2"
