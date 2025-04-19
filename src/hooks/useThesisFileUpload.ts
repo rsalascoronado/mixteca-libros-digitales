@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -65,28 +64,48 @@ export const useThesisFileUpload = () => {
       const fileName = `thesis-${thesisId ? `edit-${thesisId}-` : ''}${Date.now()}.${fileExt}`;
       
       console.log('Iniciando carga de archivo:', fileName);
+
+      const uploadPromise = new Promise<string>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        const { data: { signedUrl } } = await supabase.storage
+          .from(BUCKET_NAME)
+          .createSignedUploadUrl(fileName);
+
+        if (!signedUrl) {
+          throw new Error('No se pudo obtener la URL de carga');
+        }
+
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const progress = Math.round((event.loaded * 100) / event.total);
+            setUploadProgress(progress);
+          }
+        });
+
+        xhr.addEventListener('load', async () => {
+          if (xhr.status === 200) {
+            const { data: { publicUrl } } = supabase.storage
+              .from(BUCKET_NAME)
+              .getPublicUrl(fileName);
+            
+            resolve(publicUrl);
+          } else {
+            reject(new Error(`Error al subir archivo: ${xhr.statusText}`));
+          }
+        });
+
+        xhr.addEventListener('error', () => {
+          reject(new Error('Error de red al subir el archivo'));
+        });
+
+        xhr.open('PUT', signedUrl);
+        xhr.setRequestHeader('Content-Type', 'application/pdf');
+        xhr.send(file);
+      });
+
+      const publicUrl = await uploadPromise;
       
-      const uploadOptions = {
-        cacheControl: '3600',
-        upsert: false,
-        contentType: 'application/pdf'
-      };
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .upload(fileName, file, uploadOptions);
-
-      if (uploadError) {
-        console.error('Error de carga:', uploadError);
-        throw new Error(`Error al subir archivo: ${uploadError.message}`);
-      }
-
-      console.log('Archivo subido exitosamente:', uploadData);
-
-      const { data: { publicUrl } } = supabase.storage
-        .from(BUCKET_NAME)
-        .getPublicUrl(fileName);
-
       console.log('URL pública generada:', publicUrl);
       
       toast({
