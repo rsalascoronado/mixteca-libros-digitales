@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, File, BookOpen, Eye, Trash2, FileBox } from 'lucide-react';
+import { FileText, File, BookOpen, Eye, Trash2, FileBox, PencilIcon } from 'lucide-react';
 import { DigitalBook } from '@/types/digitalBook';
 import { Book } from '@/types';
 import { Badge } from '@/components/ui/badge';
@@ -12,15 +11,23 @@ import { es } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import PDFViewer from '../shared/PDFViewer';
 import { useToast } from '@/hooks/use-toast';
+import { EditDigitalBookDialog } from './EditDigitalBookDialog';
 
 interface DigitalBooksDialogProps {
   book: Book;
   digitalBooks: DigitalBook[];
   onAddDigitalBook?: (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => void;
   onDeleteDigitalBook?: (id: string) => void;
+  onEditDigitalBook?: (id: string, data: Partial<DigitalBook>) => void;
 }
 
-export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDeleteDigitalBook }: DigitalBooksDialogProps) {
+export function DigitalBooksDialog({ 
+  book, 
+  digitalBooks, 
+  onAddDigitalBook, 
+  onDeleteDigitalBook,
+  onEditDigitalBook 
+}: DigitalBooksDialogProps) {
   const [open, setOpen] = useState(false);
   const { hasRole, isAuthenticated } = useAuth();
   const { toast } = useToast();
@@ -31,6 +38,12 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
   const handleDeleteVersion = (id: string) => {
     if (onDeleteDigitalBook) {
       onDeleteDigitalBook(id);
+    }
+  };
+
+  const handleEditVersion = (id: string, data: Partial<DigitalBook>) => {
+    if (onEditDigitalBook) {
+      onEditDigitalBook(id, data);
     }
   };
 
@@ -130,16 +143,24 @@ export function DigitalBooksDialog({ book, digitalBooks, onAddDigitalBook, onDel
                               url={digitalBook.url} 
                               fileName={`${book.titulo} - ${digitalBook.formato}`} 
                             />
-                            {isStaff && onDeleteDigitalBook && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteVersion(digitalBook.id)}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Eliminar</span>
-                              </Button>
+                            {isStaff && (
+                              <>
+                                <EditDigitalBookDialog
+                                  digitalBook={digitalBook}
+                                  onEdit={(data) => handleEditVersion(digitalBook.id, data)}
+                                />
+                                {onDeleteDigitalBook && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteVersion(digitalBook.id)}
+                                    className="text-red-500 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Eliminar</span>
+                                  </Button>
+                                )}
+                              </>
                             )}
                           </div>
                         </TableCell>
