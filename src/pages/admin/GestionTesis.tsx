@@ -15,6 +15,7 @@ import { GraduationCap, Plus, Search, FilterX, AlertTriangle, Upload, Pencil } f
 import DataExport from '@/components/admin/DataExport';
 import DataImport from '@/components/admin/DataImport';
 import PDFViewer from '@/components/shared/PDFViewer';
+import { supabase } from '@/integrations/supabase/client';
 
 const GestionTesis = () => {
   const navigate = useNavigate();
@@ -85,7 +86,7 @@ const GestionTesis = () => {
     }
   };
 
-  const handleAgregarTesis = () => {
+  const handleAgregarTesis = async () => {
     if (!nuevaTesis.titulo || !nuevaTesis.autor || !nuevaTesis.carrera || !nuevaTesis.director) {
       toast({
         title: "Error",
@@ -104,38 +105,58 @@ const GestionTesis = () => {
       return;
     }
 
-    const newId = (Math.max(...tesis.map(t => parseInt(t.id))) + 1).toString();
-    
-    const mockPdfUrl = `/tesis/${selectedFile.name}`;
-    
-    const nuevaTesisCompleta: Thesis = {
-      id: newId,
-      titulo: nuevaTesis.titulo,
-      autor: nuevaTesis.autor,
-      carrera: nuevaTesis.carrera,
-      anio: nuevaTesis.anio || new Date().getFullYear(),
-      director: nuevaTesis.director,
-      tipo: nuevaTesis.tipo as 'Licenciatura' | 'Maestría' | 'Doctorado',
-      disponible: true,
-      resumen: nuevaTesis.resumen,
-      archivoPdf: mockPdfUrl
-    };
+    try {
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `thesis-${Date.now()}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('thesis-files')
+        .upload(fileName, selectedFile);
 
-    setTesis(prev => [...prev, nuevaTesisCompleta]);
-    setNuevaTesis({
-      titulo: '',
-      autor: '',
-      carrera: '',
-      anio: new Date().getFullYear(),
-      director: '',
-      tipo: 'Licenciatura',
-      disponible: true
-    });
-    setSelectedFile(null);
-    toast({
-      title: "Tesis agregada",
-      description: "La tesis ha sido agregada correctamente al catálogo."
-    });
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('thesis-files')
+        .getPublicUrl(fileName);
+
+      const newId = (Math.max(...tesis.map(t => parseInt(t.id))) + 1).toString();
+      
+      const nuevaTesisCompleta: Thesis = {
+        id: newId,
+        titulo: nuevaTesis.titulo,
+        autor: nuevaTesis.autor,
+        carrera: nuevaTesis.carrera,
+        anio: nuevaTesis.anio || new Date().getFullYear(),
+        director: nuevaTesis.director,
+        tipo: nuevaTesis.tipo as 'Licenciatura' | 'Maestría' | 'Doctorado',
+        disponible: true,
+        resumen: nuevaTesis.resumen,
+        archivoPdf: publicUrl
+      };
+
+      setTesis(prev => [...prev, nuevaTesisCompleta]);
+      setNuevaTesis({
+        titulo: '',
+        autor: '',
+        carrera: '',
+        anio: new Date().getFullYear(),
+        director: '',
+        tipo: 'Licenciatura',
+        disponible: true
+      });
+      setSelectedFile(null);
+      toast({
+        title: "Tesis agregada",
+        description: "La tesis ha sido agregada correctamente al catálogo."
+      });
+    } catch (error) {
+      console.error('Error uploading thesis:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo guardar la tesis.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleImportTesis = (importedData: any[]) => {
@@ -165,28 +186,54 @@ const GestionTesis = () => {
     setEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingTesis) return;
 
-    const updatedTesis = {
-      ...editingTesis,
-      archivoPdf: selectedFile 
-        ? `/tesis/${selectedFile.name}`
-        : editingTesis.archivoPdf
-    };
+    try {
+      let publicUrl = editingTesis.archivoPdf;
 
-    setTesis(prev => 
-      prev.map(t => t.id === updatedTesis.id ? updatedTesis : t)
-    );
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `thesis-edit-${editingTesis.id}-${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('thesis-files')
+          .upload(fileName, selectedFile);
 
-    setEditingTesis(null);
-    setEditDialogOpen(false);
-    setSelectedFile(null);
+        if (uploadError) throw uploadError;
 
-    toast({
-      title: "Tesis actualizada",
-      description: "Los cambios han sido guardados correctamente."
-    });
+        const { data: { publicUrl: newPublicUrl } } = supabase.storage
+          .from('thesis-files')
+          .getPublicUrl(fileName);
+
+        publicUrl = newPublicUrl;
+      }
+
+      const updatedTesis = {
+        ...editingTesis,
+        archivoPdf: publicUrl
+      };
+
+      setTesis(prev => 
+        prev.map(t => t.id === updatedTesis.id ? updatedTesis : t)
+      );
+
+      setEditingTesis(null);
+      setEditDialogOpen(false);
+      setSelectedFile(null);
+
+      toast({
+        title: "Tesis actualizada",
+        description: "Los cambios han sido guardados correctamente."
+      });
+    } catch (error) {
+      console.error('Error updating thesis:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar los cambios.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEditChange = (
