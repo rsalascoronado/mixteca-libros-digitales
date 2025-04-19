@@ -42,8 +42,9 @@ export const useThesisFileUpload = () => {
     try {
       console.log(`Intentando crear bucket '${BUCKET_NAME}'...`);
       
+      // Primero creamos el bucket
       const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
-        public: true, // Hacemos el bucket público para que los archivos sean accesibles
+        public: true,
         fileSizeLimit: MAX_FILE_SIZE
       });
       
@@ -59,6 +60,32 @@ export const useThesisFileUpload = () => {
       }
       
       console.log(`Bucket '${BUCKET_NAME}' creado exitosamente:`, data);
+      
+      // Configuramos políticas de acceso público para el bucket
+      // Política para permitir que cualquier usuario pueda leer los archivos
+      const { error: policyError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .createPolicy('public-read-policy', {
+          name: 'Public Read Policy',
+          definition: {
+            statements: [
+              {
+                effect: 'allow',
+                actions: ['select'],
+                role: 'anon',
+                condition: 'TRUE'
+              }
+            ]
+          }
+        });
+      
+      if (policyError) {
+        console.error('Error al crear política de acceso público:', policyError);
+        // No lanzamos error para no detener el flujo, ya intentamos con la config del bucket como público
+      } else {
+        console.log(`Política de acceso público creada exitosamente`);
+      }
+      
       return true;
     } catch (error) {
       console.error('Error al crear bucket:', error);
@@ -110,6 +137,7 @@ export const useThesisFileUpload = () => {
       
       const progressInterval = startProgressSimulation();
 
+      // Subimos el archivo con opción upsert para sobrescribir si ya existe
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
         .upload(fileName, file, {
@@ -133,19 +161,24 @@ export const useThesisFileUpload = () => {
       setUploadProgress(100);
       console.log(`Archivo subido completamente (100%)`);
 
-      // Obtenemos la URL pública con el formato correcto
-      const { data: { publicUrl } } = supabase.storage
+      // Verificamos y obtenemos la URL pública
+      const { data: publicUrlData, error: publicUrlError } = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(fileName);
       
-      console.log('URL generada:', publicUrl);
+      if (publicUrlError) {
+        console.error('Error al obtener URL pública:', publicUrlError);
+        throw new Error(`Error al generar el enlace del archivo: ${publicUrlError.message}`);
+      }
+      
+      console.log('URL generada:', publicUrlData.publicUrl);
       
       toast({
         title: "Archivo subido exitosamente",
         description: "El archivo PDF ha sido guardado correctamente.",
       });
 
-      return publicUrl;
+      return publicUrlData.publicUrl;
     } catch (error) {
       console.error('Error al subir archivo:', error);
       toast({
