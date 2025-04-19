@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="w-full md:w-4/12 px-4 mb-8 md:mb-0">
             <h4 className="text-lg font-semibold mb-4">Universidad Tecnológica de la Mixteca</h4>
             <p className="text-sm mb-4">
-              Carretera a Acatlima Km. 2.5<br />
+              Avenida Doctor Modesto Seara Vázquez, No 1<br />
               Huajuapan de León, Oaxaca, México<br />
               C.P. 69000
             </p>
