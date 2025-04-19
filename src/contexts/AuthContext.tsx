@@ -34,13 +34,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Updated email validation logic
-    const isStudentEmail = email.endsWith('@gs.utm.mx');
-    const isInstitutionalEmail = email.endsWith('@mixteco.utm.mx');
+    // Validate email domain
+    const isValidDomain = email.endsWith('@gs.utm.mx') || email.endsWith('@mixteco.utm.mx');
     
-    // Students must use gs.utm.mx, others must use mixteco.utm.mx
-    if ((!isStudentEmail && !isInstitutionalEmail) || 
-        (email.includes('alumno') && !isStudentEmail)) {
+    if (!isValidDomain) {
       setIsLoading(false);
       return false;
     }
