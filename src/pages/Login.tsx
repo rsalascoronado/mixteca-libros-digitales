@@ -45,12 +45,15 @@ const Login = () => {
     setError('');
     setIsLoading(true);
 
-    if (email.includes('alumno') && !email.endsWith('@gs.utm.mx')) {
-      setError('Los estudiantes deben usar su correo institucional (@gs.utm.mx)');
-      setIsLoading(false);
-      return;
-    } else if (!email.includes('alumno') && !email.endsWith('@mixteco.utm.mx')) {
-      setError('Debes usar tu correo institucional (@mixteco.utm.mx)');
+    // Updated email validation logic
+    if (selectedRole === 'estudiante') {
+      if (!email.endsWith('@gs.utm.mx')) {
+        setError('Los estudiantes deben usar su correo institucional (@gs.utm.mx)');
+        setIsLoading(false);
+        return;
+      }
+    } else if (!email.endsWith('@mixteco.utm.mx')) {
+      setError('Los usuarios del personal deben usar su correo institucional (@mixteco.utm.mx)');
       setIsLoading(false);
       return;
     }
