@@ -10,7 +10,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { saveAs } from 'file-saver';
 import UserCounter from '@/components/stats/UserCounter';
 import ReportMetrics from '@/components/stats/ReportMetrics';
-import RecentAdditions from '@/components/shared/RecentAdditions';
 
 interface HelpSection {
   title: string;
@@ -212,10 +211,6 @@ const Ayuda = () => {
           <div className="mt-4 md:mt-0">
             <UserCounter />
           </div>
-        </div>
-
-        <div className="mb-8">
-          <RecentAdditions />
         </div>
         
         <Tabs defaultValue={currentRole} className="w-full">

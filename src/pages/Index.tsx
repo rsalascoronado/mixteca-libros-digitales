@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { mockBooks } from '@/types';
 import ChatButton from '@/components/chat/ChatButton';
 import { toast } from '@/hooks/use-toast';
 import { useToast } from '@/hooks/use-toast';
+import RecentAdditions from '@/components/shared/RecentAdditions';
 
 const Index = () => {
   const { user, hasRole } = useAuth();
@@ -92,6 +92,13 @@ const Index = () => {
               <img alt="Biblioteca UTM" className="rounded-lg shadow-lg max-h-96 object-cover" src="/lovable-uploads/f46b4744-0ea0-4e43-9ce3-2a800df2cc80.png" />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Recent Additions Section */}
+      <section className="py-16 bg-accent/30">
+        <div className="container mx-auto px-4">
+          <RecentAdditions />
         </div>
       </section>
 
