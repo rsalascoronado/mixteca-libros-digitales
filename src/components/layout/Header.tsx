@@ -14,6 +14,15 @@ const Header = () => {
   // Check for admin/librarian access AND ensure user is not from gs.utm.mx domain
   const isStaff = hasRole(['bibliotecario', 'administrador']) && user?.email && !user.email.endsWith('@gs.utm.mx');
   
+  // Get display name based on domain
+  const getUserDisplayName = () => {
+    if (!user) return '';
+    if (user.email.endsWith('@gs.utm.mx')) {
+      return `${user.nombre} ${user.apellidos}`;
+    }
+    return user.nombre;
+  };
+
   return <header className="bg-primary text-primary-foreground py-2 px-4 shadow-md">
     <div className="container mx-auto flex items-center justify-between">
       {/* Logo and home section */}
@@ -104,7 +113,7 @@ const Header = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="bg-white text-primary">
                 <User className="h-4 w-4 mr-2" />
-                {!isMobile ? user.nombre : null}
+                {!isMobile && getUserDisplayName()}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -112,7 +121,7 @@ const Header = () => {
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <User className="h-4 w-4 mr-2" />
-                <span>Perfil</span>
+                <span>{getUserDisplayName()}</span>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/mis-prestamos">
