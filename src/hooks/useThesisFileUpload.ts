@@ -62,28 +62,17 @@ export const useThesisFileUpload = () => {
       console.log(`Bucket '${BUCKET_NAME}' creado exitosamente:`, data);
       
       // Configuramos políticas de acceso público para el bucket
-      // Política para permitir que cualquier usuario pueda leer los archivos
-      const { error: policyError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .createPolicy('public-read-policy', {
-          name: 'Public Read Policy',
-          definition: {
-            statements: [
-              {
-                effect: 'allow',
-                actions: ['select'],
-                role: 'anon',
-                condition: 'TRUE'
-              }
-            ]
-          }
+      // No podemos usar createPolicy directamente - usamos la API correcta
+      try {
+        // Establecemos permisos públicos de lectura usando el método updateBucket
+        await supabase.storage.updateBucket(BUCKET_NAME, {
+          public: true
         });
-      
-      if (policyError) {
-        console.error('Error al crear política de acceso público:', policyError);
-        // No lanzamos error para no detener el flujo, ya intentamos con la config del bucket como público
-      } else {
-        console.log(`Política de acceso público creada exitosamente`);
+        
+        console.log('Permisos públicos de lectura establecidos correctamente');
+      } catch (policyError) {
+        console.error('Error al configurar permisos públicos:', policyError);
+        // No lanzamos error para no detener el flujo
       }
       
       return true;
@@ -161,15 +150,10 @@ export const useThesisFileUpload = () => {
       setUploadProgress(100);
       console.log(`Archivo subido completamente (100%)`);
 
-      // Verificamos y obtenemos la URL pública
-      const { data: publicUrlData, error: publicUrlError } = supabase.storage
+      // Verificamos y obtenemos la URL pública - usando la sintaxis correcta
+      const { data: publicUrlData } = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(fileName);
-      
-      if (publicUrlError) {
-        console.error('Error al obtener URL pública:', publicUrlError);
-        throw new Error(`Error al generar el enlace del archivo: ${publicUrlError.message}`);
-      }
       
       console.log('URL generada:', publicUrlData.publicUrl);
       
