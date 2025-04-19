@@ -20,41 +20,73 @@ export const useThesisFileUpload = () => {
     }
   };
 
-  const ensureBucketExists = async () => {
+  const checkBucketExists = async () => {
     try {
-      const { data: buckets, error: bucketError } = await supabase
-        .storage
-        .listBuckets();
+      const { data, error } = await supabase.storage.getBucket(BUCKET_NAME);
       
-      if (bucketError) {
-        console.error('Error al verificar buckets:', bucketError);
-        throw new Error(`Error al verificar almacenamiento: ${bucketError.message}`);
+      if (error) {
+        if (error.message.includes('The resource was not found')) {
+          return false; // Bucket no existe
+        }
+        throw error; // Otro tipo de error
       }
-
-      const bucketExists = buckets.some(bucket => bucket.id === BUCKET_NAME);
       
-      if (!bucketExists) {
-        console.log(`El bucket '${BUCKET_NAME}' no existe. Intentando crearlo automáticamente...`);
-        
-        const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
-          public: false,
-          fileSizeLimit: MAX_FILE_SIZE
-        });
-        
-        if (error) {
-          console.error('Error al crear bucket:', error);
-          
-          if (error.message.includes('maximum allowed size')) {
-            throw new Error(`Error de tamaño al crear el bucket. Intente con un archivo más pequeño o contacte al administrador.`);
-          } else {
-            throw new Error(`No se pudo crear el bucket '${BUCKET_NAME}'. Por favor, contacte al administrador.`);
-          }
+      // Si llegamos aquí, el bucket existe
+      console.log(`Bucket '${BUCKET_NAME}' encontrado:`, data);
+      return true;
+    } catch (error) {
+      console.error('Error al verificar bucket:', error);
+      if (error instanceof Error && error.message.includes('The resource was not found')) {
+        return false;
+      }
+      throw error;
+    }
+  };
+
+  const createBucket = async () => {
+    try {
+      console.log(`Intentando crear bucket '${BUCKET_NAME}'...`);
+      
+      const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
+        public: false,
+        fileSizeLimit: MAX_FILE_SIZE
+      });
+      
+      if (error) {
+        // Si el error es porque el bucket ya existe, podemos continuar
+        if (error.message.includes('already exists')) {
+          console.log(`El bucket '${BUCKET_NAME}' ya existe, continuando...`);
+          return;
         }
         
-        console.log(`Bucket '${BUCKET_NAME}' creado exitosamente:`, data);
+        console.error('Error al crear bucket:', error);
+        throw new Error(`No se pudo crear el almacenamiento. ${error.message}`);
+      }
+      
+      console.log(`Bucket '${BUCKET_NAME}' creado exitosamente:`, data);
+    } catch (error) {
+      console.error('Error al crear bucket:', error);
+      throw error;
+    }
+  };
+
+  const ensureBucketExists = async () => {
+    try {
+      const bucketExists = await checkBucketExists();
+      
+      if (!bucketExists) {
+        await createBucket();
       }
     } catch (error) {
       console.error('Error al verificar/crear bucket:', error);
+      
+      // Verificamos si el error es de tipo "permission denied" o similar
+      if (error instanceof Error && 
+          (error.message.includes('permission') || 
+           error.message.includes('not authorized'))) {
+        throw new Error('No tiene permisos suficientes para acceder al almacenamiento. Contacte al administrador.');
+      }
+      
       throw error;
     }
   };
@@ -65,12 +97,35 @@ export const useThesisFileUpload = () => {
       setIsUploading(true);
       setUploadProgress(0);
       
-      await ensureBucketExists();
+      // Intentamos asegurar que el bucket exista
+      try {
+        await ensureBucketExists();
+      } catch (error) {
+        console.error('Error al verificar bucket, intentando subir de todas formas:', error);
+        // Continuamos con la carga de todas formas, ya que el bucket podría existir
+        // aunque no tengamos permisos para verificarlo
+      }
       
       const fileExt = file.name.split('.').pop();
       const fileName = `thesis-${thesisId ? `edit-${thesisId}-` : ''}${Date.now()}.${fileExt}`;
       
       console.log('Iniciando carga de archivo:', fileName);
+      
+      // Definimos una función para simular el progreso mientras se carga el archivo
+      const startProgressSimulation = () => {
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 5;
+          if (progress >= 90) {
+            clearInterval(interval);
+            progress = 90;
+          }
+          setUploadProgress(progress);
+        }, 300);
+        return interval;
+      };
+      
+      const progressInterval = startProgressSimulation();
 
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
@@ -78,6 +133,8 @@ export const useThesisFileUpload = () => {
           cacheControl: '3600',
           upsert: true
         });
+      
+      clearInterval(progressInterval);
 
       if (error) {
         console.error('Error al cargar archivo:', error);
@@ -87,11 +144,12 @@ export const useThesisFileUpload = () => {
       setUploadProgress(100);
       console.log(`Archivo subido completamente (100%)`);
 
+      // Intentamos obtener la URL pública
       const { data: { publicUrl } } = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(fileName);
       
-      console.log('URL pública generada:', publicUrl);
+      console.log('URL generada:', publicUrl);
       
       toast({
         title: "Archivo subido exitosamente",
@@ -109,7 +167,6 @@ export const useThesisFileUpload = () => {
       throw error;
     } finally {
       setIsUploading(false);
-      setUploadProgress(0);
     }
   };
 
