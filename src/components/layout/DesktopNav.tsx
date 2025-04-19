@@ -3,7 +3,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Library } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
 
 interface DesktopNavProps {
@@ -32,12 +37,18 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-white">
             <DropdownMenuItem>
-              <Link to="/admin/libros" className="flex w-full items-center gap-2">
+              <Link 
+                to="/admin/libros" 
+                className="flex w-full items-center gap-2 w-full"
+              >
                 Gestionar libros
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link to="/admin/tesis" className="flex w-full items-center gap-2">
+              <Link 
+                to="/admin/tesis" 
+                className="flex w-full items-center gap-2 w-full"
+              >
                 Gestionar tesis
               </Link>
             </DropdownMenuItem>
