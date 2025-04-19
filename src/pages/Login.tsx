@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
@@ -26,6 +26,12 @@ const Login = () => {
   const [selectedRole, setSelectedRole] = useState<UserRole>('estudiante');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if email is admin
+  useEffect(() => {
+    setIsAdmin(email.toLowerCase() === 'admin@mixteco.utm.mx');
+  }, [email]);
 
   // Redirect if already logged in
   React.useEffect(() => {
@@ -94,24 +100,26 @@ const Login = () => {
                   />
                 </div>
                 
-                <div className="grid gap-2">
-                  <Label htmlFor="role">Rol de Usuario</Label>
-                  <Select
-                    value={selectedRole}
-                    onValueChange={(value: UserRole) => setSelectedRole(value)}
-                  >
-                    <SelectTrigger id="role">
-                      <SelectValue placeholder="Selecciona tu rol" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="estudiante">Estudiante</SelectItem>
-                      <SelectItem value="profesor">Profesor</SelectItem>
-                      <SelectItem value="bibliotecario">Bibliotecario</SelectItem>
-                      <SelectItem value="administrativo">Administrativo</SelectItem>
-                      <SelectItem value="tecnico">Técnico</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {!isAdmin && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="role">Rol de Usuario</Label>
+                    <Select
+                      value={selectedRole}
+                      onValueChange={(value: UserRole) => setSelectedRole(value)}
+                    >
+                      <SelectTrigger id="role">
+                        <SelectValue placeholder="Selecciona tu rol" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="estudiante">Estudiante</SelectItem>
+                        <SelectItem value="profesor">Profesor</SelectItem>
+                        <SelectItem value="bibliotecario">Bibliotecario</SelectItem>
+                        <SelectItem value="administrativo">Administrativo</SelectItem>
+                        <SelectItem value="tecnico">Técnico</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div className="grid gap-2">
                   <Label htmlFor="password">Contraseña</Label>
