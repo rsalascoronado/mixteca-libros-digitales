@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +11,7 @@ const Footer = () => {
             <p className="text-sm mb-4">
               Avenida Doctor Modesto Seara Vázquez, No 1<br />
               Huajuapan de León, Oaxaca, México<br />
-              C.P. 69000
+              C.P. 69004
             </p>
             <p className="text-sm">
               Tel. (953) 532 0399 | (953) 532 0214<br />
