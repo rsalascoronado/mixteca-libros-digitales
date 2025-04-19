@@ -1,3 +1,4 @@
+
 import React, { useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -205,19 +206,23 @@ const Ayuda = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto py-10 px-4">
-        <div className="flex flex-col md:flex-row justify-between items-start mb-8">
-          <h1 className="text-3xl font-bold">Centro de Ayuda</h1>
+      <div className="container mx-auto py-4 md:py-10 px-4">
+        <div className="flex flex-col md:flex-row justify-between items-start mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold">Centro de Ayuda</h1>
           <div className="mt-4 md:mt-0">
             <UserCounter />
           </div>
         </div>
         
         <Tabs defaultValue={currentRole} className="w-full">
-          <TabsList className="mb-4">
+          <TabsList className="mb-4 flex flex-wrap gap-2">
             {helpContent.map(({ role }) => (
               hasRole([role, 'administrador']) && (
-                <TabsTrigger key={role} value={role} className="capitalize">
+                <TabsTrigger 
+                  key={role} 
+                  value={role} 
+                  className="capitalize text-sm md:text-base"
+                >
                   {role}
                 </TabsTrigger>
               )
@@ -227,9 +232,9 @@ const Ayuda = () => {
           {helpContent.map(({ role, sections }) => (
             hasRole([role, 'administrador']) && (
               <TabsContent key={role} value={role}>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-semibold capitalize">Manual de {role}</h2>
-                  <div className="flex gap-2">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                  <h2 className="text-xl md:text-2xl font-semibold capitalize">Manual de {role}</h2>
+                  <div className="flex flex-wrap gap-2">
                     <PDFViewer 
                       url={`/manuales/${role}.pdf`} 
                       fileName={`Manual de ${role}`}
@@ -238,6 +243,7 @@ const Ayuda = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => downloadPDF(role)}
+                      className="w-full sm:w-auto"
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Descargar PDF
@@ -245,25 +251,27 @@ const Ayuda = () => {
                   </div>
                 </div>
 
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="single" collapsible className="w-full space-y-2">
                   {sections.map((section, index) => (
-                    <AccordionItem key={index} value={`section-${index}`}>
-                      <AccordionTrigger>
+                    <AccordionItem key={index} value={`section-${index}`} className="border rounded-lg">
+                      <AccordionTrigger className="px-4 py-2 hover:no-underline">
                         <div className="flex items-center gap-2">
                           {section.icon}
-                          {section.title}
+                          <span className="text-sm md:text-base">{section.title}</span>
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent>
+                      <AccordionContent className="px-4 pb-4">
                         <ul className="list-disc pl-6 space-y-2">
                           {section.content.map((item, itemIndex) => (
-                            <li key={itemIndex} className="text-muted-foreground">
+                            <li key={itemIndex} className="text-sm md:text-base text-muted-foreground">
                               {item}
                             </li>
                           ))}
                         </ul>
                         {role === 'administrador' && getMetricType(section.title) && (
-                          <ReportMetrics type={getMetricType(section.title)!} />
+                          <div className="mt-6">
+                            <ReportMetrics type={getMetricType(section.title)!} />
+                          </div>
                         )}
                       </AccordionContent>
                     </AccordionItem>
