@@ -105,7 +105,6 @@ export function assignRoleBasedOnEmail(email: string): UserRole {
   return defaultRoleMap[domain] || 'estudiante'; // Default to estudiante if no match
 }
 
-// Modify mockUsers to demonstrate the new behavior
 export const mockUsers: User[] = [
   {
     id: '1',
@@ -130,14 +129,6 @@ export const mockUsers: User[] = [
     apellidos: 'Pérez López',
     role: 'profesor',
     createdAt: new Date('2023-01-03'),
-  },
-  {
-    id: '4',
-    email: 'alumno1@gs.utm.mx',
-    nombre: 'María',
-    apellidos: 'García Sánchez',
-    role: 'estudiante', // Will be overridden by email-based assignment
-    createdAt: new Date('2023-01-04'),
   },
   {
     id: '5',
