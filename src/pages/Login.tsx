@@ -9,12 +9,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { UserRole } from '@/types';
 
 const Login = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('estudiante');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -30,7 +39,6 @@ const Login = () => {
     setError('');
     setIsLoading(true);
 
-    // Updated email validation with specific error messages
     if (email.includes('alumno') && !email.endsWith('@gs.utm.mx')) {
       setError('Los estudiantes deben usar su correo institucional (@gs.utm.mx)');
       setIsLoading(false);
@@ -85,6 +93,26 @@ const Login = () => {
                     required
                   />
                 </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="role">Rol de Usuario</Label>
+                  <Select
+                    value={selectedRole}
+                    onValueChange={(value: UserRole) => setSelectedRole(value)}
+                  >
+                    <SelectTrigger id="role">
+                      <SelectValue placeholder="Selecciona tu rol" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="estudiante">Estudiante</SelectItem>
+                      <SelectItem value="profesor">Profesor</SelectItem>
+                      <SelectItem value="bibliotecario">Bibliotecario</SelectItem>
+                      <SelectItem value="administrativo">Administrativo</SelectItem>
+                      <SelectItem value="tecnico">Técnico</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="grid gap-2">
                   <Label htmlFor="password">Contraseña</Label>
                   <Input
@@ -109,7 +137,7 @@ const Login = () => {
               <div><strong>Admin:</strong> admin@mixteco.utm.mx</div>
               <div><strong>Bibliotecario:</strong> biblioteca@mixteco.utm.mx</div>
               <div><strong>Profesor:</strong> profesor@mixteco.utm.mx</div>
-              <div><strong>Estudiante:</strong> alumno@mixteco.utm.mx</div>
+              <div><strong>Estudiante:</strong> estudiante@gs.utm.mx</div>
               <div><strong>Contraseña:</strong> cualquier valor</div>
             </div>
           </CardFooter>
