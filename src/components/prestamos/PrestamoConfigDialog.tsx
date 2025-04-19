@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { UserRole, PrestamoConfig } from '@/types';
 
 interface PrestamoConfigDialogProps {
@@ -17,6 +18,7 @@ interface PrestamoConfigDialogProps {
 const PrestamoConfigDialog = ({ isOpen, onClose, onSave, currentConfigs }: PrestamoConfigDialogProps) => {
   const [configs, setConfigs] = React.useState<PrestamoConfig[]>(currentConfigs);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleInputChange = (role: UserRole, field: 'diasPrestamo' | 'maxLibros', value: number) => {
     setConfigs(prev => 
@@ -54,43 +56,70 @@ const PrestamoConfigDialog = ({ isOpen, onClose, onSave, currentConfigs }: Prest
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className={`${isMobile ? 'w-[95vw] max-w-none p-4' : 'max-w-2xl p-6'}`}>
         <DialogHeader>
-          <DialogTitle>Configuración de Préstamos por Rol</DialogTitle>
+          <DialogTitle className="text-xl md:text-2xl">
+            Configuración de Préstamos por Rol
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {configs.map((config) => (
-              <div key={config.role} className="space-y-4 p-4 border rounded-lg">
-                <h3 className="font-semibold capitalize">{config.role}</h3>
+              <div 
+                key={config.role} 
+                className="space-y-3 p-3 md:p-4 border rounded-lg bg-background/50 hover:bg-background/80 transition-colors"
+              >
+                <h3 className="font-semibold capitalize text-sm md:text-base">
+                  {config.role}
+                </h3>
                 <div className="space-y-2">
-                  <Label htmlFor={`dias-${config.role}`}>Días de préstamo</Label>
+                  <Label 
+                    htmlFor={`dias-${config.role}`}
+                    className="text-xs md:text-sm"
+                  >
+                    Días de préstamo
+                  </Label>
                   <Input
                     id={`dias-${config.role}`}
                     type="number"
                     min="1"
                     value={config.diasPrestamo}
                     onChange={(e) => handleInputChange(config.role, 'diasPrestamo', parseInt(e.target.value) || 0)}
+                    className="text-sm md:text-base h-8 md:h-10"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor={`libros-${config.role}`}>Máximo de libros</Label>
+                  <Label 
+                    htmlFor={`libros-${config.role}`}
+                    className="text-xs md:text-sm"
+                  >
+                    Máximo de libros
+                  </Label>
                   <Input
                     id={`libros-${config.role}`}
                     type="number"
                     min="1"
                     value={config.maxLibros}
                     onChange={(e) => handleInputChange(config.role, 'maxLibros', parseInt(e.target.value) || 0)}
+                    className="text-sm md:text-base h-8 md:h-10"
                   />
                 </div>
               </div>
             ))}
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
+          <DialogFooter className="sm:justify-end gap-2 pt-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              className="w-full sm:w-auto text-sm"
+            >
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button 
+              type="submit"
+              className="w-full sm:w-auto text-sm"
+            >
               Guardar cambios
             </Button>
           </DialogFooter>
