@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NewDigitalBookDialog } from '@/components/admin/NewDigitalBookDialog';
+import { NewBookDialog } from '@/components/admin/NewBookDialog';
 
 const GestionLibros = () => {
   const { hasRole } = useAuth();
@@ -119,24 +120,11 @@ const GestionLibros = () => {
     });
   };
 
-  const handleAddBook = () => {
-    const newBook: Book = {
-      id: Math.random().toString(36).substr(2, 9),
-      titulo: "Nuevo libro",
-      autor: "",
-      isbn: "",
-      categoria: categories[0]?.nombre || "",
-      copias: 1,
-      disponibles: 1,
-      editorial: "",
-      anioPublicacion: new Date().getFullYear(),
-      ubicacion: "",
-      descripcion: ""
-    };
-    setBooks([...books, newBook]);
+  const handleAddBook = (book: Book) => {
+    setBooks([...books, book]);
     toast({
       title: "Libro agregado",
-      description: "Se ha agregado un nuevo libro al catálogo."
+      description: "El libro ha sido agregado exitosamente."
     });
   };
 
@@ -177,10 +165,10 @@ const GestionLibros = () => {
                   filename="libros-biblioteca" 
                   buttonLabel="Exportar libros"
                 />
-                <Button onClick={handleAddBook}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Nuevo libro
-                </Button>
+                <NewBookDialog 
+                  categories={categories}
+                  onAddBook={handleAddBook}
+                />
               </div>
             </div>
           </CardHeader>
