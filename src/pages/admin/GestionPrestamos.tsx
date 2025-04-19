@@ -1,14 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Settings2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { mockPrestamos, mockBooks, mockUsers } from '@/types';
+import { mockPrestamos, mockBooks, mockUsers, defaultPrestamoConfig } from '@/types';
 import { isAfter } from 'date-fns';
 import PrestamosFilter from '@/components/prestamos/PrestamosFilter';
 import PrestamosList from '@/components/prestamos/PrestamosList';
+import PrestamoConfigDialog from '@/components/prestamos/PrestamoConfigDialog';
+import { Button } from '@/components/ui/button';
 
 const GestionPrestamos = () => {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ const GestionPrestamos = () => {
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState('all');
   const [busqueda, setBusqueda] = useState('');
+  const [showConfigDialog, setShowConfigDialog] = useState(false);
+  const [prestamoConfig, setPrestamoConfig] = useState(defaultPrestamoConfig);
 
   useEffect(() => {
     // Verificar permisos
@@ -110,6 +113,15 @@ const GestionPrestamos = () => {
     });
   };
 
+  const handleSaveConfig = (newConfig) => {
+    setPrestamoConfig(newConfig);
+    setShowConfigDialog(false);
+    toast({
+      title: "Configuración actualizada",
+      description: "La configuración de préstamos ha sido actualizada correctamente.",
+    });
+  };
+
   const limpiarFiltros = () => {
     setFiltroEstado('all');
     setBusqueda('');
@@ -135,9 +147,19 @@ const GestionPrestamos = () => {
   return (
     <MainLayout>
       <div className="container mx-auto py-10 px-4">
-        <div className="flex items-center mb-6">
-          <BookOpen className="h-8 w-8 text-primary mr-3" />
-          <h1 className="text-3xl font-bold">Gestión de Préstamos</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center">
+            <BookOpen className="h-8 w-8 text-primary mr-3" />
+            <h1 className="text-3xl font-bold">Gestión de Préstamos</h1>
+          </div>
+          <Button
+            onClick={() => setShowConfigDialog(true)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Settings2 className="h-4 w-4" />
+            Configurar días de préstamo
+          </Button>
         </div>
 
         <PrestamosFilter 
@@ -158,6 +180,13 @@ const GestionPrestamos = () => {
           prestamos={prestamosFiltrados} 
           onMarcarDevuelto={handleMarcarDevuelto}
           onAplicarPenalizacion={handleAplicarPenalizacion}
+        />
+
+        <PrestamoConfigDialog
+          isOpen={showConfigDialog}
+          onClose={() => setShowConfigDialog(false)}
+          onSave={handleSaveConfig}
+          currentConfigs={prestamoConfig}
         />
       </div>
     </MainLayout>
