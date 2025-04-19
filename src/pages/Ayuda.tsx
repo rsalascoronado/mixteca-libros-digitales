@@ -9,6 +9,7 @@ import PDFViewer from '@/components/shared/PDFViewer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { saveAs } from 'file-saver';
 import UserCounter from '@/components/stats/UserCounter';
+import ReportMetrics from '@/components/stats/ReportMetrics';
 
 interface HelpSection {
   title: string;
@@ -185,6 +186,23 @@ const Ayuda = () => {
     saveAs(blob, `manual_${role}.pdf`);
   }, []);
 
+  const getMetricType = (sectionTitle: string): 'usage' | 'loans' | 'collections' | 'inventory' | 'performance' | null => {
+    switch (sectionTitle) {
+      case 'Generación de informes de uso':
+        return 'usage';
+      case 'Estadísticas de préstamos y devoluciones':
+        return 'loans';
+      case 'Análisis de colecciones más utilizadas':
+        return 'collections';
+      case 'Reportes de inventario y adquisiciones':
+        return 'inventory';
+      case 'Métricas de rendimiento del sistema':
+        return 'performance';
+      default:
+        return null;
+    }
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto py-10 px-4">
@@ -244,6 +262,9 @@ const Ayuda = () => {
                             </li>
                           ))}
                         </ul>
+                        {role === 'administrador' && getMetricType(section.title) && (
+                          <ReportMetrics type={getMetricType(section.title)!} />
+                        )}
                       </AccordionContent>
                     </AccordionItem>
                   ))}
