@@ -6,14 +6,12 @@ import { HeaderLogo } from './HeaderLogo';
 import { DesktopNav } from './DesktopNav';
 import { UserMenu } from './UserMenu';
 import { MobileMenu } from './MobileMenu';
+import { isLibrarian } from '@/lib/user-utils';
 
 const Header = () => {
   const { user, logout, hasRole } = useAuth();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  
-  // Specifically check for biblioteca@mixteco.utm.mx OR bibliotecario role
-  const isLibrarian = user?.email === 'biblioteca@mixteco.utm.mx' || hasRole('bibliotecario');
   
   const getUserDisplayName = () => {
     if (!user) return '';
@@ -30,7 +28,7 @@ const Header = () => {
         
         <DesktopNav 
           user={user} 
-          isLibrarian={isLibrarian}  // Pass the updated librarian check
+          isLibrarian={isLibrarian(user)}
         />
 
         <MobileMenu 
@@ -54,4 +52,3 @@ const Header = () => {
 };
 
 export default Header;
-
