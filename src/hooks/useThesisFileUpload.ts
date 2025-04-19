@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +21,6 @@ export const useThesisFileUpload = () => {
 
   const ensureBucketExists = async () => {
     try {
-      // Verificar si el bucket existe
       const { data: buckets, error: bucketError } = await supabase
         .storage
         .listBuckets();
@@ -34,7 +32,6 @@ export const useThesisFileUpload = () => {
 
       const bucketExists = buckets.some(bucket => bucket.id === BUCKET_NAME);
       
-      // Si el bucket no existe, intentamos crearlo
       if (!bucketExists) {
         console.log(`El bucket '${BUCKET_NAME}' no existe. Intentando crearlo automáticamente...`);
         const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
@@ -61,7 +58,6 @@ export const useThesisFileUpload = () => {
       setIsUploading(true);
       setUploadProgress(0);
       
-      // Asegurar que el bucket existe antes de continuar
       await ensureBucketExists();
       
       const fileExt = file.name.split('.').pop();
@@ -69,21 +65,15 @@ export const useThesisFileUpload = () => {
       
       console.log('Iniciando carga de archivo:', fileName);
       
-      // Configurar un controlador de eventos para el progreso de carga
-      const progressHandler = (progress: { loaded: number; total: number }) => {
-        const percent = (progress.loaded / progress.total) * 100;
-        setUploadProgress(Math.round(percent));
-        console.log(`Upload progress: ${Math.round(percent)}%`);
+      const uploadOptions = {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: 'application/pdf'
       };
-      
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from(BUCKET_NAME)
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: 'application/pdf',
-          onUploadProgress: progressHandler
-        });
+        .upload(fileName, file, uploadOptions);
 
       if (uploadError) {
         console.error('Error de carga:', uploadError);
