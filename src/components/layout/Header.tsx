@@ -5,21 +5,24 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { LogOut, User, BookOpen, Users, Home } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useIsMobile } from '@/hooks/use-mobile';  // Importing mobile hook for responsiveness
 
 const Header = () => {
   const { user, logout, hasRole } = useAuth();
+  const isMobile = useIsMobile();
   
   return <header className="bg-primary text-primary-foreground py-2 px-4 shadow-md">
     <div className="container mx-auto flex items-center justify-between">
       <div className="flex items-center space-x-2">
-        {/* Home Button */}
-        <Link to="/">
+        {/* Home Button - Always visible for all roles, responsive */}
+        <Link to="/" className="flex items-center">
           <Button 
             variant="ghost" 
-            size="icon" 
-            className="text-primary-foreground hover:bg-primary/20 hover:text-white"
+            size={isMobile ? "icon" : "default"}
+            className="text-primary-foreground hover:bg-primary/20 hover:text-white flex items-center"
           >
-            <Home className="h-5 w-5" />
+            <Home className="h-5 w-5 mr-2" />
+            {!isMobile && "Inicio"}
             <span className="sr-only">Inicio</span>
           </Button>
         </Link>
