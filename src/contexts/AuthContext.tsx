@@ -43,12 +43,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
       
-      const foundUser = mockUsers.find(u => u.email === email) || mockUsers[0];
+      let foundUser = mockUsers.find(u => u.email === email);
+      
+      if (!foundUser && email === 'admin@mixteco.utm.mx') {
+        foundUser = {
+          id: 'admin-1',
+          email: 'admin@mixteco.utm.mx',
+          nombre: 'Administrador',
+          apellidos: 'Sistema',
+          role: 'administrador',
+          createdAt: new Date()
+        };
+      }
       
       if (foundUser) {
         const userWithAssignedRole: User = {
           ...foundUser,
-          role: assignRoleBasedOnEmail(email)
+          role: email === 'admin@mixteco.utm.mx' ? 'administrador' : assignRoleBasedOnEmail(email)
         };
         
         setUser(userWithAssignedRole);
