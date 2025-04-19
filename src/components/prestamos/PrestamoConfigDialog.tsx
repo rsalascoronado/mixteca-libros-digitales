@@ -21,13 +21,10 @@ const PrestamoConfigDialog = ({ isOpen, onClose, onSave, currentConfigs }: Prest
   const isMobile = useIsMobile();
 
   // Type-safe helper function to cast role string to UserRole
-  const handleInputChange = (role: string, field: 'diasPrestamo' | 'maxLibros', value: number) => {
-    // Safely cast the role to UserRole since we know it's coming from our configs
-    const userRole = role as UserRole;
-    
+  const handleInputChange = (role: UserRole, field: 'diasPrestamo' | 'maxLibros', value: number) => {
     setConfigs(prev => 
       prev.map(config => 
-        config.role === userRole 
+        config.role === role 
           ? { ...config, [field]: value } 
           : config
       )

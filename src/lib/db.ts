@@ -79,7 +79,8 @@ interface Database {
 // Use mock data until Supabase tables are properly set up
 export async function fetchBooks() {
   try {
-    // @ts-ignore - Suppress type errors until actual tables are created
+    // @ts-ignore - Suppress all TypeScript errors related to table access
+    // This is necessary until the actual tables are created in Supabase
     const { data, error } = await supabase
       .from('books')
       .select(`
@@ -114,7 +115,7 @@ export async function fetchBooks() {
 
 export async function fetchCategories() {
   try {
-    // @ts-ignore - Suppress type errors until actual tables are created
+    // @ts-ignore - Suppress all TypeScript errors related to table access
     const { data, error } = await supabase
       .from('book_categories')
       .select('*');
@@ -136,7 +137,7 @@ export async function fetchCategories() {
 
 export async function fetchTheses() {
   try {
-    // @ts-ignore - Suppress type errors until actual tables are created
+    // @ts-ignore - Suppress all TypeScript errors related to table access
     const { data, error } = await supabase
       .from('theses')
       .select('*');
@@ -165,7 +166,7 @@ export async function fetchTheses() {
 
 export async function fetchLoans() {
   try {
-    // @ts-ignore - Suppress type errors until actual tables are created
+    // @ts-ignore - Suppress all TypeScript errors related to table access
     const { data, error } = await supabase
       .from('loans')
       .select(`
@@ -195,7 +196,7 @@ export async function fetchLoans() {
 
 export async function fetchDigitalBooks() {
   try {
-    // @ts-ignore - Suppress type errors until actual tables are created
+    // @ts-ignore - Suppress all TypeScript errors related to table access
     const { data, error } = await supabase
       .from('digital_books')
       .select(`
