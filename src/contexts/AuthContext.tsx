@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, mockUsers, UserRole, assignRoleBasedOnEmail } from '@/types';
 
@@ -35,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     
     // Special handling for admin accounts - don't validate domain
-    const isAdminEmail = email === 'admin@mixteco.utm.mx' || email === 'adminadmin@mixteco.utm.mx';
+    const isAdminEmail = email === 'admin@mixteco.utm.mx';
     
     // For non-admin users, validate domain
     const isValidDomain = isAdminEmail || email.endsWith('@gs.utm.mx') || email.endsWith('@mixteco.utm.mx');
@@ -51,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let foundUser = mockUsers.find(u => u.email === email);
       
       // Handle admin accounts
-      if (!foundUser && (email === 'admin@mixteco.utm.mx' || email === 'adminadmin@mixteco.utm.mx')) {
+      if (!foundUser && email === 'admin@mixteco.utm.mx') {
         foundUser = {
           id: 'admin-1',
           email: email,

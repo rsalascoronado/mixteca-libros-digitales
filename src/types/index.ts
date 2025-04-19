@@ -90,7 +90,7 @@ export interface Thesis {
 
 export function assignRoleBasedOnEmail(email: string): UserRole {
   // Explicitly handle admin emails
-  if (email === 'admin@mixteco.utm.mx' || email === 'adminadmin@mixteco.utm.mx') {
+  if (email === 'admin@mixteco.utm.mx') {
     return 'administrador';
   }
 
