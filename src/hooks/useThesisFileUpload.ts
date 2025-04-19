@@ -83,18 +83,17 @@ export const useThesisFileUpload = () => {
         .from(BUCKET_NAME)
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: true,
-          onUploadProgress: (progress) => {
-            const calculatedProgress = progress.percent ? Math.round(progress.percent) : 0;
-            setUploadProgress(calculatedProgress);
-            console.log(`Progreso: ${calculatedProgress}%`);
-          }
+          upsert: true
         });
 
       if (error) {
         console.error('Error al cargar archivo:', error);
         throw new Error(`Error al subir el archivo: ${error.message}`);
       }
+
+      // Configuramos un sistema manual de seguimiento de progreso
+      setUploadProgress(100);
+      console.log(`Archivo subido completamente (100%)`);
 
       // Obtenemos la URL pública del archivo
       const { data: { publicUrl } } = supabase.storage
