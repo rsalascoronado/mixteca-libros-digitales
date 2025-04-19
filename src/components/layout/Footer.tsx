@@ -48,11 +48,11 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Horario de atención</h4>
             <p className="text-sm mb-4">
               Lunes a Viernes<br />
-              8:00 a 20:00 hrs
+              8:00 a 20:00 h
             </p>
             <p className="text-sm">
               Sábados<br />
-              9:00 a 14:00 hrs
+              9:00 a 14:00 h
             </p>
           </div>
         </div>
