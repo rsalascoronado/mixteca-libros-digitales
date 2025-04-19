@@ -88,6 +88,24 @@ export interface Thesis {
   archivoPdf?: string;
 }
 
+export function assignRoleBasedOnEmail(email: string): UserRole {
+  // Automatically assign 'estudiante' role to gs.utm.mx domain users
+  if (email.endsWith('@gs.utm.mx')) {
+    return 'estudiante';
+  }
+
+  // For other domains, keep existing logic
+  const defaultRoleMap: Record<string, UserRole> = {
+    'mixteco.utm.mx': 'profesor',
+    'admin.utm.mx': 'administrador',
+    // Add more domain-role mappings as needed
+  };
+
+  const domain = email.split('@')[1];
+  return defaultRoleMap[domain] || 'estudiante'; // Default to estudiante if no match
+}
+
+// Modify mockUsers to demonstrate the new behavior
 export const mockUsers: User[] = [
   {
     id: '1',
@@ -115,10 +133,10 @@ export const mockUsers: User[] = [
   },
   {
     id: '4',
-    email: 'alumno@mixteco.utm.mx',
+    email: 'alumno1@gs.utm.mx',
     nombre: 'María',
     apellidos: 'García Sánchez',
-    role: 'estudiante',
+    role: 'estudiante', // Will be overridden by email-based assignment
     createdAt: new Date('2023-01-04'),
   },
   {

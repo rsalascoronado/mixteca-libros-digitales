@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, mockUsers, UserRole } from '@/types';
+import { User, mockUsers, UserRole, assignRoleBasedOnEmail } from '@/types';
 
 type AuthContextType = {
   user: User | null;
@@ -17,7 +17,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading user from localStorage
     const savedUser = localStorage.getItem('utmBibliotecaUser');
     if (savedUser) {
       try {
@@ -34,7 +33,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Validate email domain
     const isValidDomain = email.endsWith('@gs.utm.mx') || email.endsWith('@mixteco.utm.mx');
     
     if (!isValidDomain) {
@@ -43,16 +41,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     try {
-      // In a real app, this would be an API call
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
       
-      // For demo purposes, any valid email format with any password will work
-      // We'll find a matching user or use the first one as default
       const foundUser = mockUsers.find(u => u.email === email) || mockUsers[0];
       
       if (foundUser) {
-        setUser(foundUser);
-        localStorage.setItem('utmBibliotecaUser', JSON.stringify(foundUser));
+        const userWithAssignedRole: User = {
+          ...foundUser,
+          role: assignRoleBasedOnEmail(email)
+        };
+        
+        setUser(userWithAssignedRole);
+        localStorage.setItem('utmBibliotecaUser', JSON.stringify(userWithAssignedRole));
         setIsLoading(false);
         return true;
       }
