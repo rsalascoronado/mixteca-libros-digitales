@@ -7,7 +7,7 @@ import { FileText, File, BookOpen, FileBox } from 'lucide-react';
 import PDFViewer from '@/components/shared/PDFViewer';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { UploadDigitalBookDialog } from '../UploadDigitalBookDialog';
+import { UploadDigitalBookDialog } from '@/components/admin/digital-books/UploadDigitalBookDialog';
 import { DigitalBooksActionsMenu } from './DigitalBooksActionsMenu';
 import { Badge } from '@/components/ui/badge';
 

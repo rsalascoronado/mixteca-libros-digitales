@@ -10,6 +10,7 @@ import { NewBookDialog } from '@/components/admin/NewBookDialog';
 import { BooksListTab } from '@/components/admin/books/BooksListTab';
 import { CategoriesTab } from '@/components/admin/books/CategoriesTab';
 import { useBooksManagement } from '@/hooks/use-books-management';
+import { useToast } from '@/hooks/use-toast';
 
 interface GestionLibrosProps {
   defaultTab?: 'libros' | 'categorias' | 'digital';
