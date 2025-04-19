@@ -82,7 +82,7 @@ export const useThesisFileUpload = () => {
           cacheControl: '3600',
           upsert: false,
           contentType: 'application/pdf',
-          onProgress: progressHandler
+          onUploadProgress: progressHandler
         });
 
       if (uploadError) {
