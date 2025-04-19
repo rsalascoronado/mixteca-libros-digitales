@@ -115,6 +115,8 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
 
       onThesisAdded(nuevaTesisCompleta);
       onOpenChange(false);
+      
+      // Reset form
       setNuevaTesis({
         titulo: '',
         autor: '',
