@@ -1,5 +1,5 @@
 
-import { User } from '@/types';
+import { User, UserRole } from '@/types';
 
 export const isLibrarian = (user: User | null): boolean => {
   if (!user) return false;
@@ -13,17 +13,20 @@ export const isLibrarian = (user: User | null): boolean => {
 
 export const canManageDigitalBooks = (user: User | null): boolean => {
   if (!user) return false;
-  return isLibrarian(user) || user.role === 'editor_digital';
+  // Allow librarians and administrators to manage digital books
+  return isLibrarian(user);
 };
 
 export const canManageBooks = (user: User | null): boolean => {
   if (!user) return false;
-  return isLibrarian(user) || user.role === 'gestor_libros';
+  // Allow librarians and administrators to manage physical books
+  return isLibrarian(user);
 };
 
 export const canManageTheses = (user: User | null): boolean => {
   if (!user) return false;
-  return isLibrarian(user) || user.role === 'gestor_tesis';
+  // Allow librarians and administrators to manage theses
+  return isLibrarian(user);
 };
 
 export const canManageUsers = (user: User | null): boolean => {
