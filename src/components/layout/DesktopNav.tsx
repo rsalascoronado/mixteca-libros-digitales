@@ -63,8 +63,8 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
                   to="/admin/ebooks" 
                   className="flex w-full items-center gap-2"
                 >
-                  <FileText className="h-4 w-4" />
-                  Gestionar libros electrónicos
+                  <FileText className="h-4 w-4 mr-2" />
+                  Gestionar libros digitales
                 </Link>
               </DropdownMenuItem>
             )}

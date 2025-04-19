@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, BookOpen } from 'lucide-react';
+import { LogOut, User, BookOpen, FileText } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { User as UserType, UserRole } from '@/types';
 
@@ -51,6 +50,12 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/admin/tesis">Gestionar tesis</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/admin/ebooks">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Gestionar libros digitales
+                  </Link>
                 </DropdownMenuItem>
                 {hasRole('administrador') && (
                   <>
