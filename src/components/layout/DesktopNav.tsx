@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
-import { canManageBooks, canManageTheses, canManageDigitalBooks, isLibrarian as checkIsLibrarian } from '@/lib/user-utils';
+import { canManageBooks, canManageTheses, canManageDigitalBooks, isLibrarian } from '@/lib/user-utils';
 
 interface DesktopNavProps {
   user: User | null;
@@ -19,9 +19,9 @@ interface DesktopNavProps {
 
 export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
   // Check permissions directly using the user object
-  const userCanManageBooks = user && canManageBooks(user);
-  const userCanManageTheses = user && canManageTheses(user);
-  const userCanManageDigitalBooks = user && canManageDigitalBooks(user);
+  const userCanManageBooks = user ? canManageBooks(user) : false;
+  const userCanManageTheses = user ? canManageTheses(user) : false;
+  const userCanManageDigitalBooks = user ? canManageDigitalBooks(user) : false;
   
   return (
     <nav className="hidden md:flex items-center space-x-4">
