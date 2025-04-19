@@ -9,8 +9,6 @@ import PDFViewer from '@/components/shared/PDFViewer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { saveAs } from 'file-saver';
 import UserCounter from '@/components/stats/UserCounter';
-import SectionMetrics from '@/components/stats/SectionMetrics';
-import { useState } from 'react';
 
 interface HelpSection {
   title: string;
@@ -181,7 +179,6 @@ const helpContent: RoleHelp[] = [
 const Ayuda = () => {
   const { user, hasRole } = useAuth();
   const currentRole = user?.role || 'estudiante';
-  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const downloadPDF = useCallback((role: UserRole) => {
     const blob = new Blob(['Manual detallado para ' + role], { type: 'application/pdf' });
@@ -230,12 +227,7 @@ const Ayuda = () => {
                   </div>
                 </div>
 
-                <Accordion 
-                  type="single" 
-                  collapsible 
-                  className="w-full"
-                  onValueChange={(value) => setActiveSection(value)}
-                >
+                <Accordion type="single" collapsible className="w-full">
                   {sections.map((section, index) => (
                     <AccordionItem key={index} value={`section-${index}`}>
                       <AccordionTrigger>
@@ -252,9 +244,6 @@ const Ayuda = () => {
                             </li>
                           ))}
                         </ul>
-                        {activeSection === `section-${index}` && (
-                          <SectionMetrics role={role} section={section.title} />
-                        )}
                       </AccordionContent>
                     </AccordionItem>
                   ))}
