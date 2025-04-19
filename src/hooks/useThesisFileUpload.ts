@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const BUCKET_NAME = 'thesis-files';
 
 export const useThesisFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -19,12 +20,9 @@ export const useThesisFileUpload = () => {
     }
   };
 
-  const uploadThesisFile = async (file: File, thesisId?: string) => {
+  const ensureBucketExists = async () => {
     try {
-      validateFile(file);
-      setIsUploading(true);
-      setUploadProgress(0);
-      
+      // Verificar si el bucket existe
       const { data: buckets, error: bucketError } = await supabase
         .storage
         .listBuckets();
@@ -34,27 +32,57 @@ export const useThesisFileUpload = () => {
         throw new Error(`Error al verificar almacenamiento: ${bucketError.message}`);
       }
 
-      const bucketExists = buckets.some(bucket => bucket.id === 'thesis-files');
+      const bucketExists = buckets.some(bucket => bucket.id === BUCKET_NAME);
+      
+      // Si el bucket no existe, intentamos crearlo
       if (!bucketExists) {
-        throw new Error(`El bucket 'thesis-files' no existe. Por favor, contacte al administrador.`);
+        console.log(`El bucket '${BUCKET_NAME}' no existe. Intentando crearlo automáticamente...`);
+        const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
+          public: true,
+          fileSizeLimit: MAX_FILE_SIZE
+        });
+        
+        if (error) {
+          console.error('Error al crear bucket:', error);
+          throw new Error(`No se pudo crear el bucket '${BUCKET_NAME}'. Por favor, contacte al administrador.`);
+        }
+        
+        console.log(`Bucket '${BUCKET_NAME}' creado exitosamente:`, data);
       }
+    } catch (error) {
+      console.error('Error al verificar/crear bucket:', error);
+      throw error;
+    }
+  };
+
+  const uploadThesisFile = async (file: File, thesisId?: string) => {
+    try {
+      validateFile(file);
+      setIsUploading(true);
+      setUploadProgress(0);
+      
+      // Asegurar que el bucket existe antes de continuar
+      await ensureBucketExists();
       
       const fileExt = file.name.split('.').pop();
       const fileName = `thesis-${thesisId ? `edit-${thesisId}-` : ''}${Date.now()}.${fileExt}`;
       
       console.log('Iniciando carga de archivo:', fileName);
       
+      // Configurar un controlador de eventos para el progreso de carga
+      const progressHandler = (progress: { loaded: number; total: number }) => {
+        const percent = (progress.loaded / progress.total) * 100;
+        setUploadProgress(Math.round(percent));
+        console.log(`Upload progress: ${Math.round(percent)}%`);
+      };
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('thesis-files')
+        .from(BUCKET_NAME)
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
           contentType: 'application/pdf',
-          onUploadProgress: (progress) => {
-            const percent = (progress.loaded / progress.total) * 100;
-            setUploadProgress(Math.round(percent));
-            console.log(`Upload progress: ${Math.round(percent)}%`);
-          }
+          onProgress: progressHandler
         });
 
       if (uploadError) {
@@ -65,7 +93,7 @@ export const useThesisFileUpload = () => {
       console.log('Archivo subido exitosamente:', uploadData);
 
       const { data: { publicUrl } } = supabase.storage
-        .from('thesis-files')
+        .from(BUCKET_NAME)
         .getPublicUrl(fileName);
 
       console.log('URL pública generada:', publicUrl);
