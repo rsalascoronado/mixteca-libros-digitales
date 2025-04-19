@@ -12,18 +12,18 @@ interface UserMenuProps {
   logout: () => void;
   getUserDisplayName: () => string;
   isMobile: boolean;
-  isStaff: boolean;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
 
-export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, hasRole }: UserMenuProps) => {
+export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, hasRole }: UserMenuProps) => {
   // Pre-calculate permission flags
   const userIsLibrarian = user ? isLibrarian(user) : false;
   const userCanManageBooks = user ? canManageBooks(user) : false;
   const userCanManageTheses = user ? canManageTheses(user) : false;
   const userCanManageDigitalBooks = user ? canManageDigitalBooks(user) : false;
   
-  const showAdminSection = userIsLibrarian || userCanManageBooks || userCanManageTheses || userCanManageDigitalBooks || hasRole('administrador');
+  const isAdmin = hasRole('administrador');
+  const showAdminSection = userIsLibrarian || userCanManageBooks || userCanManageTheses || userCanManageDigitalBooks || isAdmin;
 
   return (
     <div className="flex items-center">
@@ -84,7 +84,7 @@ export const UserMenu = ({ user, logout, getUserDisplayName, isMobile, isStaff, 
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {hasRole('administrador') && (
+                {isAdmin && (
                   <>
                     <DropdownMenuItem asChild>
                       <Link to="/admin/usuarios">Gestionar usuarios</Link>

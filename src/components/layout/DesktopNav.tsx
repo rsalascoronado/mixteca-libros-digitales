@@ -14,14 +14,17 @@ import { canManageBooks, canManageTheses, canManageDigitalBooks, isLibrarian } f
 
 interface DesktopNavProps {
   user: User | null;
-  isLibrarian: boolean;
 }
 
-export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
+export const DesktopNav = ({ user }: DesktopNavProps) => {
   // Check permissions directly using the user object
+  const userIsLibrarian = user ? isLibrarian(user) : false;
   const userCanManageBooks = user ? canManageBooks(user) : false;
   const userCanManageTheses = user ? canManageTheses(user) : false;
   const userCanManageDigitalBooks = user ? canManageDigitalBooks(user) : false;
+  
+  // Only show admin menu if user has at least one management permission
+  const showAdminMenu = userIsLibrarian || userCanManageBooks || userCanManageTheses || userCanManageDigitalBooks;
   
   return (
     <nav className="hidden md:flex items-center space-x-4">
@@ -33,7 +36,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
           Mis préstamos
         </Link>
       )}
-      {user && (isLibrarian || userCanManageBooks || userCanManageTheses || userCanManageDigitalBooks) && (
+      {user && showAdminMenu && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary/20 hover:text-white">
@@ -42,7 +45,7 @@ export const DesktopNav = ({ user, isLibrarian }: DesktopNavProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-white z-50">
-            {isLibrarian && (
+            {userIsLibrarian && (
               <DropdownMenuItem asChild>
                 <Link 
                   to="/admin/prestamos" 

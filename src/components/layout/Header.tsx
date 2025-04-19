@@ -6,7 +6,6 @@ import { HeaderLogo } from './HeaderLogo';
 import { DesktopNav } from './DesktopNav';
 import { UserMenu } from './UserMenu';
 import { MobileMenu } from './MobileMenu';
-import { isLibrarian } from '@/lib/user-utils';
 
 const Header = () => {
   const { user, logout, hasRole } = useAuth();
@@ -21,17 +20,12 @@ const Header = () => {
     return user.nombre;
   };
 
-  const isLibrarianUser = user ? isLibrarian(user) : false;
-
   return (
     <header className="bg-primary text-primary-foreground py-2 px-4 shadow-md">
       <div className="container mx-auto flex items-center justify-between">
         <HeaderLogo />
         
-        <DesktopNav 
-          user={user} 
-          isLibrarian={isLibrarianUser}
-        />
+        <DesktopNav user={user} />
 
         <MobileMenu 
           isMobile={isMobile} 
@@ -45,7 +39,6 @@ const Header = () => {
           logout={logout}
           getUserDisplayName={getUserDisplayName}
           isMobile={isMobile}
-          isStaff={hasRole(['bibliotecario', 'administrador'])}
           hasRole={hasRole}
         />
       </div>
