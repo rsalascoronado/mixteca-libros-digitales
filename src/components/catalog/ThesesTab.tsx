@@ -3,7 +3,7 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ThesisTable from "@/components/thesis/ThesisTable";
 import ThesisSearch from "@/components/thesis/ThesisSearch";
-import { fetchTheses } from "@/lib/db";
+import { fetchTheses } from "@/lib/theses-db"; // Changed from db to theses-db
 import { useToast } from "@/hooks/use-toast";
 
 const ThesesTab: React.FC = () => {

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { saveThesis, deleteThesis } from '@/lib/db';
+import { saveThesis, deleteThesis } from '@/lib/theses-db'; // Updated import path
 import { Thesis } from '@/types';
 
 export const useThesisFileUpload = () => {
@@ -15,6 +15,13 @@ export const useThesisFileUpload = () => {
     setUploadProgress(0);
     
     try {
+      // Check if user is authenticated
+      const { data: authData } = await supabase.auth.getSession();
+      
+      if (!authData.session) {
+        throw new Error('Debes iniciar sesión para subir archivos');
+      }
+      
       // Validar que el archivo sea un PDF
       if (!file.type.includes('pdf')) {
         throw new Error('El archivo debe ser un PDF');
@@ -71,6 +78,13 @@ export const useThesisFileUpload = () => {
   
   const deleteThesisFile = async (fileUrl: string): Promise<void> => {
     try {
+      // Check if user is authenticated
+      const { data: authData } = await supabase.auth.getSession();
+      
+      if (!authData.session) {
+        throw new Error('Debes iniciar sesión para eliminar archivos');
+      }
+      
       // Extract the filename from the URL
       const fileName = fileUrl.split('/').pop();
       
@@ -102,6 +116,13 @@ export const useThesisFileUpload = () => {
   
   const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
     try {
+      // Check if user is authenticated
+      const { data: authData } = await supabase.auth.getSession();
+      
+      if (!authData.session) {
+        throw new Error('Debes iniciar sesión para guardar tesis');
+      }
+      
       let publicUrl = thesis.archivoPdf || null;
       
       // Si hay un archivo nuevo, subir primero el archivo

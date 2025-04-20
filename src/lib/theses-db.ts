@@ -49,6 +49,13 @@ function isValidUUID(id: string): boolean {
 // Guardar tesis, aceptando tanto insert como update
 export async function saveThesis(thesis: Thesis): Promise<Thesis> {
   try {
+    // Check if user is authenticated
+    const { data: authData } = await supabase.auth.getSession();
+    
+    if (!authData.session) {
+      throw new Error('Debes iniciar sesión para guardar tesis');
+    }
+    
     const thesisData = {
       titulo: thesis.titulo,
       autor: thesis.autor,
@@ -159,6 +166,13 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
 
 export async function deleteThesis(id: string): Promise<void> {
   try {
+    // Check if user is authenticated
+    const { data: authData } = await supabase.auth.getSession();
+    
+    if (!authData.session) {
+      throw new Error('Debes iniciar sesión para eliminar tesis');
+    }
+    
     // Si es un ID de los datos de ejemplo, simplemente retornar sin error
     if (!isValidUUID(id)) {
       console.log(`Intentando eliminar tesis con ID no válido: ${id}, operación simulada`);

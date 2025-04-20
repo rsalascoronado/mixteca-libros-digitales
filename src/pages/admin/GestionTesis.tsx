@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,11 +14,12 @@ import EditThesisDialog from '@/components/thesis/EditThesisDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchTheses, deleteThesis } from '@/lib/db';
+import { fetchTheses, deleteThesis } from '@/lib/theses-db';
+import { createThesisStorageBucket } from '@/utils/createStorageBucket';
 
 const GestionTesis = () => {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { hasRole, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { deleteThesisFile } = useThesisFileUpload();
   const queryClient = useQueryClient();
@@ -29,10 +29,18 @@ const GestionTesis = () => {
   const [editingTesis, setEditingTesis] = useState<Thesis | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
+  // Create storage bucket if it doesn't exist
+  useEffect(() => {
+    if (isAuthenticated) {
+      createThesisStorageBucket();
+    }
+  }, [isAuthenticated]);
+
   // Obtener las tesis de la base de datos
   const { data: tesis = [], isLoading } = useQuery({
     queryKey: ['theses'],
-    queryFn: fetchTheses
+    queryFn: fetchTheses,
+    enabled: isAuthenticated, // Only fetch when authenticated
   });
 
   React.useEffect(() => {
@@ -151,6 +159,13 @@ const GestionTesis = () => {
   return (
     <MainLayout>
       <div className="container mx-auto py-10 px-4">
+        {!isAuthenticated ? (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+            <p className="font-bold">Autenticación requerida</p>
+            <p>Debes iniciar sesión para gestionar las tesis.</p>
+          </div>
+        ) : null}
+
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <GraduationCap className="h-8 w-8 text-primary mr-3" />
