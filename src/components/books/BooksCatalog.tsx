@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -10,6 +9,7 @@ import { mockDigitalBooks } from '@/types/digitalBook';
 import CatalogPagination from './CatalogPagination';
 
 const ITEMS_PER_PAGE = 9;
+const BOOKS_PER_ROW = 3;
 
 interface BooksCatalogProps {
   searchTerm: string;
@@ -156,6 +156,20 @@ export function BooksCatalog({
         </div>
       </div>
       
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {libros.map((libro) => (
+          <div key={libro.id} className="border rounded-lg p-4 shadow-sm">
+            <h3 className="text-lg font-semibold mb-2">{libro.titulo}</h3>
+            <p className="text-gray-600 mb-2">Autor: {libro.autor}</p>
+            <p className="text-sm text-gray-500">Categoría: {libro.categoria}</p>
+            <div className="mt-2 flex justify-between items-center">
+              <span className="text-sm text-gray-700">Disponibles: {libro.disponibles}</span>
+              <Button size="sm">Ver Detalles</Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="mb-4">
         <p className="text-gray-600 text-sm sm:text-base">
           {isLoading 
