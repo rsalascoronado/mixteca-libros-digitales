@@ -30,7 +30,7 @@ export function useBooksCatalog({
       setIsLoading(true);
       try {
         const { data: booksData, error: booksError } = await supabase
-          .from<Book>("books")
+          .from("books")
           .select("*");
         if (booksError) throw booksError;
         if (isMounted) {
