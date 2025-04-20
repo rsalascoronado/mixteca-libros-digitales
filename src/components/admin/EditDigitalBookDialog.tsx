@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PencilIcon } from 'lucide-react';
@@ -12,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { editDigitalBookSchema, EditDigitalBookFormData } from '@/components/admin/digital-books/schema';
+import PDFViewer from '@/components/shared/PDFViewer';
 
 interface EditDigitalBookDialogProps {
   digitalBook: DigitalBook;
@@ -36,7 +35,7 @@ export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDi
     try {
       setIsSubmitting(true);
       
-      // Validar que la extensión de la URL coincida con el formato seleccionado
+      // Keep existing validation logic for URL extension
       const urlExtension = data.url.split('.').pop()?.toLowerCase();
       const formatoExtensionMap: Record<string, string[]> = {
         'PDF': ['pdf'],
@@ -88,7 +87,6 @@ export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDi
       <ResponsiveDialog
         open={open}
         onOpenChange={(newState) => {
-          // Prevenir cerrar el diálogo durante el envío
           if (isSubmitting && !newState) return;
           setOpen(newState);
         }}
@@ -129,20 +127,15 @@ export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDi
                 </FormItem>
               )}
             />
-            
-            <FormField
-              control={form.control}
-              name="url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL del archivo</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="https://ejemplo.com/archivo.pdf" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
+            <div className="p-4 border rounded-lg bg-muted/10">
+              <p className="text-sm font-medium mb-2">Archivo digital actual:</p>
+              <PDFViewer 
+                url={digitalBook.url} 
+                fileName={`Archivo ${digitalBook.formato}`} 
+                fileFormat={digitalBook.formato}
+              />
+            </div>
             
             <FormField
               control={form.control}
