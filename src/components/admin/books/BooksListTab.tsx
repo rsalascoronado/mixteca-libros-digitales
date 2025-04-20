@@ -97,7 +97,7 @@ export function BooksListTab({
         }}
         onEditDigitalBook={onEditDigitalBook}
         showUploadButton={!!onAddDigitalBook}
-        selectedBooks={selectedBooks}
+        selectedBooks={selectedBooks || []}
         onSelectBook={onSelectBook}
       />
     </>

@@ -13,9 +13,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { IBook, IThesis } from "@/types/interfaces";
 
 const fetchBooks = async () => {
-  const { data, error } = await supabase.from("books").select("*");
-  if (error) throw error;
-  return data as IBook[];
+  try {
+    const { data, error } = await supabase.from("books").select("*");
+    
+    if (error) throw error;
+    
+    return (data || []).map((book) => ({
+      id: book.id,
+      titulo: book.titulo,
+      autor: book.autor,
+      isbn: book.isbn,
+      categoria: book.categoria,
+      editorial: book.editorial,
+      anioPublicacion: book.anio_publicacion,
+      copias: book.copias,
+      disponibles: book.disponibles,
+      imagen: book.imagen || undefined,
+      ubicacion: book.ubicacion,
+      descripcion: book.descripcion || undefined
+    })) as IBook[];
+  } catch (error) {
+    console.error("Error fetching books:", error);
+    return [];
+  }
 };
 
 // Define a custom type for mapped thesis data
@@ -34,6 +54,11 @@ interface ThesisDataFromDB {
 
 const fetchTheses = async () => {
   try {
+    // For now we need to use mockTheses since the theses table doesn't exist yet
+    // In a future update, we'll create the theses table
+    return mockTheses as IThesis[];
+    
+    /* The code below will be used when the theses table is created
     const { data, error } = await supabase.from("theses").select("*");
     if (error) throw error;
     
@@ -50,6 +75,7 @@ const fetchTheses = async () => {
       resumen: item.resumen,
       archivoPdf: item.archivo_pdf
     } as IThesis));
+    */
   } catch (error) {
     console.error("Error fetching theses:", error);
     return [];
@@ -68,6 +94,7 @@ const Catalogo = () => {
     queryKey: ['books'],
     queryFn: fetchBooks,
   });
+  
   const { data: theses = [], isLoading: thesesLoading, error: thesesError } = useQuery({
     queryKey: ['theses'],
     queryFn: fetchTheses,

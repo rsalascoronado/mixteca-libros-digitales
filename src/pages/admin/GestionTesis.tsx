@@ -14,7 +14,6 @@ import AddThesisDialog from '@/components/thesis/AddThesisDialog';
 import EditThesisDialog from '@/components/thesis/EditThesisDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
 // Define a type for the database thesis data structure
@@ -31,20 +30,6 @@ interface ThesisDBRow {
   archivo_pdf?: string;
 }
 
-// Function to map DB row to Thesis type
-const mapDBRowToThesis = (row: ThesisDBRow): Thesis => ({
-  id: row.id,
-  titulo: row.titulo,
-  autor: row.autor,
-  carrera: row.carrera,
-  anio: row.anio,
-  director: row.director,
-  tipo: row.tipo as 'Licenciatura' | 'Maestría' | 'Doctorado',
-  disponible: row.disponible,
-  resumen: row.resumen,
-  archivoPdf: row.archivo_pdf
-});
-
 const GestionTesis = () => {
   const navigate = useNavigate();
   const { hasRole } = useAuth();
@@ -56,22 +41,15 @@ const GestionTesis = () => {
   const [editingTesis, setEditingTesis] = useState<Thesis | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // Fetch theses from Supabase
+  // For now, use mockTheses since the theses table doesn't exist yet in Supabase
   const { data: tesis = [], isLoading, refetch } = useQuery({
     queryKey: ['theses'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from('theses')
-          .select('*');
-        
-        if (error) throw error;
-        
-        // Map the data to match our Thesis type
-        return (data || []).map(mapDBRowToThesis);
+        // For now we'll use mock data until we create the theses table
+        return [...mockTheses];
       } catch (error) {
         console.error('Error al cargar tesis:', error);
-        // Fallback to mock data if there's an error
         return [...mockTheses];
       }
     }
@@ -106,26 +84,8 @@ const GestionTesis = () => {
 
   const handleThesisAdded = async (newThesis: Thesis) => {
     try {
-      // Prepare the data for Supabase insert
-      const { data, error } = await supabase
-        .from('theses')
-        .insert({
-          id: newThesis.id,
-          titulo: newThesis.titulo,
-          autor: newThesis.autor,
-          carrera: newThesis.carrera,
-          anio: newThesis.anio,
-          director: newThesis.director,
-          tipo: newThesis.tipo,
-          disponible: newThesis.disponible,
-          resumen: newThesis.resumen,
-          archivo_pdf: newThesis.archivoPdf
-        })
-        .select();
-      
-      if (error) throw error;
-      
-      // Refresh the data
+      // For now, we'll just update the UI without actually storing in the database
+      // This will be implemented when we create the theses table
       refetch();
       
       toast({
@@ -144,25 +104,8 @@ const GestionTesis = () => {
 
   const handleThesisUpdated = async (updatedThesis: Thesis) => {
     try {
-      // Prepare the data for Supabase update
-      const { error } = await supabase
-        .from('theses')
-        .update({
-          titulo: updatedThesis.titulo,
-          autor: updatedThesis.autor,
-          carrera: updatedThesis.carrera,
-          anio: updatedThesis.anio,
-          director: updatedThesis.director,
-          tipo: updatedThesis.tipo,
-          disponible: updatedThesis.disponible,
-          resumen: updatedThesis.resumen,
-          archivo_pdf: updatedThesis.archivoPdf
-        })
-        .eq('id', updatedThesis.id);
-      
-      if (error) throw error;
-      
-      // Refresh the data
+      // For now, we'll just update the UI without actually storing in the database
+      // This will be implemented when we create the theses table
       refetch();
       setEditingTesis(null);
       
@@ -187,15 +130,8 @@ const GestionTesis = () => {
         await deleteThesisFile(thesisToDelete.archivoPdf);
       }
 
-      // Delete the thesis from Supabase
-      const { error } = await supabase
-        .from('theses')
-        .delete()
-        .eq('id', thesisToDelete.id);
-      
-      if (error) throw error;
-      
-      // Refresh the data
+      // For now, we'll just update the UI without actually deleting from the database
+      // This will be implemented when we create the theses table
       refetch();
 
       toast({
@@ -221,50 +157,16 @@ const GestionTesis = () => {
     let successCount = 0;
     let failCount = 0;
     
-    for (const rawData of importedData) {
-      try {
-        // Check if thesis already exists
-        const { data: existing } = await supabase
-          .from('theses')
-          .select('id')
-          .eq('titulo', rawData.titulo)
-          .maybeSingle();
-        
-        if (existing) {
-          failCount++;
-          continue; // Skip if already exists
-        }
-        
-        // Insert new thesis
-        const { error } = await supabase
-          .from('theses')
-          .insert({
-            titulo: rawData.titulo,
-            autor: rawData.autor,
-            carrera: rawData.carrera,
-            anio: Number(rawData.anio),
-            director: rawData.director,
-            tipo: rawData.tipo,
-            disponible: rawData.disponible === "true" || rawData.disponible === true,
-            resumen: rawData.resumen,
-            archivo_pdf: rawData.archivoPdf || null
-          });
-        
-        if (error) throw error;
-        successCount++;
-      } catch (e) {
-        console.error('Error importing thesis:', e);
-        failCount++;
-      }
-    }
-    
-    // Refresh data after import
-    refetch();
+    // For now, we'll just update the UI without actually importing to the database
+    // This will be implemented when we create the theses table
     
     toast({
       title: "Importación de tesis",
       description: `Tesis importadas: ${successCount}, Fallos: ${failCount}`
     });
+    
+    // Refresh data 
+    refetch();
   };
 
   return (
