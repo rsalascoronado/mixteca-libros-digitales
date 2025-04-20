@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +23,7 @@ import GestionPrestamos from "./pages/admin/GestionPrestamos";
 import GestionLibros from "./pages/admin/GestionLibros";
 import GestionTesis from "./pages/admin/GestionTesis";
 import GestionUsuarios from "./pages/admin/GestionUsuarios";
+import GestionPermisos from "./pages/admin/GestionPermisos";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +112,11 @@ const App = () => (
             <Route path="/admin/configuracion" element={
               <AdminOnlyRoute>
                 <Configuracion />
+              </AdminOnlyRoute>
+            } />
+            <Route path="/admin/permisos" element={
+              <AdminOnlyRoute>
+                <GestionPermisos />
               </AdminOnlyRoute>
             } />
             
