@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Book } from '@/types';
@@ -77,7 +76,7 @@ export function DigitalBooksTable({
               </TableCell>
               <TableCell className="hidden sm:table-cell max-w-[120px] lg:max-w-[200px]">
                 <div className="truncate" title={digitalBook.url}>
-                  {new URL(digitalBook.url).pathname.split('/').pop()}
+                  {digitalBook.storage_path ? digitalBook.storage_path.split('/').pop() : 'Sin nombre'}
                 </div>
               </TableCell>
               <TableCell className="hidden md:table-cell">

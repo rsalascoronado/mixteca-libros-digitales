@@ -16,7 +16,8 @@ export function useDigitalBooksManagement() {
         id: Math.random().toString(36).substr(2, 9),
         bookId,
         fechaSubida: new Date(),
-        ...data
+        ...data,
+        storage_path: data.storage_path || `${bookId}/${data.formato.toLowerCase()}/${Date.now()}`
       };
       
       setDigitalBooks(prev => [...prev, newDigitalBook]);
