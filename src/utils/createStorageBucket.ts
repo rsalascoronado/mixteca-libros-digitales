@@ -3,8 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 
 export async function createThesisStorageBucket() {
   try {
-    // Check if user is authenticated first
-    const { data: authData } = await supabase.auth.getSession();
+    // Check if user is authenticated first - use getSession for most up-to-date status
+    const { data: authData, error: authError } = await supabase.auth.getSession();
+    
+    if (authError) {
+      console.error('Error checking authentication:', authError);
+      throw new Error(`Error de autenticación: ${authError.message}`);
+    }
     
     if (!authData.session) {
       console.log('Usuario no autenticado. No se puede crear el bucket de almacenamiento.');

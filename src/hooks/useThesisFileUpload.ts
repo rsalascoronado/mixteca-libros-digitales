@@ -10,7 +10,7 @@ export const useThesisFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   
   // Check authentication status on mount
   const [sessionChecked, setSessionChecked] = useState(false);
@@ -19,14 +19,21 @@ export const useThesisFileUpload = () => {
     // Verify session on hook initialization
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
-      setSessionChecked(true);
+      setSessionChecked(!!data.session);
     };
     
     checkSession();
   }, []);
   
   const uploadThesisFile = async (file: File): Promise<string> => {
-    if (!isAuthenticated) {
+    // Verify authentication status before proceeding
+    const { data: authData } = await supabase.auth.getSession();
+    if (!authData.session) {
+      toast({
+        title: "Error de autenticación",
+        description: "Debes iniciar sesión para subir archivos",
+        variant: "destructive"
+      });
       throw new Error('Debes iniciar sesión para subir archivos');
     }
     
@@ -89,7 +96,14 @@ export const useThesisFileUpload = () => {
   };
   
   const deleteThesisFile = async (fileUrl: string): Promise<void> => {
-    if (!isAuthenticated) {
+    // Verify authentication status before proceeding
+    const { data: authData } = await supabase.auth.getSession();
+    if (!authData.session) {
+      toast({
+        title: "Error de autenticación",
+        description: "Debes iniciar sesión para eliminar archivos",
+        variant: "destructive"
+      });
       throw new Error('Debes iniciar sesión para eliminar archivos');
     }
     
@@ -125,7 +139,8 @@ export const useThesisFileUpload = () => {
   
   const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
     // Verify authentication status before continuing
-    if (!isAuthenticated) {
+    const { data: authData } = await supabase.auth.getSession();
+    if (!authData.session) {
       toast({
         title: "Error de autenticación",
         description: "Debes iniciar sesión para guardar tesis",

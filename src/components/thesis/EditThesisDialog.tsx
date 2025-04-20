@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ThesisForm } from './ThesisForm';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EditThesisDialogProps {
   thesis: Thesis | null;
@@ -16,6 +17,7 @@ interface EditThesisDialogProps {
 
 const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditThesisDialogProps) => {
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   const { saveThesisWithFile, deleteThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingThesis, setEditingThesis] = useState<Thesis | null>(thesis);
@@ -40,6 +42,16 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
 
   const handleSave = useCallback(async () => {
     if (!editingThesis) return;
+    
+    // Check if user is authenticated before proceeding
+    if (!isAuthenticated) {
+      toast({
+        title: "Error de autenticación",
+        description: "Debes iniciar sesión para guardar tesis.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
       // Si hay un nuevo archivo seleccionado y ya existía un archivo anterior, eliminar el anterior
@@ -71,7 +83,7 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
         variant: "destructive"
       });
     }
-  }, [editingThesis, selectedFile, deleteThesisFile, saveThesisWithFile, onThesisUpdated, onOpenChange, toast]);
+  }, [editingThesis, selectedFile, deleteThesisFile, saveThesisWithFile, onThesisUpdated, onOpenChange, toast, isAuthenticated]);
 
   if (!editingThesis) return null;
 

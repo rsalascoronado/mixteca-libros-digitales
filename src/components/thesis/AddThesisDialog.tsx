@@ -6,6 +6,7 @@ import { Thesis } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { ThesisForm } from './ThesisForm';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AddThesisDialogProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface AddThesisDialogProps {
 
 const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogProps) => {
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   const { saveThesisWithFile, isUploading, uploadProgress } = useThesisFileUpload();
   const [nuevaTesis, setNuevaTesis] = useState<Partial<Thesis>>({
     titulo: '',
@@ -35,6 +37,15 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
   };
 
   const handleSubmit = async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Error de autenticación",
+        description: "Debes iniciar sesión para agregar tesis.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!nuevaTesis.titulo || !nuevaTesis.autor || !nuevaTesis.carrera || !nuevaTesis.director) {
       toast({
         title: "Error",

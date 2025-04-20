@@ -6,6 +6,8 @@ import { mockTheses } from '@/types/thesis';
 // Fetch/CRUD Tesis
 export async function fetchTheses(): Promise<Thesis[]> {
   try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    
     const { data, error } = await supabase
       .from('theses')
       .select('*');
@@ -49,8 +51,13 @@ function isValidUUID(id: string): boolean {
 // Guardar tesis, aceptando tanto insert como update
 export async function saveThesis(thesis: Thesis): Promise<Thesis> {
   try {
-    // Check if user is authenticated
-    const { data: authData } = await supabase.auth.getSession();
+    // Check if user is authenticated - Use getSession to get the most up-to-date session
+    const { data: authData, error: authError } = await supabase.auth.getSession();
+    
+    if (authError) {
+      console.error('Error checking authentication:', authError);
+      throw new Error(`Error de autenticación: ${authError.message}`);
+    }
     
     if (!authData.session) {
       throw new Error('Debes iniciar sesión para guardar tesis');
@@ -166,8 +173,13 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
 
 export async function deleteThesis(id: string): Promise<void> {
   try {
-    // Check if user is authenticated
-    const { data: authData } = await supabase.auth.getSession();
+    // Check if user is authenticated - Use getSession to get the most up-to-date session
+    const { data: authData, error: authError } = await supabase.auth.getSession();
+    
+    if (authError) {
+      console.error('Error checking authentication:', authError);
+      throw new Error(`Error de autenticación: ${authError.message}`);
+    }
     
     if (!authData.session) {
       throw new Error('Debes iniciar sesión para eliminar tesis');
