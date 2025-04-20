@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+
+import React, { useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
 import { Book } from '@/types';
 import { useDigitalBookUpload } from '@/hooks/use-digital-book-upload';
 import { uploadFormSchema, UploadDigitalBookFormData } from './schema';
@@ -9,6 +8,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UploadProgressIndicator } from './UploadProgressIndicator';
 import { UploadDigitalBookForm } from './UploadDigitalBookForm';
+import { UploadDigitalBookTrigger } from './UploadDigitalBookTrigger';
+import { useUploadDialogState } from '@/hooks/use-upload-dialog-state';
+import { useFileSelection } from '@/hooks/use-file-selection';
 
 interface UploadDigitalBookDialogProps {
   book: Book;
@@ -22,16 +24,12 @@ interface UploadDigitalBookDialogProps {
 }
 
 export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigitalBookDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [isFileSelected, setIsFileSelected] = useState(false);
-  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
-  const [selectedFileSize, setSelectedFileSize] = useState<number>();
-  const [fileError, setFileError] = useState<string | null>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dialogState = useUploadDialogState();
   
   const { isUploading, uploadProgress, uploadError, handleUpload, handleRetry } = useDigitalBookUpload(book, (data) => {
     onUploadComplete(data);
-    setTimeout(() => setOpen(false), 1500);
+    setTimeout(() => dialogState.setOpen(false), 1500);
   });
 
   const form = useForm<UploadDigitalBookFormData>({
@@ -41,56 +39,18 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
     },
   });
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    setFileError(null);
-    
-    if (file) {
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
-      const formatExtMap: Record<string, string[]> = {
-        'PDF': ['pdf'],
-        'EPUB': ['epub'],
-        'MOBI': ['mobi', 'azw', 'azw3'],
-        'HTML': ['html', 'htm']
-      };
-      
-      const selectedFormat = form.getValues('formato');
-      const validExtensions = formatExtMap[selectedFormat] || [];
-      
-      if (fileExt && !validExtensions.includes(fileExt)) {
-        setFileError(`El formato del archivo (.${fileExt}) no coincide con el formato seleccionado (${selectedFormat})`);
-        return;
-      }
-      
-      form.setValue('file', file);
-      setIsFileSelected(true);
-      setSelectedFileName(file.name);
-      setSelectedFileSize(file.size);
-    } else {
-      form.setValue('file', undefined);
-      setIsFileSelected(false);
-      setSelectedFileName(null);
-      setSelectedFileSize(undefined);
-    }
-  };
-
-  const clearFileSelection = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    setIsFileSelected(false);
-    setSelectedFileName(null);
-    setSelectedFileSize(undefined);
-    form.setValue('file', undefined);
-  };
+  const handleFileSelect = useFileSelection({
+    form,
+    setIsFileSelected: dialogState.setIsFileSelected,
+    setSelectedFileName: dialogState.setSelectedFileName,
+    setSelectedFileSize: dialogState.setSelectedFileSize,
+    setFileError: dialogState.setFileError
+  });
 
   const handleSubmit = async (data: UploadDigitalBookFormData) => {
     try {
       if (data.file) {
-        const result = await handleUpload(data.file, data.formato, data.resumen);
-        if (result) {
-          console.log('Upload completed successfully');
-        }
+        await handleUpload(data.file, data.formato, data.resumen);
       }
     } catch (error) {
       console.error('Error handling submission:', error);
@@ -99,12 +59,12 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
 
   return (
     <Dialog 
-      open={open} 
+      open={dialogState.open} 
       onOpenChange={(newOpen) => {
         if (isUploading && !newOpen) return;
-        setOpen(newOpen);
+        dialogState.setOpen(newOpen);
         if (newOpen) {
-          clearFileSelection();
+          dialogState.clearFileSelection();
           form.reset({
             formato: 'PDF',
             resumen: '',
@@ -113,10 +73,7 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Save className="mr-2 h-4 w-4" />
-          Subir versión digital
-        </Button>
+        <UploadDigitalBookTrigger />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -126,14 +83,14 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
         <UploadDigitalBookForm
           form={form}
           isUploading={isUploading}
-          isFileSelected={isFileSelected}
-          fileError={fileError}
-          selectedFileName={selectedFileName}
-          selectedFileSize={selectedFileSize}
+          isFileSelected={dialogState.isFileSelected}
+          fileError={dialogState.fileError}
+          selectedFileName={dialogState.selectedFileName}
+          selectedFileSize={dialogState.selectedFileSize}
           fileInputRef={fileInputRef}
           onFileSelect={handleFileSelect}
           onSubmit={handleSubmit}
-          clearFileSelection={clearFileSelection}
+          clearFileSelection={dialogState.clearFileSelection}
         />
         
         {(isUploading || uploadError) && (
