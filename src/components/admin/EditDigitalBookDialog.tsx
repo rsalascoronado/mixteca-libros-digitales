@@ -1,25 +1,17 @@
+
 import React, { useState } from 'react';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PencilIcon } from 'lucide-react';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { DigitalBook } from '@/types/digitalBook';
 import { Textarea } from '@/components/ui/textarea';
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
-
-const editDigitalBookSchema = z.object({
-  formato: z.enum(['PDF', 'EPUB', 'MOBI', 'HTML'], {
-    required_error: 'Debe seleccionar un formato',
-  }),
-  resumen: z.string().optional(),
-  url: z.string().url('Debe ser una URL válida'),
-});
-
-type EditDigitalBookFormData = z.infer<typeof editDigitalBookSchema>;
+import { useToast } from '@/hooks/use-toast';
+import { editDigitalBookSchema, EditDigitalBookFormData } from '@/components/admin/digital-books/schema';
 
 interface EditDigitalBookDialogProps {
   digitalBook: DigitalBook;
@@ -28,6 +20,9 @@ interface EditDigitalBookDialogProps {
 
 export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDialogProps) {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+  
   const form = useForm<EditDigitalBookFormData>({
     resolver: zodResolver(editDigitalBookSchema),
     defaultValues: {
@@ -37,9 +32,50 @@ export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDi
     },
   });
 
-  const onSubmit = (data: EditDigitalBookFormData) => {
-    onEdit(data);
-    setOpen(false);
+  const onSubmit = async (data: EditDigitalBookFormData) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Validar que la extensión de la URL coincida con el formato seleccionado
+      const urlExtension = data.url.split('.').pop()?.toLowerCase();
+      const formatoExtensionMap: Record<string, string[]> = {
+        'PDF': ['pdf'],
+        'EPUB': ['epub'],
+        'MOBI': ['mobi', 'azw', 'azw3'],
+        'HTML': ['html', 'htm']
+      };
+      
+      const validExtensions = formatoExtensionMap[data.formato] || [];
+      
+      if (urlExtension && !validExtensions.includes(urlExtension)) {
+        toast({
+          title: "Advertencia",
+          description: `La extensión del archivo (.${urlExtension}) no coincide con el formato seleccionado (${data.formato})`,
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Llamar a la función de edición
+      onEdit(data);
+      
+      toast({
+        title: "Cambios guardados",
+        description: "Los cambios al libro digital han sido guardados exitosamente."
+      });
+      
+      setOpen(false);
+    } catch (error) {
+      console.error("Error al guardar cambios:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron guardar los cambios. Intente nuevamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,11 +87,20 @@ export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDi
 
       <ResponsiveDialog
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={(newState) => {
+          // Prevenir cerrar el diálogo durante el envío
+          if (isSubmitting && !newState) return;
+          setOpen(newState);
+        }}
         title="Editar archivo digital"
         footer={
-          <Button type="submit" form="edit-digital-book-form" className="w-full sm:w-auto">
-            Guardar cambios
+          <Button 
+            type="submit" 
+            form="edit-digital-book-form" 
+            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
           </Button>
         }
       >
@@ -110,6 +155,7 @@ export function EditDigitalBookDialog({ digitalBook, onEdit }: EditDigitalBookDi
                       {...field}
                       placeholder="Ingrese un resumen del archivo digital"
                       className="min-h-[100px]"
+                      value={field.value || ''}
                     />
                   </FormControl>
                   <FormMessage />

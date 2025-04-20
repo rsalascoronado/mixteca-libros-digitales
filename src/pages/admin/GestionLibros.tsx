@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,7 +33,8 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
     handleEditBook,
     handleAddBook,
     handleAddDigitalBook,
-    handleDeleteDigitalBook
+    handleDeleteDigitalBook,
+    handleEditDigitalBook
   } = useBooksManagement();
 
   const handleImportData = useCallback((data: any[]) => {
@@ -92,6 +92,7 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
                     onEditBook={handleEditBook}
                     onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
                     onAddDigitalBook={isStaff ? handleAddDigitalBook : undefined}
+                    onEditDigitalBook={isStaff ? handleEditDigitalBook : undefined}
                   />
                 </TabsContent>
                 
@@ -113,6 +114,7 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
                     onEditBook={handleEditBook}
                     onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
                     onAddDigitalBook={isStaff ? handleAddDigitalBook : undefined}
+                    onEditDigitalBook={isStaff ? handleEditDigitalBook : undefined}
                   />
                   <div className="mt-4">
                     <div className="flex flex-col sm:flex-row sm:justify-between gap-4">

@@ -125,6 +125,34 @@ export function useBooksManagement() {
     }
   }, [digitalBooks, toast]);
 
+  const handleEditDigitalBook = useCallback(async (id: string, data: Partial<DigitalBook>) => {
+    try {
+      setDigitalBooks(prev => prev.map(db => 
+        db.id === id ? { ...db, ...data } : db
+      ));
+      
+      const digitalBook = digitalBooks.find(db => db.id === id);
+      if (digitalBook?.storage_path && data.formato && digitalBook.formato !== data.formato) {
+        console.log('Formato cambiado, en un entorno de producción se actualizaría el archivo');
+      }
+      
+      toast({
+        title: "Archivo digital actualizado",
+        description: "Los cambios han sido guardados exitosamente."
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error al actualizar el archivo digital:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el archivo digital.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [digitalBooks, toast]);
+
   return {
     books,
     categories,
@@ -138,6 +166,7 @@ export function useBooksManagement() {
     handleEditBook,
     handleAddBook,
     handleAddDigitalBook,
-    handleDeleteDigitalBook
+    handleDeleteDigitalBook,
+    handleEditDigitalBook
   };
 }
