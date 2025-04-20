@@ -2,8 +2,7 @@
 import React from 'react';
 import { Book } from '@/types/book';
 import { Button } from '@/components/ui/button';
-import PDFViewer from '@/components/shared/PDFViewer';
-import { mockDigitalBooks } from '@/types/digitalBook';
+import DigitalFilesButtonGroup from './DigitalFilesButtonGroup';
 import { useNavigate } from 'react-router-dom';
 
 interface BookCardProps {
@@ -12,15 +11,6 @@ interface BookCardProps {
 
 const BookCard: React.FC<BookCardProps> = ({ libro }) => {
   const navigate = useNavigate();
-
-  const hasDigitalVersion = (bookId: string) => {
-    return mockDigitalBooks.some(digital => digital.bookId === bookId);
-  };
-
-  const getDigitalBookUrl = (bookId: string) => {
-    const digitalBook = mockDigitalBooks.find(digital => digital.bookId === bookId);
-    return digitalBook?.url || '';
-  };
 
   const handleVerDetalles = (libroId: string) => {
     navigate(`/libro/${libroId}`);
@@ -31,15 +21,11 @@ const BookCard: React.FC<BookCardProps> = ({ libro }) => {
       <h3 className="text-lg font-semibold mb-2">{libro.titulo}</h3>
       <p className="text-gray-600 mb-2">Autor: {libro.autor}</p>
       <p className="text-sm text-gray-500">Categoría: {libro.categoria}</p>
-      <div className="mt-2 flex justify-between items-center">
-        <span className="text-sm text-gray-700">Disponibles: {libro.disponibles}</span>
-        <div className="flex gap-2">
-          {hasDigitalVersion(libro.id) && (
-            <PDFViewer
-              url={getDigitalBookUrl(libro.id)}
-              fileName={`${libro.titulo}.pdf`}
-            />
-          )}
+      <div className="mt-2 flex flex-col gap-2">
+        {/* Mostrar los botones de archivos digitales solo para usuarios autenticados */}
+        <DigitalFilesButtonGroup bookId={libro.id} />
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-gray-700">Disponibles: {libro.disponibles}</span>
           <Button 
             size="sm" 
             onClick={() => handleVerDetalles(libro.id)}

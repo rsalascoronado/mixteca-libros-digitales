@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Thesis } from '@/types';
 import PDFViewer from '@/components/shared/PDFViewer';
+import { useAuth } from '@/hooks/use-auth';
 
 interface ThesisTableProps {
   theses: Thesis[];
@@ -14,11 +15,10 @@ interface ThesisTableProps {
 
 const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
   const { toast } = useToast();
-  
-  // Memoize the sorted theses to avoid unnecessary re-renders
+  const { isAuthenticated } = useAuth();
+
   const sortedTheses = useMemo(() => {
     return [...theses].sort((a, b) => {
-      // Sort by newest first
       return b.anio - a.anio;
     });
   }, [theses]);
@@ -70,7 +70,7 @@ const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
                   </span>
                 </TableCell>
                 <TableCell>
-                  {thesis.archivoPdf ? (
+                  {isAuthenticated && thesis.archivoPdf ? (
                     <PDFViewer 
                       url={thesis.archivoPdf}
                       fileName={`${thesis.titulo}.pdf`}
