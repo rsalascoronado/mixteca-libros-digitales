@@ -43,9 +43,8 @@ const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
               <TableHead className="min-w-[80px] hidden lg:table-cell">Año</TableHead>
               <TableHead className="min-w-[150px] hidden md:table-cell">Director</TableHead>
               <TableHead className="min-w-[100px]">Estado</TableHead>
-              <TableHead className="min-w-[100px]">PDF</TableHead>
-              <TableHead className="min-w-[80px]">Eliminar</TableHead>
-              <TableHead className="min-w-[80px]">Acciones</TableHead>
+              <TableHead className="min-w-[100px]">Archivo</TableHead>
+              <TableHead className="min-w-[100px]">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

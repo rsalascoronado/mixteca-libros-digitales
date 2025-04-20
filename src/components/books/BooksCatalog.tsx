@@ -8,6 +8,7 @@ import { Book, mockBooks } from '@/types/book';
 import { mockDigitalBooks } from '@/types/digitalBook';
 import CatalogPagination from './CatalogPagination';
 import { useNavigate } from 'react-router-dom';
+import PDFViewer from '@/components/shared/PDFViewer';
 
 const ITEMS_PER_PAGE = 9;
 const BOOKS_PER_ROW = 3;
@@ -105,6 +106,15 @@ export function BooksCatalog({
     navigate(`/libro/${libroId}`);
   };
 
+  const hasDigitalVersion = (bookId: string) => {
+    return mockDigitalBooks.some(digital => digital.bookId === bookId);
+  };
+
+  const getDigitalBookUrl = (bookId: string) => {
+    const digitalBook = mockDigitalBooks.find(digital => digital.bookId === bookId);
+    return digitalBook?.url || '';
+  };
+
   return (
     <div>
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
@@ -170,12 +180,20 @@ export function BooksCatalog({
             <p className="text-sm text-gray-500">Categoría: {libro.categoria}</p>
             <div className="mt-2 flex justify-between items-center">
               <span className="text-sm text-gray-700">Disponibles: {libro.disponibles}</span>
-              <Button 
-                size="sm" 
-                onClick={() => handleVerDetalles(libro.id)}
-              >
-                Ver Detalles
-              </Button>
+              <div className="flex gap-2">
+                {hasDigitalVersion(libro.id) && (
+                  <PDFViewer
+                    url={getDigitalBookUrl(libro.id)}
+                    fileName={`${libro.titulo}.pdf`}
+                  />
+                )}
+                <Button 
+                  size="sm" 
+                  onClick={() => handleVerDetalles(libro.id)}
+                >
+                  Ver Detalles
+                </Button>
+              </div>
             </div>
           </div>
         ))}
