@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { DigitalBooksTable } from './DigitalBooksTable';
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
+import { UploadDigitalBookDialog } from './UploadDigitalBookDialog';
 
 interface DigitalBooksDialogProps {
   book: Book;
@@ -20,12 +21,14 @@ interface DigitalBooksDialogProps {
 export function DigitalBooksDialog({ 
   book, 
   digitalBooks, 
+  onAddDigitalBook,
   onDeleteDigitalBook,
   onEditDigitalBook 
 }: DigitalBooksDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, hasRole } = useAuth();
   const { toast } = useToast();
+  const isStaff = hasRole(['administrador', 'bibliotecario']);
 
   const handleOpenDialog = () => {
     if (!isAuthenticated) {
@@ -37,6 +40,12 @@ export function DigitalBooksDialog({
       return;
     }
     setOpen(true);
+  };
+
+  const handleUploadComplete = (data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => {
+    if (onAddDigitalBook) {
+      onAddDigitalBook(book.id, data);
+    }
   };
 
   return (
@@ -62,12 +71,22 @@ export function DigitalBooksDialog({
         </div>
       ) : (
         <div className="space-y-4">
+          {isStaff && onAddDigitalBook && (
+            <div className="flex justify-end">
+              <UploadDigitalBookDialog 
+                book={book} 
+                onUploadComplete={handleUploadComplete}
+              />
+            </div>
+          )}
+          
           <DigitalBooksTable
             book={book}
             digitalBooks={digitalBooks}
             onDeleteDigitalBook={onDeleteDigitalBook}
             onEditDigitalBook={onEditDigitalBook}
           />
+          
           <div className="text-sm text-muted-foreground">
             Total de archivos: {digitalBooks.filter(db => db.bookId === book.id).length}
           </div>
