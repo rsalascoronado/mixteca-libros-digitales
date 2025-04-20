@@ -6,17 +6,19 @@ import { mockTheses } from '@/types/thesis';
 // Fetch/CRUD Tesis
 export async function fetchTheses(): Promise<Thesis[]> {
   try {
-    // Consulta directa, usando any en tabla custom
     const { data, error } = await supabase
-      .from('theses' as any)
+      .from('theses')
       .select('*');
+    
     if (error) {
       console.error('Error from Supabase:', error);
       throw error;
     }
+    
     if (!data || data.length === 0) {
       return [...mockTheses];
     }
+    
     return data.map((thesis: any) => ({
       id: thesis.id || '',
       titulo: thesis.titulo || '',
@@ -50,25 +52,30 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
       archivo_pdf: thesis.archivoPdf,
       updated_at: new Date().toISOString()
     };
+    
     let result;
+    
     if (thesis.id && thesis.id.length > 0 && thesis.id !== 'new') {
       const { data, error } = await supabase
-        .from('theses' as any)
+        .from('theses')
         .update(thesisData)
         .eq('id', thesis.id)
         .select()
         .single();
+        
       if (error) throw error;
       result = data;
     } else {
       const { data, error } = await supabase
-        .from('theses' as any)
+        .from('theses')
         .insert([thesisData])
         .select()
         .single();
+        
       if (error) throw error;
       result = data;
     }
+    
     return {
       id: result.id,
       titulo: result.titulo,
@@ -90,9 +97,10 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
 export async function deleteThesis(id: string): Promise<void> {
   try {
     const { error } = await supabase
-      .from('theses' as any)
+      .from('theses')
       .delete()
       .eq('id', id);
+      
     if (error) throw error;
   } catch (error) {
     console.error('Error deleting thesis:', error);

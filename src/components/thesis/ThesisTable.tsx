@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface ThesisTableProps {
   theses: Thesis[];
-  onEdit: (thesis: Thesis) => void;
+  onEdit?: (thesis: Thesis) => void;
   onDelete?: (thesis: Thesis) => void;
 }
 
@@ -71,7 +71,7 @@ const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
                   </span>
                 </TableCell>
                 <TableCell>
-                  {isAuthenticated && thesis.archivoPdf ? (
+                  {thesis.archivoPdf ? (
                     <PDFViewer 
                       url={thesis.archivoPdf}
                       fileName={`${thesis.titulo}.pdf`}
@@ -107,16 +107,18 @@ const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
                     </Button>
                   </TableCell>
                 )}
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(thesis)}
-                    aria-label={`Editar tesis ${thesis.titulo}`}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </TableCell>
+                {onEdit && (
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEdit ? onEdit(thesis) : null}
+                      aria-label={`Editar tesis ${thesis.titulo}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                )}
               </TableRow>
             )) : (
               <TableRow>

@@ -40,6 +40,7 @@ export const useThesisFileUpload = () => {
       clearInterval(progressInterval);
       
       if (error) {
+        console.error('Error uploading file:', error);
         throw error;
       }
       
@@ -48,6 +49,7 @@ export const useThesisFileUpload = () => {
         .from('thesis-files')
         .getPublicUrl(data?.path || fileName);
       
+      console.log('File uploaded successfully. Public URL:', publicUrl);
       setUploadProgress(100);
       return publicUrl;
     } catch (error) {
@@ -78,8 +80,11 @@ export const useThesisFileUpload = () => {
         .remove([fileName]);
       
       if (error) {
+        console.error('Error deleting file:', error);
         throw error;
       }
+      
+      console.log('File deleted successfully:', fileName);
     } catch (error) {
       console.error('Error deleting thesis file:', error);
       toast({

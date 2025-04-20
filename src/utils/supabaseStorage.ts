@@ -19,8 +19,6 @@ export const createBucketIfNotExists = async (bucketName: string): Promise<boole
       return true;
     }
     
-    // En modo anónimo, es posible que no tengamos permisos para crear buckets
-    // Por lo tanto, asumimos que el bucket existe y procedemos con la carga
     console.log(`Bucket "${bucketName}" no encontrado en la lista, pero asumiremos que existe en el servidor`);
     return true;
   } catch (err) {

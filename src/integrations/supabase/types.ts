@@ -95,6 +95,51 @@ export type Database = {
           },
         ]
       }
+      theses: {
+        Row: {
+          anio: number
+          archivo_pdf: string | null
+          autor: string
+          carrera: string
+          created_at: string | null
+          director: string
+          disponible: boolean
+          id: string
+          resumen: string | null
+          tipo: string
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          anio: number
+          archivo_pdf?: string | null
+          autor: string
+          carrera: string
+          created_at?: string | null
+          director: string
+          disponible?: boolean
+          id?: string
+          resumen?: string | null
+          tipo: string
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          anio?: number
+          archivo_pdf?: string | null
+          autor?: string
+          carrera?: string
+          created_at?: string | null
+          director?: string
+          disponible?: boolean
+          id?: string
+          resumen?: string | null
+          tipo?: string
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
