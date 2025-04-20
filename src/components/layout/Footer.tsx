@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -61,6 +62,9 @@ const Footer = () => {
           <p className="text-sm">
             © {new Date().getFullYear()} Biblioteca Universidad Tecnológica de la Mixteca. Todos los derechos reservados.
           </p>
+          <p className="text-sm mt-2">
+            Elaborado por Raúl Salas Coronado.
+          </p>
         </div>
       </div>
     </footer>
@@ -68,3 +72,4 @@ const Footer = () => {
 };
 
 export default Footer;
+
