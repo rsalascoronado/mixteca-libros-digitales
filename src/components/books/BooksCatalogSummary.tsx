@@ -12,10 +12,12 @@ const BooksCatalogSummary: React.FC<BooksCatalogSummaryProps> = ({
   librosLength,
   filteredLength,
 }) => (
-  <div className="mb-4">
+  <div className="mt-2">
     <p className="text-gray-600 text-sm sm:text-base">
       {isLoading
         ? "Cargando libros..."
+        : filteredLength === 0
+        ? "No se encontraron libros que coincidan con los criterios de búsqueda"
         : `Mostrando ${librosLength} de ${filteredLength} ${
             filteredLength === 1 ? "libro" : "libros"
           }`}
