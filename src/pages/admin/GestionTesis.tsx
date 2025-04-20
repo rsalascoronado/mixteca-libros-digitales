@@ -5,7 +5,7 @@ import { GraduationCap, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Thesis, mockTheses } from '@/types';
+import { Thesis } from '@/types';
 import DataExport from '@/components/admin/DataExport';
 import DataImport from '@/components/admin/DataImport';
 import ThesisTable from '@/components/thesis/ThesisTable';
@@ -14,45 +14,25 @@ import AddThesisDialog from '@/components/thesis/AddThesisDialog';
 import EditThesisDialog from '@/components/thesis/EditThesisDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
-import { useQuery } from "@tanstack/react-query";
-
-// Define a type for the database thesis data structure
-interface ThesisDBRow {
-  id: string;
-  titulo: string;
-  autor: string;
-  carrera: string;
-  anio: number;
-  director: string;
-  tipo: string;
-  disponible: boolean;
-  resumen?: string;
-  archivo_pdf?: string;
-}
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchTheses, deleteThesis } from '@/lib/db';
 
 const GestionTesis = () => {
   const navigate = useNavigate();
   const { hasRole } = useAuth();
   const { toast } = useToast();
   const { deleteThesisFile } = useThesisFileUpload();
+  const queryClient = useQueryClient();
   const [busqueda, setBusqueda] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingTesis, setEditingTesis] = useState<Thesis | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  // For now, use mockTheses since the theses table doesn't exist yet in Supabase
-  const { data: tesis = [], isLoading, refetch } = useQuery({
+  // Obtener las tesis de la base de datos
+  const { data: tesis = [], isLoading } = useQuery({
     queryKey: ['theses'],
-    queryFn: async () => {
-      try {
-        // For now we'll use mock data until we create the theses table
-        return [...mockTheses];
-      } catch (error) {
-        console.error('Error al cargar tesis:', error);
-        return [...mockTheses];
-      }
-    }
+    queryFn: fetchTheses
   });
 
   React.useEffect(() => {
@@ -84,9 +64,8 @@ const GestionTesis = () => {
 
   const handleThesisAdded = async (newThesis: Thesis) => {
     try {
-      // For now, we'll just update the UI without actually storing in the database
-      // This will be implemented when we create the theses table
-      refetch();
+      // Invalidar la consulta de tesis para que se recarguen
+      await queryClient.invalidateQueries({ queryKey: ['theses'] });
       
       toast({
         title: 'Tesis agregada',
@@ -104,9 +83,8 @@ const GestionTesis = () => {
 
   const handleThesisUpdated = async (updatedThesis: Thesis) => {
     try {
-      // For now, we'll just update the UI without actually storing in the database
-      // This will be implemented when we create the theses table
-      refetch();
+      // Invalidar la consulta de tesis para que se recarguen
+      await queryClient.invalidateQueries({ queryKey: ['theses'] });
       setEditingTesis(null);
       
       toast({
@@ -125,14 +103,16 @@ const GestionTesis = () => {
 
   const handleThesisDelete = async (thesisToDelete: Thesis) => {
     try {
-      // Delete PDF file if it exists
+      // Eliminar el archivo PDF si existe
       if (thesisToDelete.archivoPdf) {
         await deleteThesisFile(thesisToDelete.archivoPdf);
       }
 
-      // For now, we'll just update the UI without actually deleting from the database
-      // This will be implemented when we create the theses table
-      refetch();
+      // Eliminar la tesis de la base de datos
+      await deleteThesis(thesisToDelete.id);
+      
+      // Invalidar la consulta de tesis para que se recarguen
+      await queryClient.invalidateQueries({ queryKey: ['theses'] });
 
       toast({
         title: 'Tesis eliminada',
@@ -157,8 +137,7 @@ const GestionTesis = () => {
     let successCount = 0;
     let failCount = 0;
     
-    // For now, we'll just update the UI without actually importing to the database
-    // This will be implemented when we create the theses table
+    // Implementación pendiente cuando se adapte la importación a la base de datos
     
     toast({
       title: "Importación de tesis",
@@ -166,7 +145,7 @@ const GestionTesis = () => {
     });
     
     // Refresh data 
-    refetch();
+    queryClient.invalidateQueries({ queryKey: ['theses'] });
   };
 
   return (

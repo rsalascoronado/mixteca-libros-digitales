@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,7 @@ interface AddThesisDialogProps {
 
 const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogProps) => {
   const { toast } = useToast();
-  const { uploadThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
+  const { saveThesisWithFile, isUploading, uploadProgress } = useThesisFileUpload();
   const [nuevaTesis, setNuevaTesis] = useState<Partial<Thesis>>({
     titulo: '',
     autor: '',
@@ -53,23 +54,10 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
     }
 
     try {
-      const publicUrl = await uploadThesisFile(selectedFile);
+      // Guardamos la tesis y el archivo en la base de datos
+      const savedThesis = await saveThesisWithFile(nuevaTesis, selectedFile);
       
-      const newId = Date.now().toString();
-      const nuevaTesisCompleta: Thesis = {
-        id: newId,
-        titulo: nuevaTesis.titulo || '',
-        autor: nuevaTesis.autor || '',
-        carrera: nuevaTesis.carrera || '',
-        anio: nuevaTesis.anio || new Date().getFullYear(),
-        director: nuevaTesis.director || '',
-        tipo: nuevaTesis.tipo as 'Licenciatura' | 'Maestría' | 'Doctorado',
-        disponible: true,
-        resumen: nuevaTesis.resumen,
-        archivoPdf: publicUrl
-      };
-
-      onThesisAdded(nuevaTesisCompleta);
+      onThesisAdded(savedThesis);
       onOpenChange(false);
       
       setNuevaTesis({

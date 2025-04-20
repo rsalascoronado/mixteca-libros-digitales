@@ -16,7 +16,7 @@ interface EditThesisDialogProps {
 
 const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditThesisDialogProps) => {
   const { toast } = useToast();
-  const { uploadThesisFile, deleteThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
+  const { saveThesisWithFile, deleteThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingThesis, setEditingThesis] = useState<Thesis | null>(thesis);
   
@@ -42,28 +42,19 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
     if (!editingThesis) return;
     
     try {
-      let publicUrl = editingThesis.archivoPdf;
-
-      if (selectedFile) {
-        // Si ya había un archivo, eliminarlo primero
-        if (publicUrl) {
-          try {
-            await deleteThesisFile(publicUrl);
-          } catch (error) {
-            console.warn('Error deleting previous file:', error);
-            // Continuar con la actualización incluso si falla la eliminación
-          }
+      // Si hay un nuevo archivo seleccionado y ya existía un archivo anterior, eliminar el anterior
+      if (selectedFile && editingThesis.archivoPdf) {
+        try {
+          await deleteThesisFile(editingThesis.archivoPdf);
+        } catch (error) {
+          console.warn('Error deleting previous file:', error);
+          // Continuar con la actualización incluso si falla la eliminación
         }
-        
-        // Fix here: Remove the second argument (thesisId)
-        publicUrl = await uploadThesisFile(selectedFile);
       }
-
-      const updatedThesis = {
-        ...editingThesis,
-        archivoPdf: publicUrl
-      };
-
+      
+      // Guardar la tesis actualizada
+      const updatedThesis = await saveThesisWithFile(editingThesis, selectedFile || undefined);
+      
       onThesisUpdated(updatedThesis);
       onOpenChange(false);
       setSelectedFile(null);
@@ -80,7 +71,7 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
         variant: "destructive"
       });
     }
-  }, [editingThesis, selectedFile, deleteThesisFile, uploadThesisFile, onThesisUpdated, onOpenChange, toast]);
+  }, [editingThesis, selectedFile, deleteThesisFile, saveThesisWithFile, onThesisUpdated, onOpenChange, toast]);
 
   if (!editingThesis) return null;
 

@@ -5,6 +5,7 @@ import { Book } from '@/types';
 import { validateUploadableFile, generateDigitalBookFileName } from './use-digital-book-upload/file-validation';
 import { uploadDigitalBookFile } from './use-digital-book-upload/storage-upload';
 import { getFormattedSize } from '@/utils/fileValidation';
+import { saveDigitalBook } from '@/lib/db';
 
 export function useDigitalBookUpload(
   book: Book, 
@@ -119,6 +120,20 @@ export function useDigitalBookUpload(
         
         console.log('File uploaded successfully, public URL:', publicUrl);
         setUploadProgress(100);
+        
+        // Guardar en la base de datos
+        const digitalBookData = {
+          bookId: book.id,
+          formato: formato as 'PDF' | 'EPUB' | 'MOBI' | 'HTML',
+          url: publicUrl,
+          tamanioMb: getFormattedSize(file.size),
+          fechaSubida: new Date(),
+          resumen: resumen,
+          storage_path: fileName
+        };
+        
+        const savedDigitalBook = await saveDigitalBook(digitalBookData);
+        console.log('Digital book saved to database:', savedDigitalBook);
         
         // Notificar que la carga se completó
         onUploadComplete({

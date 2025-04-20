@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { saveThesis, deleteThesis } from '@/lib/db';
+import { Thesis } from '@/types';
 
 export const useThesisFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
@@ -89,9 +91,48 @@ export const useThesisFileUpload = () => {
     }
   };
   
+  const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
+    try {
+      let publicUrl = thesis.archivoPdf;
+      
+      // Si hay un archivo nuevo, subir primero el archivo
+      if (file) {
+        publicUrl = await uploadThesisFile(file);
+      }
+      
+      // Crear el objeto de tesis completo
+      const thesisToSave: Thesis = {
+        id: thesis.id || '',
+        titulo: thesis.titulo || '',
+        autor: thesis.autor || '',
+        carrera: thesis.carrera || '',
+        anio: thesis.anio || new Date().getFullYear(),
+        director: thesis.director || '',
+        tipo: thesis.tipo as 'Licenciatura' | 'Maestría' | 'Doctorado',
+        disponible: thesis.disponible !== false,
+        resumen: thesis.resumen,
+        archivoPdf: publicUrl
+      };
+      
+      // Guardar en la base de datos
+      const savedThesis = await saveThesis(thesisToSave);
+      
+      return savedThesis;
+    } catch (error) {
+      console.error('Error saving thesis with file:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'No se pudo guardar la tesis con el archivo',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+  
   return {
     uploadThesisFile,
     deleteThesisFile,
+    saveThesisWithFile,
     isUploading,
     uploadProgress
   };

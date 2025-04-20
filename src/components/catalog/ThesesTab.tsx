@@ -3,20 +3,11 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ThesisTable from "@/components/thesis/ThesisTable";
 import ThesisSearch from "@/components/thesis/ThesisSearch";
-import { mockTheses } from "@/types";
-import { IThesis } from "@/types/interfaces";
-
-const fetchTheses = async () => {
-  try {
-    // For now, mockTheses; update when the database table exists
-    return mockTheses as IThesis[];
-  } catch (error) {
-    console.error("Error fetching theses:", error);
-    return [];
-  }
-};
+import { fetchTheses } from "@/lib/db";
+import { useToast } from "@/hooks/use-toast";
 
 const ThesesTab: React.FC = () => {
+  const { toast } = useToast();
   const [thesisSearchTerm, setThesisSearchTerm] = useState("");
   const [thesisTipoFiltro, setThesisTipoFiltro] = useState("");
 
@@ -45,6 +36,13 @@ const ThesesTab: React.FC = () => {
       return matchesSearch && matchesTipo;
     });
   }, [theses, thesisSearchTerm, thesisTipoFiltro]);
+
+  const handleLoanRequest = (thesis) => {
+    toast({
+      title: "Solicitud de préstamo enviada",
+      description: `Tu solicitud para "${thesis.titulo}" ha sido registrada. El personal de biblioteca te notificará cuando esté disponible.`,
+    });
+  };
 
   return (
     <div>
