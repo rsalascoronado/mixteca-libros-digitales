@@ -9,6 +9,8 @@ import { mockDigitalBooks } from '@/types/digitalBook';
 import CatalogPagination from './CatalogPagination';
 import { useNavigate } from 'react-router-dom';
 import PDFViewer from '@/components/shared/PDFViewer';
+import BooksCatalogFilters from './BooksCatalogFilters';
+import BookCard from './BookCard';
 
 const ITEMS_PER_PAGE = 9;
 const BOOKS_PER_ROW = 3;
@@ -102,100 +104,22 @@ export function BooksCatalog({
     setCurrentPage(1);
   };
 
-  const handleVerDetalles = (libroId: string) => {
-    navigate(`/libro/${libroId}`);
-  };
-
-  const hasDigitalVersion = (bookId: string) => {
-    return mockDigitalBooks.some(digital => digital.bookId === bookId);
-  };
-
-  const getDigitalBookUrl = (bookId: string) => {
-    const digitalBook = mockDigitalBooks.find(digital => digital.bookId === bookId);
-    return digitalBook?.url || '';
-  };
-
   return (
     <div>
-      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="sm:col-span-2">
-            <Label htmlFor="search">Buscar por título, autor o ISBN</Label>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                id="search"
-                type="text"
-                placeholder="Buscar..."
-                className="pl-8"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <div>
-            <Label htmlFor="categoria">Categoría</Label>
-            <Select value={categoria} onValueChange={setCategoria}>
-              <SelectTrigger id="categoria">
-                <SelectValue placeholder="Todas las categorías" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las categorías</SelectItem>
-                {categorias.map((cat) => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label htmlFor="disponibilidad">Disponibilidad</Label>
-            <Select value={disponibilidad} onValueChange={setDisponibilidad}>
-              <SelectTrigger id="disponibilidad">
-                <SelectValue placeholder="Cualquier disponibilidad" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Cualquier disponibilidad</SelectItem>
-                <SelectItem value="disponible">Disponible físicamente</SelectItem>
-                <SelectItem value="no-disponible">No disponible</SelectItem>
-                <SelectItem value="digital">Disponible en digital</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        <div className="flex justify-end mt-4">
-          <Button variant="outline" onClick={resetFilters} className="w-full sm:w-auto">
-            Limpiar filtros
-          </Button>
-        </div>
-      </div>
-      
+      <BooksCatalogFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        categoria={categoria}
+        setCategoria={setCategoria}
+        categorias={categorias}
+        disponibilidad={disponibilidad}
+        setDisponibilidad={setDisponibilidad}
+        resetFilters={resetFilters}
+      />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {libros.map((libro) => (
-          <div key={libro.id} className="border rounded-lg p-4 shadow-sm">
-            <h3 className="text-lg font-semibold mb-2">{libro.titulo}</h3>
-            <p className="text-gray-600 mb-2">Autor: {libro.autor}</p>
-            <p className="text-sm text-gray-500">Categoría: {libro.categoria}</p>
-            <div className="mt-2 flex justify-between items-center">
-              <span className="text-sm text-gray-700">Disponibles: {libro.disponibles}</span>
-              <div className="flex gap-2">
-                {hasDigitalVersion(libro.id) && (
-                  <PDFViewer
-                    url={getDigitalBookUrl(libro.id)}
-                    fileName={`${libro.titulo}.pdf`}
-                  />
-                )}
-                <Button 
-                  size="sm" 
-                  onClick={() => handleVerDetalles(libro.id)}
-                >
-                  Ver Detalles
-                </Button>
-              </div>
-            </div>
-          </div>
+          <BookCard key={libro.id} libro={libro} />
         ))}
       </div>
 
