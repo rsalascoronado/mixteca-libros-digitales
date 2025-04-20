@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
@@ -211,7 +212,7 @@ export const useBooksManagement = () => {
 
   const handleAddBook = useCallback(async (newBook: Omit<Book, 'id'>) => {
     try {
-      const dbNewBook: Record<string, any> = {
+      const dbNewBook = {
         titulo: newBook.titulo,
         autor: newBook.autor,
         isbn: newBook.isbn,
@@ -231,9 +232,10 @@ export const useBooksManagement = () => {
         dbNewBook.imagen = newBook.imagen;
       }
 
+      // Fix: Use a single object instead of an array for the insert operation
       const { data, error } = await supabase
         .from('books')
-        .insert([dbNewBook])
+        .insert(dbNewBook)
         .select();
 
       if (error) {
