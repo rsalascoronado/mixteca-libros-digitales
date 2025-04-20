@@ -22,6 +22,7 @@ interface BookActionsMenuProps {
   onEditBook: (id: string, data: Partial<Book>) => void;
   onAddDigitalBook?: (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => void;
   onDeleteDigitalBook?: (id: string) => void;
+  onEditDigitalBook?: (id: string, data: Partial<DigitalBook>) => void;
 }
 
 export function BookActionsMenu({
@@ -31,7 +32,8 @@ export function BookActionsMenu({
   onDeleteBook,
   onEditBook,
   onAddDigitalBook,
-  onDeleteDigitalBook
+  onDeleteDigitalBook,
+  onEditDigitalBook
 }: BookActionsMenuProps) {
   return (
     <DropdownMenu>
@@ -57,6 +59,7 @@ export function BookActionsMenu({
             digitalBooks={digitalBooks}
             onAddDigitalBook={onAddDigitalBook}
             onDeleteDigitalBook={onDeleteDigitalBook}
+            onEditDigitalBook={onEditDigitalBook}
           />
         </DropdownMenuItem>
         <DropdownMenuItem 
