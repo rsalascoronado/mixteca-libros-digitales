@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Book, BookCategory } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
@@ -12,8 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EditBookDialog } from '@/components/admin/EditBookDialog';
-import { DigitalBooksDialog } from '@/components/admin/digital-books/DigitalBooksDialog';
 import { BookActionsMenu } from './BookActionsMenu';
 
 interface BooksListTabProps {
@@ -23,6 +20,7 @@ interface BooksListTabProps {
   onDeleteBook: (id: string) => void;
   onEditBook: (id: string, data: Partial<Book>) => void;
   onDeleteDigitalBook?: (id: string) => void;
+  onAddDigitalBook?: (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => void;
 }
 
 export function BooksListTab({ 
