@@ -1,8 +1,10 @@
 
-import { useMemo, useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Book } from "@/types/book";
 import { useBooksData } from "./hooks/useBooksData";
 import { useBooksRealtime } from "./hooks/useBooksRealtime";
+import { useBookFilters } from "./hooks/useBookFilters";
+import { usePagination } from "./hooks/usePagination";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -13,7 +15,7 @@ type UseBooksCatalogProps = {
 };
 
 /**
- * Combines fetching, realtime sync, and catalog filtering/pagination for books.
+ * Combina obtención, sincronización y filtrado/paginación para el catálogo de libros.
  */
 export function useBooksCatalog({
   searchTerm,
@@ -31,69 +33,41 @@ export function useBooksCatalog({
 
   useBooksRealtime(setBooks, setDigitalBooks);
 
-  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-
   // Filtering with debounce effect
+  const [debouncedFilters, setDebouncedFilters] = useState({
+    searchTerm,
+    categoria,
+    disponibilidad,
+  });
+
   useEffect(() => {
     setIsLoading(true);
     const timeoutId = setTimeout(() => {
-      try {
-        let filtered = [...books];
-
-        if (searchTerm) {
-          const searchTermLower = searchTerm.toLowerCase();
-          filtered = filtered.filter(
-            (libro) =>
-              libro.titulo.toLowerCase().includes(searchTermLower) ||
-              libro.autor.toLowerCase().includes(searchTermLower) ||
-              libro.isbn.includes(searchTerm) ||
-              libro.editorial.toLowerCase().includes(searchTermLower)
-          );
-        }
-
-        if (categoria && categoria !== "all") {
-          filtered = filtered.filter((libro) => libro.categoria === categoria);
-        }
-
-        if (disponibilidad === "disponible") {
-          filtered = filtered.filter((libro) => libro.disponibles > 0);
-        } else if (disponibilidad === "no-disponible") {
-          filtered = filtered.filter((libro) => libro.disponibles === 0);
-        } else if (disponibilidad === "digital") {
-          filtered = filtered.filter((libro) => digitalBooks.includes(libro.id));
-        }
-
-        setFilteredBooks(filtered);
-        setCurrentPage(1);
-      } catch (error) {
-        setFilteredBooks([]);
-      } finally {
-        setIsLoading(false);
-      }
+      setDebouncedFilters({ searchTerm, categoria, disponibilidad });
+      setIsLoading(false);
     }, 300);
-
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, categoria, disponibilidad, books, digitalBooks, setIsLoading]);
+    // eslint-disable-next-line
+  }, [searchTerm, categoria, disponibilidad]);
 
-  const totalPages = useMemo(
-    () => Math.ceil(filteredBooks.length / ITEMS_PER_PAGE),
-    [filteredBooks]
+  const filteredBooks = useBookFilters({
+    books,
+    digitalBooks,
+    ...debouncedFilters,
+  });
+
+  const categorias = useMemo(
+    () => Array.from(new Set(books.map((libro) => libro.categoria))),
+    [books]
   );
 
-  const libros = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredBooks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredBooks, currentPage]);
-
-  const categorias = useMemo(() => {
-    return Array.from(new Set(books.map((libro) => libro.categoria)));
-  }, [books]);
-
-  const goToPage = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    items: libros,
+    goToPage,
+  } = usePagination(filteredBooks, ITEMS_PER_PAGE);
 
   return {
     libros,
