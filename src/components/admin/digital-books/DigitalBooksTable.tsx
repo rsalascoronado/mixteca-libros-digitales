@@ -2,11 +2,12 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Book } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
-import { FileText, File, BookOpen, FileBox } from 'lucide-react';
+import { FileText, File, BookOpen, FileBox, Trash } from 'lucide-react';
 import PDFViewer from '@/components/shared/PDFViewer';
 import { useAuth } from '@/contexts/AuthContext';
 import { DigitalBooksActionsMenu } from './DigitalBooksActionsMenu';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface DigitalBooksTableProps {
   book: Book;
@@ -61,6 +62,7 @@ export function DigitalBooksTable({
             <TableHead className="hidden md:table-cell">Fecha subida</TableHead>
             <TableHead className="hidden lg:table-cell">Resumen</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
+            <TableHead className="text-center">Borrar</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -108,6 +110,19 @@ export function DigitalBooksTable({
                     onEdit={onEditDigitalBook}
                   />
                 </div>
+              </TableCell>
+              <TableCell className="text-center">
+                {onDeleteDigitalBook && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                    onClick={() => onDeleteDigitalBook(digitalBook.id)}
+                  >
+                    <Trash className="h-4 w-4" />
+                    <span className="sr-only">Eliminar archivo digital</span>
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

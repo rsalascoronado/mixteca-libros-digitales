@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Book, BookCategory } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
@@ -12,7 +11,8 @@ import {
 } from "@/components/ui/table";
 import { BookActionsMenu } from './BookActionsMenu';
 import { Badge } from '@/components/ui/badge';
-import { Book as BookIcon } from 'lucide-react';
+import { Book as BookIcon, Trash } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface BooksTableProps {
   books: Book[];
@@ -62,6 +62,7 @@ export function BooksTable({
               <TableHead>Disponibles</TableHead>
               <TableHead className="text-center">Digital</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
+              <TableHead className="text-center">Borrar</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -96,6 +97,17 @@ export function BooksTable({
                       onDeleteDigitalBook={onDeleteDigitalBook}
                       onEditDigitalBook={onEditDigitalBook}
                     />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-100"
+                      onClick={() => onDeleteBook(book.id)}
+                    >
+                      <Trash className="h-4 w-4" />
+                      <span className="sr-only">Eliminar libro</span>
+                    </Button>
                   </TableCell>
                 </TableRow>
               );
