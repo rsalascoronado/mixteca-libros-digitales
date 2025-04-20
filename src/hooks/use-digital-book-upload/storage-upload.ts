@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { uploadFile, getPublicUrl } from '@/utils/supabaseStorage';
 import { isLibrarian } from '@/lib/user-utils';

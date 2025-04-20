@@ -8,7 +8,7 @@ export const useThesisFileUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
   
-  const uploadThesisFile = async (file: File, thesisId?: string): Promise<string> => {
+  const uploadThesisFile = async (file: File): Promise<string> => {
     setIsUploading(true);
     setUploadProgress(0);
     
@@ -20,20 +20,13 @@ export const useThesisFileUpload = () => {
       
       // Generar un nombre único para el archivo
       const fileExt = file.name.split('.').pop();
-      const fileName = `thesis-${thesisId || Date.now()}.${fileExt}`;
+      const fileName = `thesis-${Date.now()}.${fileExt}`;
       
-      // Custom upload progress handling
-      const xhr = new XMLHttpRequest();
-      let uploadUrl = '';
-
-      // Set up progress monitoring
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          const percentage = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(percentage);
-        }
-      });
-
+      // Simular progreso de carga
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 500);
+      
       // Upload the file to Supabase Storage
       const { data, error } = await supabase.storage
         .from('thesis-files')
@@ -42,15 +35,18 @@ export const useThesisFileUpload = () => {
           upsert: true
         });
       
+      clearInterval(progressInterval);
+      
       if (error) {
         throw error;
       }
       
-      // Obtain the public URL of the file
+      // Get the public URL of the file
       const { data: { publicUrl } } = supabase.storage
         .from('thesis-files')
         .getPublicUrl(data?.path || fileName);
       
+      setUploadProgress(100);
       return publicUrl;
     } catch (error) {
       console.error('Error uploading thesis file:', error);
@@ -65,12 +61,14 @@ export const useThesisFileUpload = () => {
     }
   };
   
-  // Function to delete a file from Supabase Storage
   const deleteThesisFile = async (fileUrl: string): Promise<void> => {
     try {
       // Extract the filename from the URL
-      const urlParts = fileUrl.split('/');
-      const fileName = urlParts[urlParts.length - 1];
+      const fileName = fileUrl.split('/').pop();
+      
+      if (!fileName) {
+        throw new Error('No se pudo obtener el nombre del archivo');
+      }
       
       // Delete the file from Supabase Storage
       const { error } = await supabase.storage
