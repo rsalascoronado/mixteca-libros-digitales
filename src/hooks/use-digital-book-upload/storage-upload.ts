@@ -2,6 +2,19 @@
 import { supabase } from '@/integrations/supabase/client';
 import { createBucketIfNotExists, uploadFile, getPublicUrl } from '@/utils/supabaseStorage';
 import { isLibrarian } from '@/lib/user-utils';
+import { User, UserRole } from '@/types';
+
+// Helper function to convert Supabase user to our app's User type
+function mapSupabaseUserToAppUser(supabaseUser: any): User {
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email || '',
+    nombre: supabaseUser.user_metadata?.nombre || 'Usuario',
+    apellidos: supabaseUser.user_metadata?.apellidos || 'Sistema',
+    role: (supabaseUser.app_metadata?.role || 'estudiante') as UserRole,
+    createdAt: new Date(supabaseUser.created_at || Date.now())
+  };
+}
 
 export const uploadDigitalBookFile = async (
   bucketName: string, 
@@ -22,8 +35,15 @@ export const uploadDigitalBookFile = async (
     }
 
     // Obtener el usuario y verificar si tiene el rol adecuado
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !isLibrarian({ ...user, role: user.app_metadata.role })) {
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+    if (!supabaseUser) {
+      throw new Error('Unauthorized: User not found');
+    }
+    
+    // Convert Supabase user to our app's User type
+    const appUser = mapSupabaseUserToAppUser(supabaseUser);
+    
+    if (!isLibrarian(appUser)) {
       throw new Error('Unauthorized: Only librarians and administrators can upload digital books');
     }
 
