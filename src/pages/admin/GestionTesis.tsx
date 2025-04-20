@@ -12,10 +12,14 @@ import ThesisTable from '@/components/thesis/ThesisTable';
 import ThesisSearch from '@/components/thesis/ThesisSearch';
 import AddThesisDialog from '@/components/thesis/AddThesisDialog';
 import EditThesisDialog from '@/components/thesis/EditThesisDialog';
+import { useToast } from '@/hooks/use-toast';
+import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
 
 const GestionTesis = () => {
   const navigate = useNavigate();
   const { hasRole } = useAuth();
+  const { toast } = useToast();
+  const { deleteThesisFile } = useThesisFileUpload();
   const [tesis, setTesis] = useState<Thesis[]>(mockTheses);
   const [busqueda, setBusqueda] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('');
@@ -57,6 +61,29 @@ const GestionTesis = () => {
   const handleThesisUpdated = (updatedThesis: Thesis) => {
     setTesis(prev => prev.map(t => t.id === updatedThesis.id ? updatedThesis : t));
     setEditingTesis(null);
+  };
+
+  const handleThesisDelete = async (thesisToDelete: Thesis) => {
+    try {
+      // Delete PDF file if it exists
+      if (thesisToDelete.archivoPdf) {
+        await deleteThesisFile(thesisToDelete.archivoPdf);
+      }
+
+      // Remove thesis from list
+      setTesis(prev => prev.filter(t => t.id !== thesisToDelete.id));
+
+      toast({
+        title: 'Tesis eliminada',
+        description: `La tesis "${thesisToDelete.titulo}" ha sido eliminada exitosamente.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar la tesis. Intente nuevamente.',
+        variant: 'destructive'
+      });
+    }
   };
 
   const handleEditTesis = (thesis: Thesis) => {
@@ -117,6 +144,7 @@ const GestionTesis = () => {
         <ThesisTable
           theses={tesisFiltradas}
           onEdit={handleEditTesis}
+          onDelete={handleThesisDelete}
         />
 
         <AddThesisDialog

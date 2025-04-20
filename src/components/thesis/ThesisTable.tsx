@@ -1,6 +1,6 @@
 
 import React, { useMemo } from 'react';
-import { AlertTriangle, Pencil } from 'lucide-react';
+import { AlertTriangle, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Thesis } from '@/types';
@@ -9,9 +9,10 @@ import PDFViewer from '@/components/shared/PDFViewer';
 interface ThesisTableProps {
   theses: Thesis[];
   onEdit: (thesis: Thesis) => void;
+  onDelete?: (thesis: Thesis) => void;
 }
 
-const ThesisTable = ({ theses, onEdit }: ThesisTableProps) => {
+const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
   // Memoize the sorted theses to avoid unnecessary re-renders
   const sortedTheses = useMemo(() => {
     return [...theses].sort((a, b) => {
@@ -34,6 +35,7 @@ const ThesisTable = ({ theses, onEdit }: ThesisTableProps) => {
               <TableHead className="min-w-[150px] hidden md:table-cell">Director</TableHead>
               <TableHead className="min-w-[100px]">Estado</TableHead>
               <TableHead className="min-w-[100px]">PDF</TableHead>
+              <TableHead className="min-w-[80px]">Eliminar</TableHead>
               <TableHead className="min-w-[80px]">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -73,6 +75,17 @@ const ThesisTable = ({ theses, onEdit }: ThesisTableProps) => {
                   <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => onDelete && onDelete(thesis)}
+                    aria-label={`Eliminar tesis ${thesis.titulo}`}
+                    disabled={!onDelete}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onEdit(thesis)}
                     aria-label={`Editar tesis ${thesis.titulo}`}
                   >
@@ -82,7 +95,7 @@ const ThesisTable = ({ theses, onEdit }: ThesisTableProps) => {
               </TableRow>
             )) : (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
+                <TableCell colSpan={10} className="h-24 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <AlertTriangle className="h-8 w-8 text-gray-300 mb-2" />
                     <span className="text-gray-500">
