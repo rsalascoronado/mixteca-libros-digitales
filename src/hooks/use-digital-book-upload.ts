@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Book } from '@/types';
 import { validateUploadableFile, generateDigitalBookFileName } from './use-digital-book-upload/file-validation';
@@ -20,10 +20,29 @@ export function useDigitalBookUpload(
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  const simulateProgress = useCallback(() => {
+    // Esta función simula el progreso de carga ya que Supabase no proporciona eventos de progreso
+    let progress = 10;
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 15); // Incremento aleatorio
+      
+      if (progress >= 90) {
+        clearInterval(interval);
+        progress = 90; // Detenerse en 90% hasta que la operación se complete
+      }
+      
+      setUploadProgress(progress);
+    }, 800);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   const handleUpload = async (file: File, formato: string, resumen?: string) => {
     try {
       setUploadError(null);
       console.log('Starting upload process for:', file.name);
+      
+      // Validar el archivo
       const validationResult = validateUploadableFile(file, formato, book);
       if (!validationResult.isValid) {
         console.error('Validation failed:', validationResult.error);
@@ -39,65 +58,76 @@ export function useDigitalBookUpload(
       setIsUploading(true);
       setUploadProgress(10);
       
+      // Generar nombre único para el archivo
       const fileName = generateDigitalBookFileName(book, file);
       console.log('Generated filename:', fileName);
       
-      setUploadProgress(30);
+      // Iniciar simulación de progreso
+      const stopProgressSimulation = simulateProgress();
       
-      console.log('Uploading to storage bucket: digital-books');
-      const { publicUrl, error } = await uploadDigitalBookFile('digital-books', fileName, file);
-      
-      if (error) {
-        console.error('Upload error:', error);
-        setUploadError(error instanceof Error ? error.message : String(error));
-        toast({
-          title: "Error",
-          description: "No se pudo guardar el archivo digital: " + (error instanceof Error ? error.message : String(error)),
-          variant: "destructive"
+      try {
+        console.log('Uploading to storage bucket: digital-books');
+        const { publicUrl, error } = await uploadDigitalBookFile('digital-books', fileName, file);
+        
+        // Detener la simulación y establecer el progreso según el resultado
+        stopProgressSimulation();
+        
+        if (error) {
+          console.error('Upload error:', error);
+          setUploadError(error instanceof Error ? error.message : String(error));
+          setUploadProgress(0);
+          toast({
+            title: "Error",
+            description: "No se pudo guardar el archivo digital: " + (error instanceof Error ? error.message : String(error)),
+            variant: "destructive"
+          });
+          return false;
+        }
+        
+        if (!publicUrl) {
+          console.error('No public URL returned');
+          setUploadError("No se pudo obtener la URL del archivo subido");
+          setUploadProgress(0);
+          toast({
+            title: "Error",
+            description: "No se pudo obtener la URL del archivo subido.",
+            variant: "destructive"
+          });
+          return false;
+        }
+        
+        console.log('File uploaded successfully, public URL:', publicUrl);
+        setUploadProgress(100);
+        
+        // Notificar que la carga se completó
+        onUploadComplete({
+          formato,
+          url: publicUrl, 
+          tamanioMb: getFormattedSize(file.size),
+          resumen,
+          storage_path: fileName
         });
-        setUploadProgress(0);
-        return false;
-      }
-      
-      if (!publicUrl) {
-        console.error('No public URL returned');
-        setUploadError("No se pudo obtener la URL del archivo subido");
+        
         toast({
-          title: "Error",
-          description: "No se pudo obtener la URL del archivo subido.",
-          variant: "destructive"
+          title: "Archivo digital guardado",
+          description: "Se ha guardado el archivo digital correctamente."
         });
-        setUploadProgress(0);
-        return false;
+        
+        // Resetear el estado después de un tiempo
+        setTimeout(() => {
+          setUploadError(null);
+          setUploadProgress(0);
+        }, 3000);
+        
+        return true;
+      } catch (uploadError) {
+        stopProgressSimulation();
+        throw uploadError; // Reenviar el error para ser manejado en el bloque catch externo
       }
-      
-      console.log('File uploaded successfully, public URL:', publicUrl);
-      setUploadProgress(90);
-      
-      onUploadComplete({
-        formato,
-        url: publicUrl, 
-        tamanioMb: getFormattedSize(file.size),
-        resumen,
-        storage_path: fileName
-      });
-      
-      toast({
-        title: "Archivo digital guardado",
-        description: "Se ha guardado el archivo digital correctamente."
-      });
-
-      setUploadProgress(100);
-      // Reset upload error and progress after a delay
-      setTimeout(() => {
-        setUploadError(null);
-        setUploadProgress(0);
-      }, 3000);
-      
-      return true;
     } catch (error) {
       console.error('Unexpected upload error:', error);
-      setUploadError(error instanceof Error ? error.message : "Error inesperado");
+      setUploadError(error instanceof Error ? error.message : "Error inesperado durante la carga");
+      setUploadProgress(0);
       toast({
         title: "Error",
         description: "No se pudo guardar el archivo digital. Intente nuevamente.",
