@@ -1,4 +1,3 @@
-
 // Common interfaces for database models
 
 // Book related interfaces
@@ -15,6 +14,7 @@ export interface IBook {
   imagen?: string;
   ubicacion: string;
   descripcion?: string;
+  archivo?: string | null;
 }
 
 export interface IBookCategory {
