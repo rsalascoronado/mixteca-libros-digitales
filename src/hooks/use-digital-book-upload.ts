@@ -18,13 +18,16 @@ export function useDigitalBookUpload(
 ) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleUpload = async (file: File, formato: string, resumen?: string) => {
     try {
+      setUploadError(null);
       console.log('Starting upload process for:', file.name);
       const validationResult = validateUploadableFile(file, formato, book);
       if (!validationResult.isValid) {
         console.error('Validation failed:', validationResult.error);
+        setUploadError(validationResult.error || "El archivo no cumple con los requisitos");
         toast({
           title: "Error de validación",
           description: validationResult.error || "El archivo no cumple con los requisitos",
@@ -46,21 +49,25 @@ export function useDigitalBookUpload(
       
       if (error) {
         console.error('Upload error:', error);
+        setUploadError(error instanceof Error ? error.message : String(error));
         toast({
           title: "Error",
           description: "No se pudo guardar el archivo digital: " + (error instanceof Error ? error.message : String(error)),
           variant: "destructive"
         });
+        setUploadProgress(0);
         return false;
       }
       
       if (!publicUrl) {
         console.error('No public URL returned');
+        setUploadError("No se pudo obtener la URL del archivo subido");
         toast({
           title: "Error",
           description: "No se pudo obtener la URL del archivo subido.",
           variant: "destructive"
         });
+        setUploadProgress(0);
         return false;
       }
       
@@ -81,10 +88,16 @@ export function useDigitalBookUpload(
       });
 
       setUploadProgress(100);
+      // Reset upload error and progress after a delay
+      setTimeout(() => {
+        setUploadError(null);
+        setUploadProgress(0);
+      }, 3000);
+      
       return true;
     } catch (error) {
       console.error('Unexpected upload error:', error);
-      
+      setUploadError(error instanceof Error ? error.message : "Error inesperado");
       toast({
         title: "Error",
         description: "No se pudo guardar el archivo digital. Intente nuevamente.",
@@ -94,13 +107,13 @@ export function useDigitalBookUpload(
       return false;
     } finally {
       setIsUploading(false);
-      setTimeout(() => setUploadProgress(0), 1000);
     }
   };
 
   return {
     isUploading,
     uploadProgress,
+    uploadError,
     handleUpload
   };
 }

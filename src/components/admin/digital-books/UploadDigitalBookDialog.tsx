@@ -29,9 +29,10 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   
-  const { isUploading, uploadProgress, handleUpload } = useDigitalBookUpload(book, (data) => {
+  const { isUploading, uploadProgress, uploadError, handleUpload } = useDigitalBookUpload(book, (data) => {
     onUploadComplete(data);
-    setOpen(false);
+    // Only close the dialog after successful upload
+    setTimeout(() => setOpen(false), 1500);
   });
 
   const form = useForm<UploadDigitalBookFormData>({
@@ -100,6 +101,14 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
       onOpenChange={(newOpen) => {
         if (isUploading && !newOpen) return;
         setOpen(newOpen);
+        // Reset form when opening dialog
+        if (newOpen) {
+          clearFileSelection();
+          form.reset({
+            formato: 'PDF',
+            resumen: '',
+          });
+        }
       }}
     >
       <DialogTrigger asChild>
@@ -125,8 +134,11 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
           clearFileSelection={clearFileSelection}
         />
         
-        {isUploading && (
-          <UploadProgressIndicator uploadProgress={uploadProgress} />
+        {(isUploading || uploadError) && (
+          <UploadProgressIndicator 
+            uploadProgress={uploadProgress} 
+            error={uploadError}
+          />
         )}
       </DialogContent>
     </Dialog>
