@@ -17,6 +17,8 @@ interface UploadDigitalBookFormProps {
 
 export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBookFormProps) {
   const [isFileSelected, setIsFileSelected] = React.useState(false);
+  const [selectedFileName, setSelectedFileName] = React.useState<string | null>(null);
+  const [fileError, setFileError] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<UploadDigitalBookFormData>({
@@ -26,17 +28,58 @@ export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBo
     },
   });
 
+  const selectedFormat = form.watch('formato');
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setFileError(null);
+    
     if (file) {
+      // Validate file extension
+      const fileExt = file.name.split('.').pop()?.toLowerCase();
+      const formatExtMap: Record<string, string[]> = {
+        'PDF': ['pdf'],
+        'EPUB': ['epub'],
+        'MOBI': ['mobi', 'azw', 'azw3'],
+        'HTML': ['html', 'htm']
+      };
+      
+      const validExtensions = formatExtMap[selectedFormat] || [];
+      
+      if (fileExt && !validExtensions.includes(fileExt)) {
+        setFileError(`El formato del archivo (.${fileExt}) no coincide con el formato seleccionado (${selectedFormat})`);
+        return;
+      }
+      
+      // Validate file size
+      if (file.size > 50 * 1024 * 1024) {
+        setFileError('El archivo excede el límite de 50MB permitido.');
+        return;
+      }
+      
       form.setValue('file', file);
       setIsFileSelected(true);
+      setSelectedFileName(file.name);
+    } else {
+      form.setValue('file', undefined);
+      setIsFileSelected(false);
+      setSelectedFileName(null);
     }
   };
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
+
+  const formatAccept = React.useMemo(() => {
+    switch (selectedFormat) {
+      case 'PDF': return '.pdf';
+      case 'EPUB': return '.epub';
+      case 'MOBI': return '.mobi,.azw,.azw3';
+      case 'HTML': return '.html,.htm';
+      default: return '.pdf,.epub,.mobi,.html';
+    }
+  }, [selectedFormat]);
 
   return (
     <Form {...form}>
@@ -47,7 +90,16 @@ export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBo
           render={({ field }) => (
             <FormItem>
               <FormLabel>Formato</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={(value) => {
+                field.onChange(value);
+                if (isFileSelected) {
+                  // Clear file selection if format changes
+                  fileInputRef.current!.value = '';
+                  setIsFileSelected(false);
+                  setSelectedFileName(null);
+                  form.setValue('file', undefined);
+                }
+              }} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar formato" />
@@ -72,13 +124,13 @@ export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBo
             <FormItem>
               <FormLabel>Archivo</FormLabel>
               <FormControl>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
                   <input
                     type="file"
                     ref={fileInputRef}
                     className="hidden"
                     onChange={handleFileSelect}
-                    accept=".pdf,.epub,.mobi,.html"
+                    accept={formatAccept}
                   />
                   <Button
                     type="button"
@@ -87,14 +139,19 @@ export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBo
                     onClick={triggerFileInput}
                   >
                     <Upload className="mr-2 h-4 w-4" />
-                    Seleccionar archivo
+                    Seleccionar archivo {selectedFormat}
                   </Button>
                 </div>
               </FormControl>
+              {fileError && (
+                <p className="text-sm font-medium text-destructive mt-2">
+                  {fileError}
+                </p>
+              )}
               <FormMessage />
-              {isFileSelected && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Archivo seleccionado: {fileInputRef.current?.files?.[0]?.name}
+              {isFileSelected && selectedFileName && (
+                <p className="text-sm text-muted-foreground mt-2 break-all">
+                  Archivo seleccionado: {selectedFileName}
                 </p>
               )}
             </FormItem>
@@ -112,6 +169,7 @@ export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBo
                   {...field}
                   placeholder="Ingrese un resumen del archivo digital"
                   className="min-h-[80px]"
+                  value={field.value || ''}
                 />
               </FormControl>
               <FormMessage />
@@ -122,10 +180,10 @@ export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBo
         <Button 
           type="submit" 
           className="w-full"
-          disabled={!isFileSelected || isUploading}
+          disabled={!isFileSelected || isUploading || !!fileError}
         >
           {isUploading ? (
-            <>Subiendo archivo...</>
+            <>Subiendo archivo ({Math.round(uploadProgress)}%)...</>
           ) : (
             <>
               <Save className="mr-2 h-4 w-4" />

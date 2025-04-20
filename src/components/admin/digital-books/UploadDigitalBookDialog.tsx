@@ -42,7 +42,11 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      // Prevent closing the dialog while uploading
+      if (isUploading && !newOpen) return;
+      setOpen(newOpen);
+    }}>
       <DialogTrigger asChild>
         <Button size="sm">
           <Upload className="mr-2 h-4 w-4" />
@@ -62,11 +66,11 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
         {isUploading && (
           <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
             <div 
-              className="bg-primary h-2.5 rounded-full" 
+              className="bg-primary h-2.5 rounded-full transition-all duration-300" 
               style={{ width: `${uploadProgress}%` }}
             ></div>
             <p className="text-xs text-muted-foreground mt-1 text-right">
-              {uploadProgress}%
+              {Math.round(uploadProgress)}%
             </p>
           </div>
         )}

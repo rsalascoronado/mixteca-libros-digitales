@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useMemo } from 'react';
 import { Book, BookCategory } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
@@ -57,8 +58,10 @@ export function useBooksManagement() {
   }, [toast]);
 
   const handleDeleteBook = useCallback((id: string) => {
-    setBooks(prev => prev.filter(book => book.id !== id));
+    // First delete any digital books associated with this book
     setDigitalBooks(prev => prev.filter(db => db.bookId !== id));
+    // Then delete the book
+    setBooks(prev => prev.filter(book => book.id !== id));
     toast({
       title: "Libro eliminado",
       description: "El libro ha sido eliminado exitosamente."
@@ -84,29 +87,62 @@ export function useBooksManagement() {
   }, [toast]);
 
   const handleAddDigitalBook = useCallback(async (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => {
-    const newDigitalBook: DigitalBook = {
-      id: Math.random().toString(36).substr(2, 9),
-      bookId,
-      fechaSubida: new Date(),
-      ...data
-    };
-    setDigitalBooks(prev => [...prev, newDigitalBook]);
-    toast({
-      title: "Archivo digital agregado",
-      description: `Se ha agregado una versión ${data.formato} al libro correctamente.`
-    });
-  }, [toast]);
+    try {
+      // Validate that book exists
+      const book = books.find(b => b.id === bookId);
+      if (!book) {
+        toast({
+          title: "Error",
+          description: "El libro seleccionado no existe.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const newDigitalBook: DigitalBook = {
+        id: Math.random().toString(36).substr(2, 9),
+        bookId,
+        fechaSubida: new Date(),
+        ...data
+      };
+      
+      // In a real application, we would save to the database here
+      // For now, we're just updating the local state
+      setDigitalBooks(prev => [...prev, newDigitalBook]);
+      
+      toast({
+        title: "Archivo digital agregado",
+        description: `Se ha agregado una versión ${data.formato} al libro correctamente.`
+      });
+      
+      return newDigitalBook;
+    } catch (error) {
+      console.error('Error al agregar libro digital:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo agregar el archivo digital. Intente nuevamente.",
+        variant: "destructive"
+      });
+    }
+  }, [books, toast]);
 
   const handleDeleteDigitalBook = useCallback(async (id: string) => {
     try {
       const bookToDelete = digitalBooks.find(db => db.id === id);
       
       if (bookToDelete?.storage_path) {
-        const { error: storageError } = await supabase.storage
-          .from('digital-books')
-          .remove([bookToDelete.storage_path]);
-          
-        if (storageError) throw storageError;
+        try {
+          const { error: storageError } = await supabase.storage
+            .from('digital-books')
+            .remove([bookToDelete.storage_path]);
+            
+          if (storageError) {
+            console.error('Error eliminando archivo de storage:', storageError);
+          }
+        } catch (error) {
+          console.error('Error al acceder al storage:', error);
+          // Continue with deletion even if storage removal fails
+        }
       }
       
       setDigitalBooks(prev => prev.filter(db => db.id !== id));
@@ -115,6 +151,8 @@ export function useBooksManagement() {
         title: "Archivo digital eliminado",
         description: "El archivo digital ha sido eliminado exitosamente."
       });
+      
+      return true;
     } catch (error) {
       console.error('Error al eliminar el archivo:', error);
       toast({
@@ -122,19 +160,16 @@ export function useBooksManagement() {
         description: "No se pudo eliminar el archivo digital.",
         variant: "destructive"
       });
+      return false;
     }
   }, [digitalBooks, toast]);
 
   const handleEditDigitalBook = useCallback(async (id: string, data: Partial<DigitalBook>) => {
     try {
+      // Update digital book in state
       setDigitalBooks(prev => prev.map(db => 
         db.id === id ? { ...db, ...data } : db
       ));
-      
-      const digitalBook = digitalBooks.find(db => db.id === id);
-      if (digitalBook?.storage_path && data.formato && digitalBook.formato !== data.formato) {
-        console.log('Formato cambiado, en un entorno de producción se actualizaría el archivo');
-      }
       
       toast({
         title: "Archivo digital actualizado",
@@ -151,7 +186,7 @@ export function useBooksManagement() {
       });
       return false;
     }
-  }, [digitalBooks, toast]);
+  }, [toast]);
 
   return {
     books,

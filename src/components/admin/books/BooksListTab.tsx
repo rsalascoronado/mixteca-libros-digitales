@@ -4,6 +4,8 @@ import { Book, BookCategory } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
 import { BookSearch } from './BookSearch';
 import { BooksTable } from './BooksTable';
+import { Button } from '@/components/ui/button';
+import { UploadDigitalBookDialog } from '@/components/admin/digital-books/UploadDigitalBookDialog';
 
 interface BooksListTabProps {
   books: Book[];
@@ -29,6 +31,7 @@ export function BooksListTab({
   showDigitalOnly = false
 }: BooksListTabProps) {
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [selectedBookId, setSelectedBookId] = React.useState<string | null>(null);
 
   const filteredBooks = React.useMemo(() => {
     let filteredList = books.filter(book => 
@@ -46,13 +49,31 @@ export function BooksListTab({
     return filteredList;
   }, [books, searchTerm, digitalBooks, showDigitalOnly]);
 
+  const selectedBook = selectedBookId 
+    ? books.find(book => book.id === selectedBookId) 
+    : null;
+
   return (
     <>
-      <div className="flex items-center mb-4">
-        <BookSearch 
-          value={searchTerm}
-          onChange={setSearchTerm}
-        />
+      <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
+        <div className="flex-1 min-w-[250px]">
+          <BookSearch 
+            value={searchTerm}
+            onChange={setSearchTerm}
+          />
+        </div>
+
+        {selectedBook && onAddDigitalBook && (
+          <UploadDigitalBookDialog 
+            book={selectedBook}
+            onUploadComplete={(data) => {
+              if (onAddDigitalBook) {
+                onAddDigitalBook(selectedBook.id, data);
+              }
+              setSelectedBookId(null);
+            }}
+          />
+        )}
       </div>
       
       <BooksTable 
@@ -62,10 +83,12 @@ export function BooksListTab({
         onDeleteBook={onDeleteBook}
         onEditBook={onEditBook}
         onDeleteDigitalBook={onDeleteDigitalBook}
-        onAddDigitalBook={onAddDigitalBook}
+        onAddDigitalBook={(bookId) => {
+          setSelectedBookId(bookId);
+        }}
         onEditDigitalBook={onEditDigitalBook}
+        showUploadButton={!!onAddDigitalBook}
       />
     </>
   );
 }
-
