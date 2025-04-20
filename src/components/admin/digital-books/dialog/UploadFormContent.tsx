@@ -38,6 +38,13 @@ export function UploadFormContent({
   onSubmit,
   clearFileSelection
 }: UploadFormContentProps) {
+  // Create a wrapper function for the retry functionality
+  const handleRetry = () => {
+    // Get current form values and submit them
+    const currentValues = form.getValues();
+    onSubmit(currentValues);
+  };
+
   return (
     <>
       <DialogHeader>
@@ -61,7 +68,7 @@ export function UploadFormContent({
         <UploadProgressIndicator 
           uploadProgress={uploadProgress} 
           error={uploadError}
-          onRetry={onSubmit}
+          onRetry={handleRetry}
         />
       )}
     </>
