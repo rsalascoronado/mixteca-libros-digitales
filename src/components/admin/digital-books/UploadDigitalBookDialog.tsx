@@ -1,16 +1,15 @@
 
 import React, { useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Book } from '@/types';
 import { useDigitalBookUpload } from '@/hooks/use-digital-book-upload';
 import { uploadFormSchema, UploadDigitalBookFormData } from './schema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { UploadProgressIndicator } from './UploadProgressIndicator';
-import { UploadDigitalBookForm } from './UploadDigitalBookForm';
 import { UploadDigitalBookTrigger } from './UploadDigitalBookTrigger';
 import { useUploadDialogState } from '@/hooks/use-upload-dialog-state';
 import { useFileSelection } from '@/hooks/use-file-selection';
+import { UploadFormContent } from './dialog/UploadFormContent';
 
 interface UploadDigitalBookDialogProps {
   book: Book;
@@ -27,7 +26,7 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dialogState = useUploadDialogState();
   
-  const { isUploading, uploadProgress, uploadError, handleUpload, handleRetry } = useDigitalBookUpload(book, (data) => {
+  const { isUploading, uploadProgress, uploadError, handleUpload } = useDigitalBookUpload(book, (data) => {
     onUploadComplete(data);
     setTimeout(() => dialogState.setOpen(false), 1500);
   });
@@ -76,13 +75,12 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
         <UploadDigitalBookTrigger />
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Subir versión digital de "{book.titulo}"</DialogTitle>
-        </DialogHeader>
-        
-        <UploadDigitalBookForm
+        <UploadFormContent
+          book={book}
           form={form}
           isUploading={isUploading}
+          uploadProgress={uploadProgress}
+          uploadError={uploadError}
           isFileSelected={dialogState.isFileSelected}
           fileError={dialogState.fileError}
           selectedFileName={dialogState.selectedFileName}
@@ -92,14 +90,6 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
           onSubmit={handleSubmit}
           clearFileSelection={dialogState.clearFileSelection}
         />
-        
-        {(isUploading || uploadError) && (
-          <UploadProgressIndicator 
-            uploadProgress={uploadProgress} 
-            error={uploadError}
-            onRetry={handleRetry}
-          />
-        )}
       </DialogContent>
     </Dialog>
   );
