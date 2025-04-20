@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { Book } from '@/types';
 import { validateUploadableFile, generateDigitalBookFileName } from './use-digital-book-upload/file-validation';
 import { uploadDigitalBookFile } from './use-digital-book-upload/storage-upload';
@@ -21,32 +21,55 @@ export function useDigitalBookUpload(
 
   const handleUpload = async (file: File, formato: string, resumen?: string) => {
     try {
+      console.log('Starting upload process for:', file.name);
       const validationResult = validateUploadableFile(file, formato, book);
-      if (!validationResult.isValid) return false;
+      if (!validationResult.isValid) {
+        console.error('Validation failed:', validationResult.error);
+        toast({
+          title: "Error de validación",
+          description: validationResult.error || "El archivo no cumple con los requisitos",
+          variant: "destructive"
+        });
+        return false;
+      }
 
       setIsUploading(true);
       setUploadProgress(10);
       
       const fileName = generateDigitalBookFileName(book, file);
+      console.log('Generated filename:', fileName);
       
       setUploadProgress(30);
       
+      console.log('Uploading to storage bucket: digital-books');
       const { publicUrl, error } = await uploadDigitalBookFile('digital-books', fileName, file);
       
       if (error) {
+        console.error('Upload error:', error);
         toast({
           title: "Error",
-          description: "No se pudo guardar el archivo digital: " + error.message,
+          description: "No se pudo guardar el archivo digital: " + (error instanceof Error ? error.message : String(error)),
           variant: "destructive"
         });
         return false;
       }
       
+      if (!publicUrl) {
+        console.error('No public URL returned');
+        toast({
+          title: "Error",
+          description: "No se pudo obtener la URL del archivo subido.",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      console.log('File uploaded successfully, public URL:', publicUrl);
       setUploadProgress(90);
       
       onUploadComplete({
         formato,
-        url: publicUrl || '', 
+        url: publicUrl, 
         tamanioMb: getFormattedSize(file.size),
         resumen,
         storage_path: fileName
@@ -60,7 +83,7 @@ export function useDigitalBookUpload(
       setUploadProgress(100);
       return true;
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Unexpected upload error:', error);
       
       toast({
         title: "Error",
@@ -71,7 +94,7 @@ export function useDigitalBookUpload(
       return false;
     } finally {
       setIsUploading(false);
-      setUploadProgress(0);
+      setTimeout(() => setUploadProgress(0), 1000);
     }
   };
 

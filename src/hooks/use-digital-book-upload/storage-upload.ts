@@ -22,7 +22,7 @@ export const uploadDigitalBookFile = async (
   file: File
 ) => {
   try {
-    // Verificar que el bucket existe
+    // Verificar que el bucket existe, o crearlo si no existe
     const bucketCreated = await createBucketIfNotExists(bucketName);
     if (!bucketCreated) {
       throw new Error('Could not create or access bucket');
@@ -41,6 +41,7 @@ export const uploadDigitalBookFile = async (
       throw new Error('Unauthorized: Only librarians and administrators can upload digital books');
     }
 
+    // Upload the file to Supabase Storage
     const { data, error } = await uploadFile(bucketName, fileName, file);
     
     if (error) {
@@ -48,6 +49,7 @@ export const uploadDigitalBookFile = async (
       throw error;
     }
 
+    // Get the public URL for the uploaded file
     const publicUrl = getPublicUrl(bucketName, fileName);
     return { publicUrl, error: null };
   } catch (err) {
@@ -55,4 +57,3 @@ export const uploadDigitalBookFile = async (
     return { publicUrl: null, error: err };
   }
 };
-
