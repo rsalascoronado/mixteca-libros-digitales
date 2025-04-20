@@ -21,9 +21,9 @@ const ThesisSearch = ({
   onLimpiarFiltros
 }: ThesisSearchProps) => {
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="md:col-span-2">
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="sm:col-span-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input 
@@ -51,7 +51,7 @@ const ThesisSearch = ({
             </Select>
           </div>
           
-          <Button variant="outline" onClick={onLimpiarFiltros}>
+          <Button variant="outline" onClick={onLimpiarFiltros} className="whitespace-nowrap">
             <FilterX className="h-4 w-4 mr-2" />
             Limpiar
           </Button>

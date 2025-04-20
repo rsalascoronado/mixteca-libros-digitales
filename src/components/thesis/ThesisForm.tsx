@@ -78,8 +78,8 @@ export const ThesisForm = ({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4 py-4">
-      <div className="col-span-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+      <div className="col-span-1 md:col-span-2">
         <Label htmlFor="titulo">
           Título <span className="text-red-500">*</span>
         </Label>
@@ -92,7 +92,7 @@ export const ThesisForm = ({
         />
       </div>
       
-      <div>
+      <div className="col-span-1">
         <Label htmlFor="autor">
           Autor <span className="text-red-500">*</span>
         </Label>
@@ -105,7 +105,7 @@ export const ThesisForm = ({
         />
       </div>
       
-      <div>
+      <div className="col-span-1">
         <Label htmlFor="carrera">
           Carrera <span className="text-red-500">*</span>
         </Label>
@@ -118,7 +118,7 @@ export const ThesisForm = ({
         />
       </div>
       
-      <div>
+      <div className="col-span-1">
         <Label htmlFor="director">
           Director de tesis <span className="text-red-500">*</span>
         </Label>
@@ -131,7 +131,7 @@ export const ThesisForm = ({
         />
       </div>
       
-      <div>
+      <div className="col-span-1">
         <Label htmlFor="tipo">
           Tipo de tesis <span className="text-red-500">*</span>
         </Label>
@@ -150,7 +150,7 @@ export const ThesisForm = ({
         </Select>
       </div>
       
-      <div>
+      <div className="col-span-1">
         <Label htmlFor="anio">
           Año
         </Label>
@@ -164,7 +164,7 @@ export const ThesisForm = ({
         />
       </div>
       
-      <div className="col-span-2">
+      <div className="col-span-1 md:col-span-2">
         <Label htmlFor="resumen">
           Resumen
         </Label>
@@ -178,25 +178,27 @@ export const ThesisForm = ({
         />
       </div>
       
-      <div className="col-span-2">
+      <div className="col-span-1 md:col-span-2">
         <Label htmlFor="archivoPdf">
           Archivo PDF de la tesis <span className="text-red-500">*</span>
         </Label>
         <div className="mt-1 space-y-2">
-          <Input
-            id="archivoPdf"
-            type="file"
-            accept=".pdf"
-            onChange={handleFileChange}
-            className="flex-1"
-          />
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Input
+              id="archivoPdf"
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              className="flex-1"
+            />
+          </div>
           {selectedFile && (
             <div className="space-y-2">
               <div className="flex items-center justify-between p-2 bg-muted rounded-md">
-                <div className="flex items-center gap-2 text-sm">
-                  <Upload className="h-4 w-4 text-green-600" />
-                  <span>{selectedFile.name}</span>
-                  <span className="text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm overflow-hidden">
+                  <Upload className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <span className="truncate">{selectedFile.name}</span>
+                  <span className="text-muted-foreground whitespace-nowrap">
                     ({formatFileSize(selectedFile.size)})
                   </span>
                 </div>
@@ -204,7 +206,7 @@ export const ThesisForm = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => onFileChange(null)}
-                  className="text-destructive hover:text-destructive"
+                  className="text-destructive hover:text-destructive ml-2 flex-shrink-0"
                 >
                   <FileX className="h-4 w-4" />
                   <span className="sr-only">Eliminar archivo</span>
@@ -222,15 +224,15 @@ export const ThesisForm = ({
           )}
           {!selectedFile && thesis?.archivoPdf && (
             <div className="flex items-center justify-between p-2 bg-muted rounded-md">
-              <div className="flex items-center gap-2 text-sm">
-                <Upload className="h-4 w-4 text-blue-600" />
-                <span>{getFileNameFromUrl(thesis.archivoPdf)}</span>
+              <div className="flex items-center gap-2 text-sm overflow-hidden">
+                <Upload className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <span className="truncate">{getFileNameFromUrl(thesis.archivoPdf)}</span>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleDeleteFile}
-                className="text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive ml-2 flex-shrink-0"
               >
                 <FileX className="h-4 w-4" />
                 <span className="sr-only">Eliminar archivo</span>
