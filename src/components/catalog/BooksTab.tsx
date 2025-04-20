@@ -1,79 +1,18 @@
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { BooksCatalog } from "@/components/books/BooksCatalog";
-import { IBook } from "@/types/interfaces";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useBooksData } from "@/components/books/hooks/useBooksData"; // Hook de prueba integrado
 
-const fetchBooks = async () => {
-  try {
-    const { data, error } = await supabase.from("books").select("*");
-
-    if (error) throw error;
-
-    return (data || []).map((book: any) => ({
-      id: book.id,
-      titulo: book.titulo,
-      autor: book.autor,
-      isbn: book.isbn,
-      categoria: book.categoria,
-      editorial: book.editorial,
-      anioPublicacion: book.anio_publicacion,
-      copias: book.copias,
-      disponibles: book.disponibles,
-      imagen: book.imagen || undefined,
-      ubicacion: book.ubicacion,
-      descripcion: book.descripcion || undefined,
-    })) as IBook[];
-  } catch (error) {
-    console.error("Error fetching books:", error);
-    return [];
-  }
-};
-
-interface BooksTabProps {
-  // No props required, tab handles its own state.
-}
-
-const BooksTab: React.FC<BooksTabProps> = () => {
+/**
+ * Modo PRUEBA: Buscamos y filtramos los libros localmente.
+ * Se usa el hook useBooksData que trae los libros (de supabase o mocks), y la lógica de paginación/filtro está en BooksCatalog.
+ * No hay fetching react-query en este archivo.
+ */
+const BooksTab: React.FC = () => {
+  const { books, digitalBooks } = useBooksData();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoria, setCategoria] = useState("");
   const [disponibilidad, setDisponibilidad] = useState("");
-
-  const {
-    data: books = [],
-    isLoading: booksLoading,
-    error: booksError,
-  } = useQuery({
-    queryKey: ["books"],
-    queryFn: fetchBooks,
-  });
-
-  const filteredBooks = useMemo(() => {
-    return books.filter((book) => {
-      const matchSearch =
-        !searchTerm ||
-        book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.isbn.includes(searchTerm) ||
-        book.editorial.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchCategory = !categoria || book.categoria === categoria;
-      return matchSearch && matchCategory;
-    });
-  }, [books, searchTerm, categoria]);
-
-  if (booksLoading)
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        Cargando libros...
-      </div>
-    );
-  if (booksError)
-    return (
-      <div className="p-4 text-red-500 text-sm">
-        Error obteniendo libros: {(booksError as Error).message}
-      </div>
-    );
 
   return (
     <BooksCatalog
@@ -83,7 +22,7 @@ const BooksTab: React.FC<BooksTabProps> = () => {
       setCategoria={setCategoria}
       disponibilidad={disponibilidad}
       setDisponibilidad={setDisponibilidad}
-      booksProp={filteredBooks}
+      booksProp={books} // Entregamos los libros para filtrar localmente
     />
   );
 };
