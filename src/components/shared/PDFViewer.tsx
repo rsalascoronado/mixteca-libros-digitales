@@ -20,15 +20,6 @@ const PDFViewer = ({ url, fileName, fileFormat = 'PDF' }: PDFViewerProps) => {
   const [loadError, setLoadError] = useState(false);
 
   const handleOpenFile = () => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Acceso restringido",
-        description: "Debes iniciar sesión para ver los documentos digitales.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // For non-PDF and non-HTML formats, open in a new tab directly
     if (fileFormat !== 'PDF' && fileFormat !== 'HTML') {
       window.open(url, '_blank');
@@ -72,60 +63,54 @@ const PDFViewer = ({ url, fileName, fileFormat = 'PDF' }: PDFViewerProps) => {
         </Button>
       }
     >
-      {isAuthenticated ? (
-        <ScrollArea className="h-full w-full rounded-md">
-          {loadError ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <p className="text-muted-foreground mb-4">
-                No se pudo cargar el documento. 
-              </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Posibles razones:
-                <ul className="list-disc pl-6 mt-2">
-                  <li>El enlace al documento no es accesible</li>
-                  <li>El formato del documento no es compatible con la visualización directa</li>
-                  <li>Restricciones de seguridad del navegador</li>
-                </ul>
-              </p>
-              <div className="flex gap-2 mt-4">
-                <Button 
-                  onClick={() => window.open(url, '_blank')}
-                  className="flex items-center gap-2"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Abrir en nueva pestaña
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = fileName || `documento.${fileFormat?.toLowerCase() || 'pdf'}`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Descargar
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <iframe
-              src={url.startsWith('http') ? url : fallbackUrl}
-              className="w-full h-[calc(80vh-80px)]"
-              title="Document Viewer"
-              onError={handleIframeError}
-              onLoad={() => console.log('Document loaded successfully')}
-            />
-          )}
-        </ScrollArea>
-      ) : (
-        <div className="py-6 text-center text-muted-foreground">
-          Debe iniciar sesión para ver los documentos digitales.
+      {loadError ? (
+        <div className="flex flex-col items-center justify-center py-8">
+          <p className="text-muted-foreground mb-4">
+            No se pudo cargar el documento. 
+          </p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Posibles razones:
+            <ul className="list-disc pl-6 mt-2">
+              <li>El enlace al documento no es accesible</li>
+              <li>El formato del documento no es compatible con la visualización directa</li>
+              <li>Restricciones de seguridad del navegador</li>
+            </ul>
+          </p>
+          <div className="flex gap-2 mt-4">
+            <Button 
+              onClick={() => window.open(url, '_blank')}
+              className="flex items-center gap-2"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Abrir en nueva pestaña
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName || `documento.${fileFormat?.toLowerCase() || 'pdf'}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Descargar
+            </Button>
+          </div>
         </div>
+      ) : (
+        <ScrollArea className="h-full w-full rounded-md">
+          <iframe
+            src={url.startsWith('http') ? url : fallbackUrl}
+            className="w-full h-[calc(80vh-80px)]"
+            title="Document Viewer"
+            onError={handleIframeError}
+            onLoad={() => console.log('Document loaded successfully')}
+          />
+        </ScrollArea>
       )}
     </ResponsiveDialog>
   );
