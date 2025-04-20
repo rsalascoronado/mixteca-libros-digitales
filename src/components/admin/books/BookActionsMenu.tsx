@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Book, BookCategory } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
@@ -21,6 +20,7 @@ interface BookActionsMenuProps {
   digitalBooks: DigitalBook[];
   onDeleteBook: (id: string) => void;
   onEditBook: (id: string, data: Partial<Book>) => void;
+  onAddDigitalBook?: (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => void;
   onDeleteDigitalBook?: (id: string) => void;
 }
 
@@ -30,6 +30,7 @@ export function BookActionsMenu({
   digitalBooks,
   onDeleteBook,
   onEditBook,
+  onAddDigitalBook,
   onDeleteDigitalBook
 }: BookActionsMenuProps) {
   return (
@@ -54,6 +55,7 @@ export function BookActionsMenu({
           <DigitalBooksDialog 
             book={book} 
             digitalBooks={digitalBooks}
+            onAddDigitalBook={onAddDigitalBook}
             onDeleteDigitalBook={onDeleteDigitalBook}
           />
         </DropdownMenuItem>

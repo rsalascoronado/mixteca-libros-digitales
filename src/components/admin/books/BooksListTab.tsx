@@ -31,7 +31,8 @@ export function BooksListTab({
   digitalBooks,
   onDeleteBook,
   onEditBook,
-  onDeleteDigitalBook
+  onDeleteDigitalBook,
+  onAddDigitalBook
 }: BooksListTabProps) {
   const [searchTerm, setSearchTerm] = React.useState('');
 
@@ -85,6 +86,7 @@ export function BooksListTab({
                     digitalBooks={digitalBooks}
                     onDeleteBook={onDeleteBook}
                     onEditBook={onEditBook}
+                    onAddDigitalBook={onAddDigitalBook}
                     onDeleteDigitalBook={onDeleteDigitalBook}
                   />
                 </TableCell>

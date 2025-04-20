@@ -9,7 +9,89 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      books: {
+        Row: {
+          anio_publicacion: number
+          autor: string
+          categoria: string
+          copias: number
+          descripcion: string | null
+          disponibles: number
+          editorial: string
+          id: string
+          imagen: string | null
+          isbn: string
+          titulo: string
+          ubicacion: string
+        }
+        Insert: {
+          anio_publicacion: number
+          autor: string
+          categoria: string
+          copias?: number
+          descripcion?: string | null
+          disponibles?: number
+          editorial: string
+          id?: string
+          imagen?: string | null
+          isbn: string
+          titulo: string
+          ubicacion: string
+        }
+        Update: {
+          anio_publicacion?: number
+          autor?: string
+          categoria?: string
+          copias?: number
+          descripcion?: string | null
+          disponibles?: number
+          editorial?: string
+          id?: string
+          imagen?: string | null
+          isbn?: string
+          titulo?: string
+          ubicacion?: string
+        }
+        Relationships: []
+      }
+      digital_books: {
+        Row: {
+          book_id: string
+          fecha_subida: string
+          formato: string
+          id: string
+          resumen: string | null
+          tamanio_mb: number
+          url: string
+        }
+        Insert: {
+          book_id: string
+          fecha_subida?: string
+          formato: string
+          id?: string
+          resumen?: string | null
+          tamanio_mb: number
+          url: string
+        }
+        Update: {
+          book_id?: string
+          fecha_subida?: string
+          formato?: string
+          id?: string
+          resumen?: string | null
+          tamanio_mb?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_books_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
