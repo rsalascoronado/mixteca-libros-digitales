@@ -16,6 +16,7 @@ interface UploadDigitalBookFormProps {
   isFileSelected: boolean;
   fileError: string | null;
   selectedFileName: string | null;
+  selectedFileSize?: number;
   fileInputRef: React.RefObject<HTMLInputElement>;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (data: UploadDigitalBookFormData) => Promise<void>;
@@ -28,6 +29,7 @@ export function UploadDigitalBookForm({
   isFileSelected,
   fileError,
   selectedFileName,
+  selectedFileSize,
   fileInputRef,
   onFileSelect,
   onSubmit,
@@ -51,6 +53,7 @@ export function UploadDigitalBookForm({
         <FileUploadField
           selectedFormat={form.getValues('formato')}
           selectedFileName={selectedFileName}
+          selectedFileSize={selectedFileSize}
           fileError={fileError}
           onFileSelect={onFileSelect}
           fileInputRef={fileInputRef}

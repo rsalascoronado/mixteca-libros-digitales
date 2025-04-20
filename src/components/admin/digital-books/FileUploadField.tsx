@@ -1,13 +1,15 @@
 
 import React from 'react';
-import { FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { Upload } from 'lucide-react';
-import { formatExtensionMap } from '@/utils/fileValidation';
+import { FormLabel } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { FileText } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getFormattedSize } from '@/utils/fileValidation';
 
 interface FileUploadFieldProps {
   selectedFormat: string;
   selectedFileName: string | null;
+  selectedFileSize?: number;
   fileError: string | null;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
@@ -16,49 +18,46 @@ interface FileUploadFieldProps {
 export function FileUploadField({
   selectedFormat,
   selectedFileName,
+  selectedFileSize,
   fileError,
   onFileSelect,
   fileInputRef
 }: FileUploadFieldProps) {
-  const formatAccept = React.useMemo(() => {
-    const extensions = formatExtensionMap[selectedFormat] || [];
-    return extensions.map(ext => `.${ext}`).join(',');
-  }, [selectedFormat]);
-
   return (
-    <FormItem>
-      <FormLabel>Archivo</FormLabel>
-      <FormControl>
-        <div className="flex flex-col gap-2">
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={onFileSelect}
-            accept={formatAccept}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            Seleccionar archivo {selectedFormat}
-          </Button>
+    <div className="space-y-2">
+      <FormLabel>Archivo digital</FormLabel>
+      <Input 
+        type="file" 
+        accept={`.${selectedFormat?.toLowerCase()}`}
+        onChange={onFileSelect}
+        ref={fileInputRef}
+        className="cursor-pointer"
+      />
+      
+      {selectedFileName && !fileError && (
+        <div className="mt-2 p-3 border rounded-md bg-muted/10">
+          <div className="flex items-start gap-2">
+            <FileText className="h-5 w-5 mt-0.5 text-muted-foreground" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium">{selectedFileName}</p>
+              <div className="flex gap-2 text-xs text-muted-foreground">
+                {selectedFileSize && (
+                  <span>Tamaño: {getFormattedSize(selectedFileSize)} MB</span>
+                )}
+                {selectedFormat && (
+                  <span>Formato: {selectedFormat}</span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      </FormControl>
+      )}
+      
       {fileError && (
-        <p className="text-sm font-medium text-destructive mt-2">
-          {fileError}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{fileError}</AlertDescription>
+        </Alert>
       )}
-      <FormMessage />
-      {selectedFileName && (
-        <p className="text-sm text-muted-foreground mt-2 break-all">
-          Archivo seleccionado: {selectedFileName}
-        </p>
-      )}
-    </FormItem>
+    </div>
   );
 }

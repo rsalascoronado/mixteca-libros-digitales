@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -26,12 +25,12 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
   const [open, setOpen] = useState(false);
   const [isFileSelected, setIsFileSelected] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const [selectedFileSize, setSelectedFileSize] = useState<number>();
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   
   const { isUploading, uploadProgress, uploadError, handleUpload, handleRetry } = useDigitalBookUpload(book, (data) => {
     onUploadComplete(data);
-    // Only close the dialog after successful upload
     setTimeout(() => setOpen(false), 1500);
   });
 
@@ -66,10 +65,12 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
       form.setValue('file', file);
       setIsFileSelected(true);
       setSelectedFileName(file.name);
+      setSelectedFileSize(file.size);
     } else {
       form.setValue('file', undefined);
       setIsFileSelected(false);
       setSelectedFileName(null);
+      setSelectedFileSize(undefined);
     }
   };
 
@@ -79,6 +80,7 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
     }
     setIsFileSelected(false);
     setSelectedFileName(null);
+    setSelectedFileSize(undefined);
     form.setValue('file', undefined);
   };
 
@@ -101,7 +103,6 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
       onOpenChange={(newOpen) => {
         if (isUploading && !newOpen) return;
         setOpen(newOpen);
-        // Reset form when opening dialog
         if (newOpen) {
           clearFileSelection();
           form.reset({
@@ -128,6 +129,7 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
           isFileSelected={isFileSelected}
           fileError={fileError}
           selectedFileName={selectedFileName}
+          selectedFileSize={selectedFileSize}
           fileInputRef={fileInputRef}
           onFileSelect={handleFileSelect}
           onSubmit={handleSubmit}
