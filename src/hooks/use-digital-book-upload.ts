@@ -1,8 +1,9 @@
 
 import { useState } from 'react';
 import { useToast } from './use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Book } from '@/types';
+import { validateFileFormat, validateFileSize, getFormattedSize } from '@/utils/fileValidation';
+import { createBucketIfNotExists, uploadFile, getPublicUrl } from '@/utils/supabaseStorage';
 
 export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
   formato: string;
@@ -17,31 +18,22 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
 
   const handleUpload = async (file: File, formato: string, resumen?: string) => {
     try {
-      // Validate file type based on format
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
-      const formatExtMap: Record<string, string[]> = {
-        'PDF': ['pdf'],
-        'EPUB': ['epub'],
-        'MOBI': ['mobi', 'azw', 'azw3'],
-        'HTML': ['html', 'htm']
-      };
-      
-      const validExtensions = formatExtMap[formato] || [];
-      
-      if (fileExt && !validExtensions.includes(fileExt)) {
+      // Validate file format and size
+      const formatError = validateFileFormat(file, formato);
+      if (formatError) {
         toast({
           title: "Formato incorrecto",
-          description: `El formato del archivo (.${fileExt}) no coincide con el formato seleccionado (${formato})`,
+          description: formatError,
           variant: "destructive"
         });
         return false;
       }
 
-      // Verify file size before starting the upload
-      if (file.size > 50 * 1024 * 1024) {
+      const sizeError = validateFileSize(file);
+      if (sizeError) {
         toast({
           title: "Error de tamaño",
-          description: "El archivo excede el límite de 50MB permitido.",
+          description: sizeError,
           variant: "destructive"
         });
         return false;
@@ -50,106 +42,60 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
       setIsUploading(true);
       setUploadProgress(10);
       
-      const fileName = `book-${book.id}-${Date.now()}.${fileExt}`;
+      const fileName = `book-${book.id}-${Date.now()}.${file.name.split('.').pop()}`;
       
-      // Create bucket if it doesn't exist
-      try {
-        const { data: bucket, error: bucketError } = await supabase.storage.getBucket('digital-books');
-        
-        if (bucketError && bucketError.message.includes('does not exist')) {
-          const { error: createError } = await supabase.storage.createBucket('digital-books', {
-            public: true,
-            fileSizeLimit: 52428800 // 50MB
-          });
-          
-          if (createError) {
-            console.error('Error creating bucket:', createError);
-            throw createError;
-          }
-        }
-      } catch (err) {
-        console.error('Bucket check error:', err);
-        // Continue with upload attempt even if bucket check failed
+      // Create bucket if needed
+      const bucketCreated = await createBucketIfNotExists('digital-books');
+      if (!bucketCreated) {
+        setUploadProgress(0);
+        return false;
       }
       
-      // Attempt to upload the file to Supabase storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('digital-books')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
+      setUploadProgress(30);
+      
+      // Upload file
+      const { error: uploadError } = await uploadFile('digital-books', fileName, file);
+      
       if (uploadError) {
         console.error('Error al subir el archivo:', uploadError);
         
-        // Handle specific error types
-        if (uploadError.message.includes('size')) {
-          toast({
-            title: "Error de tamaño",
-            description: "El archivo excede el límite de 50MB permitido por el servidor.",
-            variant: "destructive"
-          });
-        } else if (uploadError.message.includes('auth')) {
-          toast({
-            title: "Error de autenticación",
-            description: "Debe iniciar sesión para subir archivos.",
-            variant: "destructive"
-          });
-        } else if (uploadError.message.includes('security')) {
-          toast({
-            title: "Error de seguridad",
-            description: "No tiene permisos para subir archivos en este bucket.",
-            variant: "destructive"
-          });
-        } else if (uploadError.message.includes('violates row-level security policy')) {
+        if (uploadError.message.includes('violates row-level security policy')) {
           toast({
             title: "Error de permisos",
             description: "No tiene permisos para subir archivos. Utilizando URL alternativa.",
-            variant: "default" // Changed from "warning" to "default"
+            variant: "default"
           });
           
-          // Fallback to using a mock URL for development
           const mockUrl = `https://example.com/digital-books/${fileName}`;
           setUploadProgress(100);
           
           onUploadComplete({
             formato,
             url: mockUrl,
-            tamanioMb: Number((file.size / (1024 * 1024)).toFixed(2)),
+            tamanioMb: getFormattedSize(file.size),
             resumen,
             storage_path: fileName
           });
           
-          toast({
-            title: "Archivo digital guardado (modo simulación)",
-            description: "Se ha simulado la carga del archivo digital."
-          });
-          
           return true;
-        } else {
-          toast({
-            title: "Error",
-            description: "No se pudo guardar el archivo digital: " + uploadError.message,
-            variant: "destructive"
-          });
         }
+        
+        toast({
+          title: "Error",
+          description: "No se pudo guardar el archivo digital: " + uploadError.message,
+          variant: "destructive"
+        });
         return false;
       }
       
       setUploadProgress(90);
-      
-      // Get the public URL for the uploaded file
-      const { data: { publicUrl } } = supabase.storage
-        .from('digital-books')
-        .getPublicUrl(fileName);
-      
+      const publicUrl = getPublicUrl('digital-books', fileName);
       setUploadProgress(100);
       
       onUploadComplete({
         formato,
         url: publicUrl,
-        tamanioMb: Number((file.size / (1024 * 1024)).toFixed(2)),
+        tamanioMb: getFormattedSize(file.size),
         resumen,
         storage_path: fileName
       });
@@ -163,7 +109,6 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
     } catch (error) {
       console.error('Error al subir el archivo:', error);
       
-      // Fallback for development/testing when storage isn't available
       if (process.env.NODE_ENV === 'development') {
         const mockUrl = `https://example.com/digital-books/mock-${Date.now()}.${file.name.split('.').pop()}`;
         setUploadProgress(100);
@@ -171,7 +116,7 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
         onUploadComplete({
           formato,
           url: mockUrl,
-          tamanioMb: Number((file.size / (1024 * 1024)).toFixed(2)),
+          tamanioMb: getFormattedSize(file.size),
           resumen
         });
         
