@@ -33,11 +33,12 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
       const fileExt = file.name.split('.').pop();
       const fileName = `${book.id}-${Date.now()}.${fileExt}`;
       
+      // Attempt to upload the file to Supabase storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('digital-books')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true // Changed to true to allow overwriting existing files
         });
 
       if (uploadError) {
@@ -56,6 +57,12 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
             description: "Debe iniciar sesión para subir archivos.",
             variant: "destructive"
           });
+        } else if (uploadError.message.includes('security')) {
+          toast({
+            title: "Error de seguridad",
+            description: "No tiene permisos para subir archivos en este bucket.",
+            variant: "destructive"
+          });
         } else {
           toast({
             title: "Error",
@@ -68,6 +75,7 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
       
       setUploadProgress(90);
       
+      // Get the public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('digital-books')
         .getPublicUrl(fileName);

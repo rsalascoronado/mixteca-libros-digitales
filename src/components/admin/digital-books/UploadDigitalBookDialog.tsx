@@ -27,8 +27,17 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
   });
 
   const handleSubmit = async (data: UploadDigitalBookFormData) => {
-    if (data.file) {
-      await handleUpload(data.file, data.formato, data.resumen);
+    try {
+      if (data.file) {
+        const result = await handleUpload(data.file, data.formato, data.resumen);
+        if (result) {
+          console.log('Upload completed successfully');
+        }
+      } else {
+        console.error('No file selected');
+      }
+    } catch (error) {
+      console.error('Error handling submission:', error);
     }
   };
 

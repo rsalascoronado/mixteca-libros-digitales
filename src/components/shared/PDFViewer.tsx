@@ -29,7 +29,7 @@ const PDFViewer = ({ url, fileName, fileFormat = 'PDF' }: PDFViewerProps) => {
       return;
     }
     
-    // For non-PDF formats, open in a new tab
+    // For non-PDF and non-HTML formats, open in a new tab directly
     if (fileFormat !== 'PDF' && fileFormat !== 'HTML') {
       window.open(url, '_blank');
       return;
@@ -40,6 +40,7 @@ const PDFViewer = ({ url, fileName, fileFormat = 'PDF' }: PDFViewerProps) => {
   };
 
   const handleIframeError = () => {
+    console.log('Error loading document:', url);
     setLoadError(true);
   };
 
@@ -117,6 +118,7 @@ const PDFViewer = ({ url, fileName, fileFormat = 'PDF' }: PDFViewerProps) => {
               className="w-full h-[calc(80vh-80px)]"
               title="Document Viewer"
               onError={handleIframeError}
+              onLoad={() => console.log('Document loaded successfully')}
             />
           )}
         </ScrollArea>
