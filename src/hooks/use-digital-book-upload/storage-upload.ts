@@ -21,49 +21,36 @@ export const uploadDigitalBookFile = async (
   file: File
 ) => {
   try {
-    console.log('Starting upload process for:', fileName);
-    
     // Get current user session
     const { data: { user: supabaseUser }, error: sessionError } = await supabase.auth.getUser();
-    if (sessionError) {
-      console.error('Session error:', sessionError);
-      throw new Error('Error de autenticación');
-    }
-    if (!supabaseUser) {
-      throw new Error('Usuario no autenticado');
-    }
+    if (sessionError) throw new Error('Error de autenticación');
+    if (!supabaseUser) throw new Error('Usuario no autenticado');
 
-    // Convert and check user role
+    // Check user role
     const appUser = mapSupabaseUserToAppUser(supabaseUser);
     if (!isLibrarian(appUser)) {
-      throw new Error('No autorizado: Solo bibliotecarios y administradores pueden subir libros digitales');
+      throw new Error('No autorizado: Solo bibliotecarios pueden subir libros digitales');
     }
 
     // Ensure bucket exists
     const bucketCreated = await createBucketIfNotExists(bucketName);
     if (!bucketCreated) {
-      throw new Error('No se pudo crear o acceder al bucket de almacenamiento');
+      throw new Error('Error al acceder al almacenamiento');
     }
 
-    // Upload file with improved error handling
-    console.log('Uploading file to storage...');
+    // Upload file
     const { data, error: uploadError } = await uploadFile(bucketName, fileName, file);
-    
-    if (uploadError) {
-      console.error('Upload error:', uploadError);
-      throw uploadError;
-    }
+    if (uploadError) throw uploadError;
 
-    // Get public URL for the uploaded file
-    console.log('Getting public URL for uploaded file...');
+    // Get public URL
     const publicUrl = getPublicUrl(bucketName, fileName);
-    
     return { publicUrl, error: null };
+    
   } catch (err) {
-    console.error('Storage upload error:', err);
+    console.error('Error en la carga:', err);
     return { 
       publicUrl: null, 
-      error: err instanceof Error ? err : new Error('Error desconocido durante la carga') 
+      error: err instanceof Error ? err : new Error('Error desconocido') 
     };
   }
 };
