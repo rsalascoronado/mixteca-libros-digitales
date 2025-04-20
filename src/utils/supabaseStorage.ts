@@ -24,6 +24,15 @@ export const createBucketIfNotExists = async (bucketName: string): Promise<boole
 };
 
 export const uploadFile = async (bucketName: string, fileName: string, file: File) => {
+  // Verificar la sesión actual
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    return { 
+      error: new Error('User must be authenticated to upload files'),
+      data: null
+    };
+  }
+
   const { data, error } = await supabase.storage
     .from(bucketName)
     .upload(fileName, file, {
@@ -40,4 +49,19 @@ export const getPublicUrl = (bucketName: string, fileName: string): string => {
     .getPublicUrl(fileName);
     
   return publicUrl;
+};
+
+export const deleteFile = async (bucketName: string, fileName: string) => {
+  // Verificar la sesión actual
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    return { 
+      error: new Error('User must be authenticated to delete files'),
+      data: null
+    };
+  }
+
+  return await supabase.storage
+    .from(bucketName)
+    .remove([fileName]);
 };

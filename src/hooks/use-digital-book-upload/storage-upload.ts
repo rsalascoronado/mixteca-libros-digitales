@@ -13,6 +13,12 @@ export const uploadDigitalBookFile = async (
       throw new Error('Could not create or access bucket');
     }
 
+    // Verificar que el usuario está autenticado antes de subir
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error('User must be authenticated to upload files');
+    }
+
     const { data, error } = await uploadFile(bucketName, fileName, file);
     
     if (error) {

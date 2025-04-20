@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo } from 'react';
 import { Book, BookCategory } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
@@ -6,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { mockBooks, mockCategories } from '@/types';
 import { mockDigitalBooks } from '@/types/digitalBook';
 import { supabase } from '@/integrations/supabase/client';
+import { deleteFile } from '@/utils/supabaseStorage';
 
 export function useBooksManagement() {
   const [categories, setCategories] = useState(mockCategories);
@@ -58,9 +58,7 @@ export function useBooksManagement() {
   }, [toast]);
 
   const handleDeleteBook = useCallback((id: string) => {
-    // First delete any digital books associated with this book
     setDigitalBooks(prev => prev.filter(db => db.bookId !== id));
-    // Then delete the book
     setBooks(prev => prev.filter(book => book.id !== id));
     toast({
       title: "Libro eliminado",
@@ -88,7 +86,16 @@ export function useBooksManagement() {
 
   const handleAddDigitalBook = useCallback(async (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => {
     try {
-      // Validate that book exists
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Error de autenticación",
+          description: "Debe iniciar sesión para agregar libros digitales.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const book = books.find(b => b.id === bookId);
       if (!book) {
         toast({
@@ -106,8 +113,6 @@ export function useBooksManagement() {
         ...data
       };
       
-      // In a real application, we would save to the database here
-      // For now, we're just updating the local state
       setDigitalBooks(prev => [...prev, newDigitalBook]);
       
       toast({
@@ -128,13 +133,21 @@ export function useBooksManagement() {
 
   const handleDeleteDigitalBook = useCallback(async (id: string) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Error de autenticación",
+          description: "Debe iniciar sesión para eliminar libros digitales.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       const bookToDelete = digitalBooks.find(db => db.id === id);
       
       if (bookToDelete?.storage_path) {
         try {
-          const { error: storageError } = await supabase.storage
-            .from('digital-books')
-            .remove([bookToDelete.storage_path]);
+          const { error: storageError } = await deleteFile('digital-books', bookToDelete.storage_path);
             
           if (storageError) {
             console.error('Error eliminando archivo de storage:', storageError);
@@ -166,7 +179,16 @@ export function useBooksManagement() {
 
   const handleEditDigitalBook = useCallback(async (id: string, data: Partial<DigitalBook>) => {
     try {
-      // Update digital book in state
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Error de autenticación",
+          description: "Debe iniciar sesión para editar libros digitales.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       setDigitalBooks(prev => prev.map(db => 
         db.id === id ? { ...db, ...data } : db
       ));
