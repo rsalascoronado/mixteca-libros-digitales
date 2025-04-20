@@ -1,8 +1,8 @@
 
-import { useState, useEffect, useMemo } from "react";
-import { Book, mockBooks } from "@/types/book";
-import { mockDigitalBooks } from "@/types/digitalBook";
-import { supabase } from "@/integrations/supabase/client";
+import { useMemo, useState, useEffect } from "react";
+import { Book } from "@/types/book";
+import { useBooksData } from "./hooks/useBooksData";
+import { useBooksRealtime } from "./hooks/useBooksRealtime";
 
 const ITEMS_PER_PAGE = 9;
 
@@ -12,117 +12,27 @@ type UseBooksCatalogProps = {
   disponibilidad: string;
 };
 
+/**
+ * Combines fetching, realtime sync, and catalog filtering/pagination for books.
+ */
 export function useBooksCatalog({
   searchTerm,
   categoria,
   disponibilidad,
 }: UseBooksCatalogProps) {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [digitalBooks, setDigitalBooks] = useState<string[]>([]);
+  const {
+    books,
+    setBooks,
+    digitalBooks,
+    setDigitalBooks,
+    isLoading,
+    setIsLoading,
+  } = useBooksData();
+
+  useBooksRealtime(setBooks, setDigitalBooks);
+
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Fetch initial data from Supabase on mount
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const { data: booksData, error: booksError } = await supabase
-          .from("books")
-          .select("*");
-        if (booksError) throw booksError;
-        if (isMounted) {
-          setBooks(booksData ?? []);
-        }
-
-        const { data: digitalBooksData, error: digitalError } = await supabase
-          .from("digital_books")
-          .select("book_id");
-        if (digitalError) throw digitalError;
-        if (isMounted) {
-          setDigitalBooks(
-            (digitalBooksData ?? []).map((item) => item.book_id)
-          );
-        }
-      } catch (error) {
-        setBooks([...mockBooks]);
-        setDigitalBooks(mockDigitalBooks.map((db) => db.bookId));
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // Real-time subscription to books table changes
-  useEffect(() => {
-    const booksChannel = supabase
-      .channel("public:books")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "books" },
-        (payload) => {
-          setBooks((currentBooks) => {
-            switch (payload.eventType) {
-              case "INSERT":
-                return [...currentBooks, payload.new as Book];
-              case "UPDATE":
-                return currentBooks.map((book) =>
-                  book.id === payload.new.id ? (payload.new as Book) : book
-                );
-              case "DELETE":
-                return currentBooks.filter(
-                  (book) => book.id !== payload.old.id
-                );
-              default:
-                return currentBooks;
-            }
-          });
-        }
-      )
-      .subscribe();
-
-    const digitalBooksChannel = supabase
-      .channel("public:digital_books")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "digital_books" },
-        (payload) => {
-          setDigitalBooks((currentDigitalBooks) => {
-            switch (payload.eventType) {
-              case "INSERT":
-                return [...currentDigitalBooks, (payload.new as any).book_id];
-              case "UPDATE":
-                // Usually book_id won't change, but if it does:
-                return currentDigitalBooks.map((id) =>
-                  id === (payload.old as any).book_id
-                    ? (payload.new as any).book_id
-                    : id
-                );
-              case "DELETE":
-                return currentDigitalBooks.filter(
-                  (id) => id !== (payload.old as any).book_id
-                );
-              default:
-                return currentDigitalBooks;
-            }
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(booksChannel);
-      supabase.removeChannel(digitalBooksChannel);
-    };
-  }, []);
 
   // Filtering with debounce effect
   useEffect(() => {
@@ -164,7 +74,7 @@ export function useBooksCatalog({
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, categoria, disponibilidad, books, digitalBooks]);
+  }, [searchTerm, categoria, disponibilidad, books, digitalBooks, setIsLoading]);
 
   const totalPages = useMemo(
     () => Math.ceil(filteredBooks.length / ITEMS_PER_PAGE),
@@ -183,10 +93,6 @@ export function useBooksCatalog({
   const goToPage = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const resetFilters = () => {
-    // El hook no implementa esto, pero puede exponerse si fuera necesario.
   };
 
   return {
