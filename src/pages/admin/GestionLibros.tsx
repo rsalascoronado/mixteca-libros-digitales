@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Suspense } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import BulkActionsBar from '@/components/admin/books/BulkActionsBar';
+import LibrosHeader from '@/components/admin/libros/LibrosHeader';
+import LibrosTabs from '@/components/admin/libros/LibrosTabs';
 
 interface GestionLibrosProps {
   defaultTab?: 'libros' | 'categorias' | 'digital';
@@ -40,7 +41,6 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
     handleEditDigitalBook
   } = useBooksManagement();
 
-  // Selección múltiple de libros
   const [selectedBooks, setSelectedBooks] = useState<string[]>([]);
 
   const handleSelectBook = useCallback((bookId: string, checked: boolean) => {
@@ -62,7 +62,6 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
     try {
       const { error } = await supabase.from('books').delete().in('id', selectedBooks);
       if (error) throw error;
-      // Actualizamos lista de libros local
       selectedBooks.forEach(id => handleDeleteBook(id));
       setSelectedBooks([]);
       toast({
@@ -88,7 +87,6 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
       });
       return;
     }
-    // Usamos el componente DataExport
     DataExport({
       data: selectedBooksData,
       filename: "libros-seleccionados",
@@ -130,96 +128,42 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
 
   const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
-    setSelectedBooks([]); // Limpiar selección
+    setSelectedBooks([]);
   }, []);
 
   return (
     <MainLayout>
       <div className="container mx-auto py-6 md:py-8">
         <Card>
-          <CardHeader className="pb-3">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-              <div>
-                <CardTitle>Gestión de Libros</CardTitle>
-                <CardDescription>
-                  Administra el catálogo de libros de la biblioteca
-                </CardDescription>
-              </div>
-              <div className="flex flex-wrap gap-2 items-center">
-                <DataImport onImport={handleImportData} />
-                <DataExport 
-                  data={books} 
-                  filename="libros-biblioteca" 
-                  buttonLabel="Exportar libros"
-                />
-                <NewBookDialog 
-                  categories={categories}
-                  onAddBook={handleAddBook}
-                />
-              </div>
-            </div>
-            {activeTab === 'libros' && (
-              <BulkActionsBar
-                selectedCount={selectedBooks.length}
-                totalCount={books.length}
-                onSelectAll={handleSelectAll}
-                onBulkDelete={handleBulkDelete}
-                onExportSelected={handleExportSelected}
-                disabled={selectedBooks.length === 0}
-              />
-            )}
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={handleTabChange}>
-              <TabsList className="mb-4 w-full sm:w-auto flex overflow-x-auto">
-                <TabsTrigger value="libros">Libros</TabsTrigger>
-                <TabsTrigger value="categorias">Categorías</TabsTrigger>
-                <TabsTrigger value="digital">Libros digitales</TabsTrigger>
-              </TabsList>
-              
-              <Suspense fallback={<div className="py-4 text-center">Cargando...</div>}>
-                <TabsContent value="libros">
-                  <BooksListTab 
-                    books={books}
-                    categories={categories}
-                    digitalBooks={digitalBooks}
-                    onDeleteBook={handleDeleteBook}
-                    onEditBook={handleEditBook}
-                    onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
-                    onAddDigitalBook={isStaff ? handleAddDigitalBook : undefined}
-                    onEditDigitalBook={isStaff ? handleEditDigitalBook : undefined}
-                    // Pasar las propiedades para selección masiva
-                    selectedBooks={selectedBooks}
-                    onSelectBook={handleSelectBook}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="categorias">
-                  <CategoriesTab 
-                    categories={categories}
-                    onAddCategoria={handleAddCategoria}
-                    onDeleteCategory={handleDeleteCategory}
-                    onEditCategory={handleEditCategory}
-                  />
-                </TabsContent>
+          <LibrosHeader
+            books={books}
+            categories={categories}
+            onImport={handleImportData}
+            onAddBook={handleAddBook}
+          />
 
-                <TabsContent value="digital">
-                  <BooksListTab 
-                    books={books}
-                    categories={categories}
-                    digitalBooks={digitalBooks}
-                    onDeleteBook={handleDeleteBook}
-                    onEditBook={handleEditBook}
-                    onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
-                    onAddDigitalBook={isStaff ? handleAddDigitalBook : undefined}
-                    onEditDigitalBook={isStaff ? handleEditDigitalBook : undefined}
-                    showDigitalOnly={true}
-                    selectedBooks={selectedBooks}
-                    onSelectBook={handleSelectBook}
-                  />
-                </TabsContent>
-              </Suspense>
-            </Tabs>
+          <CardContent>
+            <LibrosTabs
+              books={books}
+              categories={categories}
+              digitalBooks={digitalBooks}
+              selectedBooks={selectedBooks}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              onSelectBook={handleSelectBook}
+              onSelectAll={handleSelectAll}
+              onBulkDelete={handleBulkDelete}
+              onExportSelected={handleExportSelected}
+              onDeleteBook={handleDeleteBook}
+              onEditBook={handleEditBook}
+              onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
+              onAddDigitalBook={isStaff ? handleAddDigitalBook : undefined}
+              onEditDigitalBook={isStaff ? handleEditDigitalBook : undefined}
+              onAddCategoria={handleAddCategoria}
+              onDeleteCategory={handleDeleteCategory}
+              onEditCategory={handleEditCategory}
+              isStaff={isStaff}
+            />
           </CardContent>
         </Card>
       </div>
