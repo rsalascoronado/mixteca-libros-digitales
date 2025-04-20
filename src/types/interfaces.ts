@@ -46,6 +46,7 @@ export interface IDigitalBook {
   tamanioMb: number;
   fechaSubida: Date;
   resumen?: string;
+  storage_path?: string;
 }
 
 // Loan related interfaces

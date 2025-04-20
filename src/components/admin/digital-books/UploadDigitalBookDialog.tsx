@@ -33,6 +33,7 @@ interface UploadDigitalBookDialogProps {
     url: string;
     tamanioMb: number;
     resumen?: string;
+    storage_path?: string;
   }) => void;
 }
 
@@ -71,26 +72,32 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
       const fileExt = file.name.split('.').pop();
       const fileName = `${book.id}-${Date.now()}.${fileExt}`;
       
-      // Mock upload for now to avoid storage permissions errors
-      // In a real scenario, we would upload to Supabase Storage
-      setUploadProgress(50);
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('digital-books')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
       
-      // Simulate a delay to mimic file upload
-      await new Promise(resolve => setTimeout(resolve, 1000));
       setUploadProgress(90);
       
-      // Instead of uploading to Supabase, we'll use a mock URL
-      // In a production app, you would use the actual Supabase storage URL
-      const mockUrl = `https://ejemplomock.com/archivos/${fileName}`;
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('digital-books')
+        .getPublicUrl(fileName);
       
       setUploadProgress(100);
       
       // Pass the data back to the parent component
       onUploadComplete({
         formato: data.formato,
-        url: mockUrl,
+        url: publicUrl,
         tamanioMb: Number((file.size / (1024 * 1024)).toFixed(2)),
         resumen: data.resumen,
+        storage_path: fileName
       });
       
       setOpen(false);

@@ -1,10 +1,10 @@
-
 import { useState, useCallback, useMemo } from 'react';
 import { Book, BookCategory } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
 import { useToast } from '@/hooks/use-toast';
 import { mockBooks, mockCategories } from '@/types';
 import { mockDigitalBooks } from '@/types/digitalBook';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useBooksManagement() {
   const [categories, setCategories] = useState(mockCategories);
@@ -12,7 +12,6 @@ export function useBooksManagement() {
   const [digitalBooks, setDigitalBooks] = useState(mockDigitalBooks);
   const { toast } = useToast();
 
-  // Memoize categorias por nombre para búsqueda rápida
   const categoriesByName = useMemo(() => {
     return categories.reduce((acc, category) => {
       acc[category.nombre] = category;
@@ -20,7 +19,6 @@ export function useBooksManagement() {
     }, {} as Record<string, BookCategory>);
   }, [categories]);
 
-  // Memoize libros por id para búsqueda rápida
   const booksById = useMemo(() => {
     return books.reduce((acc, book) => {
       acc[book.id] = book;
@@ -60,7 +58,6 @@ export function useBooksManagement() {
 
   const handleDeleteBook = useCallback((id: string) => {
     setBooks(prev => prev.filter(book => book.id !== id));
-    // También eliminar libros digitales asociados
     setDigitalBooks(prev => prev.filter(db => db.bookId !== id));
     toast({
       title: "Libro eliminado",
@@ -86,7 +83,7 @@ export function useBooksManagement() {
     });
   }, [toast]);
 
-  const handleAddDigitalBook = useCallback((bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => {
+  const handleAddDigitalBook = useCallback(async (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => {
     const newDigitalBook: DigitalBook = {
       id: Math.random().toString(36).substr(2, 9),
       bookId,
@@ -100,13 +97,33 @@ export function useBooksManagement() {
     });
   }, [toast]);
 
-  const handleDeleteDigitalBook = useCallback((id: string) => {
-    setDigitalBooks(prev => prev.filter(db => db.id !== id));
-    toast({
-      title: "Archivo digital eliminado",
-      description: "El archivo digital ha sido eliminado exitosamente."
-    });
-  }, [toast]);
+  const handleDeleteDigitalBook = useCallback(async (id: string) => {
+    try {
+      const bookToDelete = digitalBooks.find(db => db.id === id);
+      
+      if (bookToDelete?.storage_path) {
+        const { error: storageError } = await supabase.storage
+          .from('digital-books')
+          .remove([bookToDelete.storage_path]);
+          
+        if (storageError) throw storageError;
+      }
+      
+      setDigitalBooks(prev => prev.filter(db => db.id !== id));
+      
+      toast({
+        title: "Archivo digital eliminado",
+        description: "El archivo digital ha sido eliminado exitosamente."
+      });
+    } catch (error) {
+      console.error('Error al eliminar el archivo:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el archivo digital.",
+        variant: "destructive"
+      });
+    }
+  }, [digitalBooks, toast]);
 
   return {
     books,
