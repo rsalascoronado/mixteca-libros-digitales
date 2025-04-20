@@ -18,6 +18,7 @@ import DataImport from '@/components/admin/DataImport';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { NewUserDialog } from '@/components/admin/NewUserDialog';
+import { EditUserDialog } from '@/components/admin/EditUserDialog';
 
 const GestionUsuarios = () => {
   const { hasRole } = useAuth();
@@ -36,6 +37,13 @@ const GestionUsuarios = () => {
     toast({
       title: "Datos importados",
       description: `Se importaron ${data.length} usuarios correctamente.`
+    });
+  };
+
+  const handleUserUpdated = () => {
+    toast({
+      title: "Lista actualizada",
+      description: "La lista de usuarios ha sido actualizada."
     });
   };
 
@@ -96,9 +104,7 @@ const GestionUsuarios = () => {
                       <TableCell className="capitalize">{user.role}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
-                            Editar
-                          </Button>
+                          <EditUserDialog user={user} onUserUpdated={handleUserUpdated} />
                           <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700">
                             Eliminar
                           </Button>
