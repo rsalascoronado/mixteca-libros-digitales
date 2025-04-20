@@ -29,7 +29,7 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   
-  const { isUploading, uploadProgress, uploadError, handleUpload } = useDigitalBookUpload(book, (data) => {
+  const { isUploading, uploadProgress, uploadError, handleUpload, handleRetry } = useDigitalBookUpload(book, (data) => {
     onUploadComplete(data);
     // Only close the dialog after successful upload
     setTimeout(() => setOpen(false), 1500);
@@ -138,6 +138,7 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
           <UploadProgressIndicator 
             uploadProgress={uploadProgress} 
             error={uploadError}
+            onRetry={handleRetry}
           />
         )}
       </DialogContent>

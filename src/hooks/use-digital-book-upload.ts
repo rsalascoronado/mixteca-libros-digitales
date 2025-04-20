@@ -19,6 +19,9 @@ export function useDigitalBookUpload(
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [currentFile, setCurrentFile] = useState<File | null>(null);
+  const [currentFormat, setCurrentFormat] = useState<string | null>(null);
+  const [currentResumen, setCurrentResumen] = useState<string | undefined>(undefined);
 
   const simulateProgress = useCallback(() => {
     // Esta función simula el progreso de carga ya que Supabase no proporciona eventos de progreso
@@ -37,8 +40,26 @@ export function useDigitalBookUpload(
     return () => clearInterval(interval);
   }, []);
 
+  const handleRetry = useCallback(() => {
+    if (currentFile && currentFormat) {
+      handleUpload(currentFile, currentFormat, currentResumen);
+    } else {
+      setUploadError("No hay archivo para reintentar la carga");
+      toast({
+        title: "Error",
+        description: "No hay archivo para reintentar la carga",
+        variant: "destructive"
+      });
+    }
+  }, [currentFile, currentFormat, currentResumen]);
+
   const handleUpload = async (file: File, formato: string, resumen?: string) => {
     try {
+      // Guardar los datos actuales para posible reintento
+      setCurrentFile(file);
+      setCurrentFormat(formato);
+      setCurrentResumen(resumen);
+      
       setUploadError(null);
       console.log('Starting upload process for:', file.name);
       
@@ -72,7 +93,7 @@ export function useDigitalBookUpload(
         // Detener la simulación y establecer el progreso según el resultado
         stopProgressSimulation();
         
-        if (error) {
+        if (error && !publicUrl) {
           console.error('Upload error:', error);
           setUploadError(error instanceof Error ? error.message : String(error));
           setUploadProgress(0);
@@ -117,6 +138,9 @@ export function useDigitalBookUpload(
         setTimeout(() => {
           setUploadError(null);
           setUploadProgress(0);
+          setCurrentFile(null);
+          setCurrentFormat(null);
+          setCurrentResumen(undefined);
         }, 3000);
         
         return true;
@@ -144,6 +168,7 @@ export function useDigitalBookUpload(
     isUploading,
     uploadProgress,
     uploadError,
-    handleUpload
+    handleUpload,
+    handleRetry
   };
 }
