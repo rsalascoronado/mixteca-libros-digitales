@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Book, mockBooks } from '@/types/book';
 import { mockDigitalBooks } from '@/types/digitalBook';
 import CatalogPagination from './CatalogPagination';
+import { useNavigate } from 'react-router-dom';
 
 const ITEMS_PER_PAGE = 9;
 const BOOKS_PER_ROW = 3;
@@ -28,6 +29,7 @@ export function BooksCatalog({
   disponibilidad,
   setDisponibilidad
 }: BooksCatalogProps) {
+  const navigate = useNavigate();
   const [libros, setLibros] = useState<Book[]>([]);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -99,6 +101,10 @@ export function BooksCatalog({
     setCurrentPage(1);
   };
 
+  const handleVerDetalles = (libroId: string) => {
+    navigate(`/libro/${libroId}`);
+  };
+
   return (
     <div>
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
@@ -164,7 +170,12 @@ export function BooksCatalog({
             <p className="text-sm text-gray-500">Categoría: {libro.categoria}</p>
             <div className="mt-2 flex justify-between items-center">
               <span className="text-sm text-gray-700">Disponibles: {libro.disponibles}</span>
-              <Button size="sm">Ver Detalles</Button>
+              <Button 
+                size="sm" 
+                onClick={() => handleVerDetalles(libro.id)}
+              >
+                Ver Detalles
+              </Button>
             </div>
           </div>
         ))}
