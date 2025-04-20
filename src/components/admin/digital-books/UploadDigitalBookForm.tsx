@@ -1,15 +1,26 @@
 
-import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Save } from 'lucide-react';
-import { digitalBookSchema, type DigitalBookFormData } from './schema';
+import { Textarea } from '@/components/ui/textarea';
 import React from 'react';
 
+const uploadFormSchema = z.object({
+  formato: z.enum(['PDF', 'EPUB', 'MOBI', 'HTML'], {
+    required_error: 'Debe seleccionar un formato',
+  }),
+  file: z.instanceof(File).refine((file) => file.size <= 100 * 1024 * 1024, `El archivo debe ser menor a 100MB`),
+  resumen: z.string().optional(),
+});
+
+type UploadFormData = z.infer<typeof uploadFormSchema>;
+
 interface UploadDigitalBookFormProps {
-  onSubmit: (data: DigitalBookFormData) => Promise<void>;
+  onSubmit: (data: UploadFormData) => Promise<void>;
   isUploading: boolean;
 }
 
@@ -17,8 +28,8 @@ export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBo
   const [isFileSelected, setIsFileSelected] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const form = useForm<DigitalBookFormData>({
-    resolver: zodResolver(digitalBookSchema),
+  const form = useForm<UploadFormData>({
+    resolver: zodResolver(uploadFormSchema),
     defaultValues: {
       formato: 'PDF',
     },
@@ -95,6 +106,24 @@ export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBo
                   Archivo seleccionado: {fileInputRef.current?.files?.[0]?.name}
                 </p>
               )}
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="resumen"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Resumen</FormLabel>
+              <FormControl>
+                <Textarea
+                  {...field}
+                  placeholder="Ingrese un resumen del archivo digital"
+                  className="min-h-[80px]"
+                />
+              </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
