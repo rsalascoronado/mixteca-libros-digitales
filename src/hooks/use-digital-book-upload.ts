@@ -17,6 +17,16 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
 
   const handleUpload = async (file: File, formato: string, resumen?: string) => {
     try {
+      // Verify file size before starting the upload
+      if (file.size > 50 * 1024 * 1024) {
+        toast({
+          title: "Error de tamaño",
+          description: "El archivo excede el límite de 50MB permitido.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       setIsUploading(true);
       setUploadProgress(10);
       
@@ -30,7 +40,31 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
           upsert: false
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Error al subir el archivo:', uploadError);
+        
+        // Handle specific error types
+        if (uploadError.message.includes('size')) {
+          toast({
+            title: "Error de tamaño",
+            description: "El archivo excede el límite de 50MB permitido por el servidor.",
+            variant: "destructive"
+          });
+        } else if (uploadError.message.includes('auth')) {
+          toast({
+            title: "Error de autenticación",
+            description: "Debe iniciar sesión para subir archivos.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "No se pudo guardar el archivo digital: " + uploadError.message,
+            variant: "destructive"
+          });
+        }
+        return false;
+      }
       
       setUploadProgress(90);
       

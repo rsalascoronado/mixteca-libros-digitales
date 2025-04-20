@@ -102,6 +102,7 @@ export function DigitalBooksTable({
                   <PDFViewer 
                     url={digitalBook.url} 
                     fileName={`${book.titulo} - ${digitalBook.formato}`} 
+                    fileFormat={digitalBook.formato as 'PDF' | 'EPUB' | 'MOBI' | 'HTML'}
                   />
                   <DigitalBooksActionsMenu
                     isStaff={isStaff}
