@@ -55,7 +55,8 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
           }
         }
         
-        publicUrl = await uploadThesisFile(selectedFile, editingThesis.id);
+        // Fix here: Remove the second argument (thesisId)
+        publicUrl = await uploadThesisFile(selectedFile);
       }
 
       const updatedThesis = {
