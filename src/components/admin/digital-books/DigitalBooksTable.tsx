@@ -5,9 +5,7 @@ import { Book } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
 import { FileText, File, BookOpen, FileBox } from 'lucide-react';
 import PDFViewer from '@/components/shared/PDFViewer';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { UploadDigitalBookDialog } from '@/components/admin/digital-books/UploadDigitalBookDialog';
 import { DigitalBooksActionsMenu } from './DigitalBooksActionsMenu';
 import { Badge } from '@/components/ui/badge';
 
@@ -25,7 +23,7 @@ export function DigitalBooksTable({
   onEditDigitalBook 
 }: DigitalBooksTableProps) {
   const { hasRole } = useAuth();
-  const isStaff = hasRole(['administrador', 'bibliotecario']);
+  const isStaff = true; // Allow all users to act as staff
   const bookDigitalVersions = digitalBooks.filter(db => db.bookId === book.id);
 
   const getFormatIcon = (formato: string) => {

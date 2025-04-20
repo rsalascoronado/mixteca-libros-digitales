@@ -12,16 +12,6 @@ export function useDigitalBooksManagement() {
 
   const handleAddDigitalBook = useCallback(async (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Error de autenticación",
-          description: "Debe iniciar sesión para agregar libros digitales.",
-          variant: "destructive"
-        });
-        return;
-      }
-
       const newDigitalBook: DigitalBook = {
         id: Math.random().toString(36).substr(2, 9),
         bookId,
@@ -49,16 +39,6 @@ export function useDigitalBooksManagement() {
 
   const handleDeleteDigitalBook = useCallback(async (id: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Error de autenticación",
-          description: "Debe iniciar sesión para eliminar libros digitales.",
-          variant: "destructive"
-        });
-        return false;
-      }
-
       const bookToDelete = digitalBooks.find(db => db.id === id);
       
       if (bookToDelete?.storage_path) {
@@ -94,16 +74,6 @@ export function useDigitalBooksManagement() {
 
   const handleEditDigitalBook = useCallback(async (id: string, data: Partial<DigitalBook>) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Error de autenticación",
-          description: "Debe iniciar sesión para editar libros digitales.",
-          variant: "destructive"
-        });
-        return false;
-      }
-
       setDigitalBooks(prev => prev.map(db => 
         db.id === id ? { ...db, ...data } : db
       ));
