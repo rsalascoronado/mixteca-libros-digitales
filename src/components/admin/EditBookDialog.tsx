@@ -6,10 +6,12 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { Edit } from 'lucide-react';
+import { Edit, Upload, Trash2 } from 'lucide-react';
 import { Book, BookCategory } from '@/types';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
+import { useToast } from '@/hooks/use-toast';
 
 const bookSchema = z.object({
   titulo: z.string().min(1, 'El título es requerido'),
@@ -18,6 +20,7 @@ const bookSchema = z.object({
   categoria: z.string().min(1, 'La categoría es requerida'),
   disponibles: z.coerce.number().min(0, 'El número debe ser positivo'),
   copias: z.coerce.number().min(0, 'El número debe ser positivo'),
+  file: z.instanceof(File).optional(),
 });
 
 type BookFormData = z.infer<typeof bookSchema>;
@@ -30,6 +33,9 @@ interface EditBookDialogProps {
 
 export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogProps) {
   const [open, setOpen] = React.useState(false);
+  const { uploadThesisFile, deleteThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
+  const { toast } = useToast();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   
   const form = useForm<BookFormData>({
     resolver: zodResolver(bookSchema),
@@ -43,9 +49,69 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
     },
   });
 
-  const onSubmit = (data: BookFormData) => {
-    onEditBook(book.id, data);
-    setOpen(false);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      form.setValue('file', file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const onSubmit = async (data: BookFormData) => {
+    try {
+      // Upload file if provided
+      let fileUrl: string | undefined;
+      if (data.file) {
+        fileUrl = await uploadThesisFile(data.file, book.id);
+      }
+
+      // Update book data
+      onEditBook(book.id, {
+        titulo: data.titulo,
+        autor: data.autor,
+        isbn: data.isbn,
+        categoria: data.categoria,
+        disponibles: data.disponibles,
+        copias: data.copias,
+        archivo: fileUrl || book.archivo,
+      });
+
+      setOpen(false);
+      toast({
+        title: "Libro actualizado",
+        description: "Los cambios han sido guardados exitosamente."
+      });
+    } catch (error) {
+      console.error('Error al actualizar el libro:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el libro.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteFile = async () => {
+    if (book.archivo) {
+      try {
+        await deleteThesisFile(book.archivo);
+        onEditBook(book.id, { archivo: null });
+        toast({
+          title: "Archivo eliminado",
+          description: "El archivo digital ha sido eliminado exitosamente."
+        });
+      } catch (error) {
+        console.error('Error al eliminar el archivo:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo eliminar el archivo digital.",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
   return (
@@ -75,6 +141,7 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
               name="autor"
@@ -88,6 +155,7 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="isbn"
@@ -101,6 +169,7 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="categoria"
@@ -125,6 +194,7 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="disponibles"
@@ -142,6 +212,7 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="copias"
@@ -159,7 +230,61 @@ export function EditBookDialog({ book, categories, onEditBook }: EditBookDialogP
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
+
+            <FormField
+              control={form.control}
+              name="file"
+              render={({ field: { onChange, ...field } }) => (
+                <FormItem>
+                  <FormLabel>Archivo digital</FormLabel>
+                  <div className="flex flex-col gap-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      onChange={handleFileSelect}
+                      accept=".pdf,.epub,.mobi"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={triggerFileInput}
+                        disabled={isUploading}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {isUploading ? `Subiendo... ${uploadProgress}%` : 'Seleccionar archivo'}
+                      </Button>
+                      {book.archivo && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleDeleteFile}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Eliminar archivo</span>
+                        </Button>
+                      )}
+                    </div>
+                    {book.archivo && (
+                      <p className="text-sm text-muted-foreground">
+                        Archivo actual: {new URL(book.archivo).pathname.split('/').pop()}
+                      </p>
+                    )}
+                    {form.watch('file') && (
+                      <p className="text-sm text-muted-foreground">
+                        Nuevo archivo: {form.watch('file')?.name}
+                      </p>
+                    )}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" className="w-full" disabled={isUploading}>
               Guardar cambios
             </Button>
           </form>
