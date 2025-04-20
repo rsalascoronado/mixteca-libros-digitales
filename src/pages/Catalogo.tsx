@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Book, Library, Microscope } from 'lucide-react';
+import { Book as BookIcon, Library, Microscope } from 'lucide-react';
 import ThesisTable from '@/components/thesis/ThesisTable';
 import ThesisSearch from '@/components/thesis/ThesisSearch';
 import { mockTheses } from '@/types';
@@ -9,18 +10,50 @@ import { BooksCatalog } from '@/components/books/BooksCatalog';
 import BookSearchResultTest from '@/components/books/BookSearchResultTest';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Book, Thesis } from "@/types";
+import { IBook, IThesis } from "@/types/interfaces";
 
 const fetchBooks = async () => {
   const { data, error } = await supabase.from("books").select("*");
   if (error) throw error;
-  return data as Book[];
+  return data as IBook[];
 };
 
+// Define a custom type for mapped thesis data
+interface ThesisDataFromDB {
+  id: string;
+  titulo: string;
+  autor: string;
+  carrera: string;
+  anio: number;
+  director: string;
+  tipo: string;
+  disponible: boolean;
+  resumen?: string;
+  archivo_pdf?: string;
+}
+
 const fetchTheses = async () => {
-  const { data, error } = await supabase.from("theses").select("*");
-  if (error) throw error;
-  return data as Thesis[];
+  try {
+    const { data, error } = await supabase.from("theses").select("*");
+    if (error) throw error;
+    
+    // Map the data to match the expected IThesis structure
+    return (data || []).map((item: ThesisDataFromDB) => ({
+      id: item.id,
+      titulo: item.titulo,
+      autor: item.autor,
+      carrera: item.carrera,
+      anio: item.anio,
+      director: item.director,
+      tipo: item.tipo as 'Licenciatura' | 'Maestría' | 'Doctorado',
+      disponible: item.disponible,
+      resumen: item.resumen,
+      archivoPdf: item.archivo_pdf
+    } as IThesis));
+  } catch (error) {
+    console.error("Error fetching theses:", error);
+    return [];
+  }
 };
 
 const Catalogo = () => {
@@ -84,7 +117,7 @@ const Catalogo = () => {
           <Tabs defaultValue="books" className="w-full">
             <TabsList className="mb-4">
               <TabsTrigger value="books" className="flex items-center gap-2">
-                <Book className="h-4 w-4" />
+                <BookIcon className="h-4 w-4" />
                 Libros
               </TabsTrigger>
               <TabsTrigger value="theses" className="flex items-center gap-2">
@@ -103,7 +136,7 @@ const Catalogo = () => {
               {booksLoading ? (
                 <div className="p-4 text-center text-muted-foreground">Cargando libros...</div>
               ) : booksError ? (
-                <div className="p-4 text-red-500 text-sm">Error obteniendo libros: {booksError.message}</div>
+                <div className="p-4 text-red-500 text-sm">Error obteniendo libros: {(booksError as Error).message}</div>
               ) : (
                 <BooksCatalog
                   searchTerm={searchTerm}
@@ -138,7 +171,7 @@ const Catalogo = () => {
               {thesesLoading ? (
                 <div className="p-4 text-center text-muted-foreground">Cargando tesis...</div>
               ) : thesesError ? (
-                <div className="p-4 text-red-500 text-sm">Error obteniendo tesis: {thesesError.message}</div>
+                <div className="p-4 text-red-500 text-sm">Error obteniendo tesis: {(thesesError as Error).message}</div>
               ) : (
                 <ThesisTable 
                   theses={filteredTheses} 

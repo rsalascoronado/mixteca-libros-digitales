@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Plus } from 'lucide-react';
@@ -14,18 +15,67 @@ import EditThesisDialog from '@/components/thesis/EditThesisDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+
+// Define a type for the database thesis data structure
+interface ThesisDBRow {
+  id: string;
+  titulo: string;
+  autor: string;
+  carrera: string;
+  anio: number;
+  director: string;
+  tipo: string;
+  disponible: boolean;
+  resumen?: string;
+  archivo_pdf?: string;
+}
+
+// Function to map DB row to Thesis type
+const mapDBRowToThesis = (row: ThesisDBRow): Thesis => ({
+  id: row.id,
+  titulo: row.titulo,
+  autor: row.autor,
+  carrera: row.carrera,
+  anio: row.anio,
+  director: row.director,
+  tipo: row.tipo as 'Licenciatura' | 'Maestría' | 'Doctorado',
+  disponible: row.disponible,
+  resumen: row.resumen,
+  archivoPdf: row.archivo_pdf
+});
 
 const GestionTesis = () => {
   const navigate = useNavigate();
   const { hasRole } = useAuth();
   const { toast } = useToast();
   const { deleteThesisFile } = useThesisFileUpload();
-  const [tesis, setTesis] = useState<Thesis[]>(mockTheses);
   const [busqueda, setBusqueda] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingTesis, setEditingTesis] = useState<Thesis | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  // Fetch theses from Supabase
+  const { data: tesis = [], isLoading, refetch } = useQuery({
+    queryKey: ['theses'],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('theses')
+          .select('*');
+        
+        if (error) throw error;
+        
+        // Map the data to match our Thesis type
+        return (data || []).map(mapDBRowToThesis);
+      } catch (error) {
+        console.error('Error al cargar tesis:', error);
+        // Fallback to mock data if there's an error
+        return [...mockTheses];
+      }
+    }
+  });
 
   React.useEffect(() => {
     if (!hasRole(['bibliotecario', 'administrador'])) {
@@ -54,13 +104,80 @@ const GestionTesis = () => {
     return cumpleBusqueda && cumpleTipo;
   });
 
-  const handleThesisAdded = (newThesis: Thesis) => {
-    setTesis(prev => [...prev, newThesis]);
+  const handleThesisAdded = async (newThesis: Thesis) => {
+    try {
+      // Prepare the data for Supabase insert
+      const { data, error } = await supabase
+        .from('theses')
+        .insert({
+          id: newThesis.id,
+          titulo: newThesis.titulo,
+          autor: newThesis.autor,
+          carrera: newThesis.carrera,
+          anio: newThesis.anio,
+          director: newThesis.director,
+          tipo: newThesis.tipo,
+          disponible: newThesis.disponible,
+          resumen: newThesis.resumen,
+          archivo_pdf: newThesis.archivoPdf
+        })
+        .select();
+      
+      if (error) throw error;
+      
+      // Refresh the data
+      refetch();
+      
+      toast({
+        title: 'Tesis agregada',
+        description: `La tesis "${newThesis.titulo}" ha sido agregada exitosamente.`,
+      });
+    } catch (error) {
+      console.error('Error al agregar tesis:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo agregar la tesis. Intente nuevamente.',
+        variant: 'destructive'
+      });
+    }
   };
 
-  const handleThesisUpdated = (updatedThesis: Thesis) => {
-    setTesis(prev => prev.map(t => t.id === updatedThesis.id ? updatedThesis : t));
-    setEditingTesis(null);
+  const handleThesisUpdated = async (updatedThesis: Thesis) => {
+    try {
+      // Prepare the data for Supabase update
+      const { error } = await supabase
+        .from('theses')
+        .update({
+          titulo: updatedThesis.titulo,
+          autor: updatedThesis.autor,
+          carrera: updatedThesis.carrera,
+          anio: updatedThesis.anio,
+          director: updatedThesis.director,
+          tipo: updatedThesis.tipo,
+          disponible: updatedThesis.disponible,
+          resumen: updatedThesis.resumen,
+          archivo_pdf: updatedThesis.archivoPdf
+        })
+        .eq('id', updatedThesis.id);
+      
+      if (error) throw error;
+      
+      // Refresh the data
+      refetch();
+      setEditingTesis(null);
+      
+      toast({
+        title: 'Tesis actualizada',
+        description: `La tesis "${updatedThesis.titulo}" ha sido actualizada exitosamente.`,
+      });
+    } catch (error) {
+      console.error('Error al actualizar tesis:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar la tesis. Intente nuevamente.',
+        variant: 'destructive'
+      });
+    }
   };
 
   const handleThesisDelete = async (thesisToDelete: Thesis) => {
@@ -70,14 +187,23 @@ const GestionTesis = () => {
         await deleteThesisFile(thesisToDelete.archivoPdf);
       }
 
-      // Remove thesis from list
-      setTesis(prev => prev.filter(t => t.id !== thesisToDelete.id));
+      // Delete the thesis from Supabase
+      const { error } = await supabase
+        .from('theses')
+        .delete()
+        .eq('id', thesisToDelete.id);
+      
+      if (error) throw error;
+      
+      // Refresh the data
+      refetch();
 
       toast({
         title: 'Tesis eliminada',
         description: `La tesis "${thesisToDelete.titulo}" ha sido eliminada exitosamente.`,
       });
     } catch (error) {
+      console.error('Error al eliminar tesis:', error);
       toast({
         title: 'Error',
         description: 'No se pudo eliminar la tesis. Intente nuevamente.',
@@ -94,27 +220,47 @@ const GestionTesis = () => {
   const handleImportTesis = async (importedData: any[]) => {
     let successCount = 0;
     let failCount = 0;
-    for (const raw of importedData) {
+    
+    for (const rawData of importedData) {
       try {
-        // Prevent duplicate thesis by title, director, or id
-        const { data: existing } = await supabase.from("theses").select("id").eq("titulo", raw.titulo).maybeSingle();
-        if (existing) continue;
-        await supabase.from("theses").insert([{
-          titulo: raw.titulo,
-          autor: raw.autor,
-          carrera: raw.carrera,
-          anio: Number(raw.anio),
-          director: raw.director,
-          tipo: raw.tipo,
-          disponible: raw.disponible === "true" || raw.disponible === true,
-          resumen: raw.resumen,
-          archivo_pdf: raw.archivoPdf || null
-        }]);
+        // Check if thesis already exists
+        const { data: existing } = await supabase
+          .from('theses')
+          .select('id')
+          .eq('titulo', rawData.titulo)
+          .maybeSingle();
+        
+        if (existing) {
+          failCount++;
+          continue; // Skip if already exists
+        }
+        
+        // Insert new thesis
+        const { error } = await supabase
+          .from('theses')
+          .insert({
+            titulo: rawData.titulo,
+            autor: rawData.autor,
+            carrera: rawData.carrera,
+            anio: Number(rawData.anio),
+            director: rawData.director,
+            tipo: rawData.tipo,
+            disponible: rawData.disponible === "true" || rawData.disponible === true,
+            resumen: rawData.resumen,
+            archivo_pdf: rawData.archivoPdf || null
+          });
+        
+        if (error) throw error;
         successCount++;
       } catch (e) {
+        console.error('Error importing thesis:', e);
         failCount++;
       }
     }
+    
+    // Refresh data after import
+    refetch();
+    
     toast({
       title: "Importación de tesis",
       description: `Tesis importadas: ${successCount}, Fallos: ${failCount}`
@@ -155,6 +301,7 @@ const GestionTesis = () => {
         <div className="mb-4">
           <p className="text-gray-600">
             Mostrando {tesisFiltradas.length} {tesisFiltradas.length === 1 ? 'tesis' : 'tesis'}
+            {isLoading && ' (Cargando...)'}
           </p>
         </div>
 

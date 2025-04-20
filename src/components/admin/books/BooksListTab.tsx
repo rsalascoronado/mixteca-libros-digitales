@@ -17,6 +17,9 @@ interface BooksListTabProps {
   onAddDigitalBook?: (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => void;
   onEditDigitalBook?: (id: string, data: Partial<DigitalBook>) => void;
   showDigitalOnly?: boolean;
+  // Add the new props for bulk actions
+  selectedBooks?: string[];
+  onSelectBook?: (bookId: string, checked: boolean) => void;
 }
 
 export function BooksListTab({ 
@@ -28,7 +31,9 @@ export function BooksListTab({
   onDeleteDigitalBook,
   onAddDigitalBook,
   onEditDigitalBook,
-  showDigitalOnly = false
+  showDigitalOnly = false,
+  selectedBooks = [],
+  onSelectBook
 }: BooksListTabProps) {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [selectedBookId, setSelectedBookId] = React.useState<string | null>(null);
@@ -92,6 +97,8 @@ export function BooksListTab({
         }}
         onEditDigitalBook={onEditDigitalBook}
         showUploadButton={!!onAddDigitalBook}
+        selectedBooks={selectedBooks}
+        onSelectBook={onSelectBook}
       />
     </>
   );

@@ -188,7 +188,7 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
                     onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
                     onAddDigitalBook={isStaff ? handleAddDigitalBook : undefined}
                     onEditDigitalBook={isStaff ? handleEditDigitalBook : undefined}
-                    // Nuevos props para selección masiva
+                    // Pasar las propiedades para selección masiva
                     selectedBooks={selectedBooks}
                     onSelectBook={handleSelectBook}
                   />
