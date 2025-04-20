@@ -22,6 +22,8 @@ interface BooksListTabProps {
   onEditBook: (id: string, data: Partial<Book>) => void;
   onDeleteDigitalBook?: (id: string) => void;
   onAddDigitalBook?: (bookId: string, data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => void;
+  onEditDigitalBook?: (id: string, data: Partial<DigitalBook>) => void;
+  showDigitalOnly?: boolean;
 }
 
 export function BooksListTab({ 
@@ -31,17 +33,28 @@ export function BooksListTab({
   onDeleteBook,
   onEditBook,
   onDeleteDigitalBook,
-  onAddDigitalBook
+  onAddDigitalBook,
+  onEditDigitalBook,
+  showDigitalOnly = false
 }: BooksListTabProps) {
   const [searchTerm, setSearchTerm] = React.useState('');
 
   const filteredBooks = React.useMemo(() => {
-    return books.filter(book => 
+    let filteredList = books.filter(book => 
       book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.isbn.includes(searchTerm)
     );
-  }, [books, searchTerm]);
+
+    if (showDigitalOnly) {
+      // Solo mostrar libros que tienen versiones digitales
+      filteredList = filteredList.filter(book => 
+        digitalBooks.some(db => db.bookId === book.id)
+      );
+    }
+
+    return filteredList;
+  }, [books, searchTerm, digitalBooks, showDigitalOnly]);
 
   return (
     <>
@@ -87,6 +100,7 @@ export function BooksListTab({
                     onEditBook={onEditBook}
                     onAddDigitalBook={onAddDigitalBook}
                     onDeleteDigitalBook={onDeleteDigitalBook}
+                    onEditDigitalBook={onEditDigitalBook}
                   />
                 </TableCell>
               </TableRow>

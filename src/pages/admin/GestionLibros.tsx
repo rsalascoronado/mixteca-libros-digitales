@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -115,33 +116,8 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
                     onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
                     onAddDigitalBook={isStaff ? handleAddDigitalBook : undefined}
                     onEditDigitalBook={isStaff ? handleEditDigitalBook : undefined}
+                    showDigitalOnly={true}
                   />
-                  <div className="mt-4">
-                    <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-                      <div>
-                        <h3 className="text-lg font-medium">Exportar/Importar libros digitales</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Gestiona tu base de datos de libros digitales
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <DataImport 
-                          onImport={(data) => {
-                            toast({
-                              title: "Libros digitales importados",
-                              description: `Se importaron ${data.length} archivos digitales correctamente.`
-                            });
-                          }} 
-                        />
-                        <DataExport 
-                          data={digitalBooks} 
-                          filename="libros-digitales" 
-                          buttonLabel="Exportar libros digitales"
-                          variant="default"
-                        />
-                      </div>
-                    </div>
-                  </div>
                 </TabsContent>
               </Suspense>
             </Tabs>
