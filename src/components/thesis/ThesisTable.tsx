@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { AlertTriangle, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Thesis } from '@/types';
 import PDFViewer from '@/components/shared/PDFViewer';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ThesisTableProps {
   theses: Thesis[];
