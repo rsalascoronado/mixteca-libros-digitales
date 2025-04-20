@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Book } from '@/types';
-import { mockBooks, mockDigitalBooks } from '@/types/book';
+import { Book, mockBooks } from '@/types/book';
+import { mockDigitalBooks } from '@/types/digitalBook';
 import CatalogPagination from './CatalogPagination';
 
 const ITEMS_PER_PAGE = 9;
@@ -28,8 +28,8 @@ export function BooksCatalog({
   disponibilidad,
   setDisponibilidad
 }: BooksCatalogProps) {
-  const [libros, setLibros] = useState<typeof Book[]>([]);
-  const [filteredBooks, setFilteredBooks] = useState<typeof Book[]>([]);
+  const [libros, setLibros] = useState<Book[]>([]);
+  const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
 
