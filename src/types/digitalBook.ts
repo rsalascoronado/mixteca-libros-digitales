@@ -1,3 +1,4 @@
+
 import { IDigitalBook } from './interfaces';
 
 export type DigitalBook = IDigitalBook;
