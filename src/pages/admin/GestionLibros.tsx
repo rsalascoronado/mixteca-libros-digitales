@@ -91,6 +91,7 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
                     onDeleteBook={handleDeleteBook}
                     onEditBook={handleEditBook}
                     onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
+                    onAddDigitalBook={isStaff ? handleAddDigitalBook : undefined}
                   />
                 </TabsContent>
                 
@@ -111,6 +112,7 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
                     onDeleteBook={handleDeleteBook}
                     onEditBook={handleEditBook}
                     onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
+                    onAddDigitalBook={isStaff ? handleAddDigitalBook : undefined}
                   />
                   <div className="mt-4">
                     <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
