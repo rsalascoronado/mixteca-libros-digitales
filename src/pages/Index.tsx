@@ -200,9 +200,9 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold">Libros destacados</h2>
-            <Link to="/catalogo">
+            <Link to="/catalogo/consultados">
               <Button variant="link" className="text-primary">
-                Ver todos los libros
+                Ver catálogo completo
               </Button>
             </Link>
           </div>

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,7 @@ import Login from "./pages/Login";
 import Catalogo from "./pages/Catalogo";
 import DetalleLibro from "./pages/DetalleLibro";
 import Ayuda from "./pages/Ayuda";
+import MostConsultedBooks from "./pages/MostConsultedBooks";
 
 // Páginas protegidas
 import MisPrestamos from "./pages/MisPrestamos";
@@ -75,6 +75,7 @@ const App = () => (
             <Route path="/catalogo" element={<Catalogo />} />
             <Route path="/libro/:id" element={<DetalleLibro />} />
             <Route path="/ayuda" element={<Ayuda />} />
+            <Route path="/catalogo/consultados" element={<MostConsultedBooks />} />
             
             {/* Rutas protegidas para usuarios autenticados */}
             <Route path="/mis-prestamos" element={
