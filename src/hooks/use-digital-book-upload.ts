@@ -121,33 +121,45 @@ export function useDigitalBookUpload(
         console.log('File uploaded successfully, public URL:', publicUrl);
         setUploadProgress(100);
         
-        // Guardar en la base de datos
-        const digitalBookData = {
-          bookId: book.id,
-          formato: formato as 'PDF' | 'EPUB' | 'MOBI' | 'HTML',
-          url: publicUrl,
-          tamanioMb: getFormattedSize(file.size),
-          fechaSubida: new Date(),
-          resumen: resumen,
-          storage_path: fileName
-        };
-        
-        const savedDigitalBook = await saveDigitalBook(digitalBookData);
-        console.log('Digital book saved to database:', savedDigitalBook);
-        
-        // Notificar que la carga se completó
-        onUploadComplete({
-          formato,
-          url: publicUrl, 
-          tamanioMb: getFormattedSize(file.size),
-          resumen,
-          storage_path: fileName
-        });
-        
-        toast({
-          title: "Archivo digital guardado",
-          description: "Se ha guardado el archivo digital correctamente."
-        });
+        try {
+          // Guardar en la base de datos
+          const digitalBookData = {
+            bookId: book.id,
+            formato: formato as 'PDF' | 'EPUB' | 'MOBI' | 'HTML',
+            url: publicUrl,
+            tamanioMb: getFormattedSize(file.size),
+            fechaSubida: new Date(),
+            resumen: resumen,
+            storage_path: fileName
+          };
+          
+          const savedDigitalBook = await saveDigitalBook(digitalBookData);
+          console.log('Digital book saved to database:', savedDigitalBook);
+          
+          // Notificar que la carga se completó
+          onUploadComplete({
+            formato,
+            url: publicUrl, 
+            tamanioMb: getFormattedSize(file.size),
+            resumen,
+            storage_path: fileName
+          });
+          
+          toast({
+            title: "Archivo digital guardado",
+            description: "Se ha guardado el archivo digital correctamente."
+          });
+        } catch (dbError) {
+          console.error('Error guardando libro digital en la base de datos:', dbError);
+          setUploadError(dbError instanceof Error ? dbError.message : 'Error guardando en la base de datos');
+          toast({
+            title: "Error",
+            description: "Se subió el archivo pero hubo un error al guardar en la base de datos: " + 
+              (dbError instanceof Error ? dbError.message : 'Error desconocido'),
+            variant: "destructive"
+          });
+          return false;
+        }
         
         // Resetear el estado después de un tiempo
         setTimeout(() => {
@@ -161,7 +173,7 @@ export function useDigitalBookUpload(
         return true;
       } catch (uploadError) {
         stopProgressSimulation();
-        throw uploadError; // Reenviar el error para ser manejado en el bloque catch externo
+        throw new Error(`Error en la carga: ${uploadError instanceof Error ? uploadError.message : 'Error desconocido'}`);
       }
     } catch (error) {
       console.error('Unexpected upload error:', error);
@@ -169,7 +181,8 @@ export function useDigitalBookUpload(
       setUploadProgress(0);
       toast({
         title: "Error",
-        description: "No se pudo guardar el archivo digital. Intente nuevamente.",
+        description: "No se pudo guardar el archivo digital: " + 
+          (error instanceof Error ? error.message : "Error inesperado"),
         variant: "destructive"
       });
       

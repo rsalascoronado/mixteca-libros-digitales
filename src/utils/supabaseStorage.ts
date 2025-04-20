@@ -8,7 +8,7 @@ export const createBucketIfNotExists = async (bucketName: string): Promise<boole
     
     if (listError) {
       console.error('Error al listar buckets:', listError);
-      return false;
+      throw new Error(`Error al listar buckets: ${listError.message}`);
     }
     
     // Verificar si el bucket ya existe en la lista
@@ -23,7 +23,8 @@ export const createBucketIfNotExists = async (bucketName: string): Promise<boole
     return true;
   } catch (err) {
     console.error('Error al verificar/crear bucket:', err);
-    return false;
+    const message = err instanceof Error ? err.message : JSON.stringify(err);
+    throw new Error(`Error al verificar bucket: ${message}`);
   }
 };
 
@@ -36,10 +37,7 @@ export const uploadFile = async (bucketName: string, fileName: string, file: Fil
     
     if (!bucketExists) {
       console.error(`Error: El bucket "${bucketName}" no pudo ser verificado`);
-      return { 
-        data: null, 
-        error: new Error(`No se pudo acceder al bucket "${bucketName}"`) 
-      };
+      throw new Error(`No se pudo acceder al bucket "${bucketName}"`);
     }
     
     // Realizar la carga del archivo
@@ -52,7 +50,11 @@ export const uploadFile = async (bucketName: string, fileName: string, file: Fil
     
     if (error) {
       console.error(`Error al cargar archivo "${fileName}":`, error);
-      throw error;
+      throw new Error(`Error al cargar archivo: ${error.message}`);
+    }
+    
+    if (!data || !data.path) {
+      throw new Error(`No se pudo cargar el archivo "${fileName}": respuesta vacía del servidor`);
     }
     
     console.log(`Archivo "${fileName}" cargado exitosamente:`, data);
@@ -70,28 +72,47 @@ export const uploadFile = async (bucketName: string, fileName: string, file: Fil
 
 export const getPublicUrl = (bucketName: string, fileName: string): string => {
   try {
+    if (!bucketName) {
+      throw new Error('Nombre de bucket no proporcionado');
+    }
+    
+    if (!fileName) {
+      throw new Error('Nombre de archivo no proporcionado');
+    }
+    
     const { data } = supabase.storage.from(bucketName).getPublicUrl(fileName);
     
     if (!data || !data.publicUrl) {
       console.error(`No se pudo obtener URL pública para ${bucketName}/${fileName}`);
-      return '';
+      throw new Error(`No se pudo obtener URL pública para ${fileName}`);
     }
     
     console.log(`URL pública obtenida: ${data.publicUrl}`);
     return data.publicUrl;
   } catch (error) {
     console.error('Error al obtener URL pública:', error);
-    return '';
+    const message = error instanceof Error ? error.message : JSON.stringify(error);
+    throw new Error(`Error al obtener URL pública: ${message}`);
   }
 };
 
 export const deleteFile = async (bucketName: string, fileName: string) => {
   try {
     console.log(`Eliminando archivo "${fileName}" del bucket "${bucketName}"`);
+    
+    if (!bucketName) {
+      throw new Error('Nombre de bucket no proporcionado');
+    }
+    
+    if (!fileName) {
+      throw new Error('Nombre de archivo no proporcionado');
+    }
+    
     const result = await supabase.storage.from(bucketName).remove([fileName]);
     
     if (result.error) {
       console.error(`Error al eliminar archivo "${fileName}":`, result.error);
+      throw new Error(`Error al eliminar archivo: ${result.error.message}`);
     } else {
       console.log(`Archivo "${fileName}" eliminado exitosamente`);
     }
@@ -99,6 +120,11 @@ export const deleteFile = async (bucketName: string, fileName: string) => {
     return result;
   } catch (error) {
     console.error('Error en deleteFile:', error);
-    return { data: null, error };
+    return { 
+      data: null, 
+      error: error instanceof Error 
+        ? error 
+        : new Error(typeof error === 'object' && error !== null ? JSON.stringify(error) : 'Error desconocido al eliminar archivo')
+    };
   }
 };

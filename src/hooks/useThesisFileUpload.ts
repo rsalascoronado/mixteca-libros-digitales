@@ -106,7 +106,12 @@ export const useThesisFileUpload = () => {
       
       // Si hay un archivo nuevo, subir primero el archivo
       if (file) {
-        publicUrl = await uploadThesisFile(file);
+        try {
+          publicUrl = await uploadThesisFile(file);
+        } catch (uploadError) {
+          console.error('Error en la carga del archivo:', uploadError);
+          throw new Error(`Error en la carga del archivo: ${uploadError instanceof Error ? uploadError.message : 'Error desconocido'}`);
+        }
       }
       
       // Crear el objeto de tesis completo
@@ -123,10 +128,26 @@ export const useThesisFileUpload = () => {
         archivoPdf: publicUrl
       };
       
-      // Guardar en la base de datos
-      const savedThesis = await saveThesis(thesisToSave);
-      
-      return savedThesis;
+      try {
+        // Guardar en la base de datos
+        const savedThesis = await saveThesis(thesisToSave);
+        return savedThesis;
+      } catch (dbError) {
+        console.error('Error al guardar en la base de datos:', dbError);
+        
+        // Si subimos un archivo pero fallamos al guardar en la base de datos,
+        // intentamos eliminar el archivo para no dejar huérfanos
+        if (file && publicUrl) {
+          try {
+            await deleteThesisFile(publicUrl);
+            console.log('Archivo eliminado después del error de guardado en BD');
+          } catch (cleanupError) {
+            console.error('No se pudo limpiar el archivo después del error:', cleanupError);
+          }
+        }
+        
+        throw dbError;
+      }
     } catch (error) {
       console.error('Error saving thesis with file:', error);
       toast({
