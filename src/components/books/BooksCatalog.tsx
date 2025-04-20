@@ -1,10 +1,10 @@
 
-import React, { useState } from "react";
-import BookSearchFilters from "./BookSearchFilters";
+import React from "react";
 import BookList from "./BooksCatalogBookList";
 import BooksCatalogSummary from "./BooksCatalogSummary";
 import { useBooksCatalog } from "./useBooksCatalog";
 import { Book } from "@/types/book";
+import BookSearchTesisStyle from "./BookSearchTesisStyle";
 
 interface BooksCatalogProps {
   searchTerm: string;
@@ -17,9 +17,10 @@ interface BooksCatalogProps {
 }
 
 /**
- * Catálogo de libros adaptado a la lógica de filtros estilo "tesis":
+ * Catálogo de libros adaptado a la lógica y UI de filtros estilo "tesis":
  * - Input de búsqueda desacoplado con debounce.
  * - Select de categoría y disponibilidad.
+ * - Diseño visual inspirado en búsqueda de tesis.
  */
 export function BooksCatalog({
   searchTerm,
@@ -30,7 +31,6 @@ export function BooksCatalog({
   setDisponibilidad,
   booksProp,
 }: BooksCatalogProps) {
-  // Aunque booksProp está soportado, normalmente la data viene del hook original
   let libros = booksProp ?? [];
   let isLoading = false;
   let categorias: string[] = [];
@@ -51,7 +51,7 @@ export function BooksCatalog({
 
   return (
     <div className="space-y-4">
-      <BookSearchFilters
+      <BookSearchTesisStyle
         searchTerm={searchTerm}
         categoria={categoria}
         disponibilidad={disponibilidad}
@@ -85,3 +85,4 @@ export function BooksCatalog({
     </div>
   );
 }
+
