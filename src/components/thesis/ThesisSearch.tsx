@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FilterX, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface ThesisSearchProps {
   busqueda: string;
@@ -20,6 +21,13 @@ const ThesisSearch = ({
   onTipoFiltroChange,
   onLimpiarFiltros
 }: ThesisSearchProps) => {
+  const [searchTerm, setSearchTerm] = useState(busqueda);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  
+  useEffect(() => {
+    onBusquedaChange(debouncedSearchTerm);
+  }, [debouncedSearchTerm, onBusquedaChange]);
+
   return (
     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -30,8 +38,9 @@ const ThesisSearch = ({
               type="text" 
               placeholder="Buscar por título, autor o director..." 
               className="pl-8" 
-              value={busqueda} 
-              onChange={(e) => onBusquedaChange(e.target.value)} 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+              aria-label="Buscar tesis"
             />
           </div>
         </div>
@@ -39,7 +48,7 @@ const ThesisSearch = ({
         <div className="flex items-center space-x-2">
           <div className="flex-1">
             <Select value={tipoFiltro || "all"} onValueChange={onTipoFiltroChange}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Filtrar por tipo">
                 <SelectValue placeholder="Todos los tipos" />
               </SelectTrigger>
               <SelectContent>
@@ -51,7 +60,12 @@ const ThesisSearch = ({
             </Select>
           </div>
           
-          <Button variant="outline" onClick={onLimpiarFiltros} className="whitespace-nowrap">
+          <Button 
+            variant="outline" 
+            onClick={onLimpiarFiltros} 
+            className="whitespace-nowrap"
+            aria-label="Limpiar filtros"
+          >
             <FilterX className="h-4 w-4 mr-2" />
             Limpiar
           </Button>

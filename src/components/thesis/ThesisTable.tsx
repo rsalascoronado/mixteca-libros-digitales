@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { AlertTriangle, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -12,6 +12,14 @@ interface ThesisTableProps {
 }
 
 const ThesisTable = ({ theses, onEdit }: ThesisTableProps) => {
+  // Memoize the sorted theses to avoid unnecessary re-renders
+  const sortedTheses = useMemo(() => {
+    return [...theses].sort((a, b) => {
+      // Sort by newest first
+      return b.anio - a.anio;
+    });
+  }, [theses]);
+  
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="overflow-x-auto">
@@ -30,14 +38,22 @@ const ThesisTable = ({ theses, onEdit }: ThesisTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {theses.length > 0 ? theses.map(thesis => (
+            {sortedTheses.length > 0 ? sortedTheses.map(thesis => (
               <TableRow key={thesis.id}>
-                <TableCell className="font-medium">{thesis.titulo}</TableCell>
-                <TableCell>{thesis.autor}</TableCell>
-                <TableCell className="hidden md:table-cell">{thesis.carrera}</TableCell>
+                <TableCell className="font-medium" title={thesis.titulo}>
+                  <div className="truncate max-w-[200px]">{thesis.titulo}</div>
+                </TableCell>
+                <TableCell title={thesis.autor}>
+                  <div className="truncate max-w-[150px]">{thesis.autor}</div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell" title={thesis.carrera}>
+                  <div className="truncate max-w-[150px]">{thesis.carrera}</div>
+                </TableCell>
                 <TableCell className="hidden sm:table-cell">{thesis.tipo}</TableCell>
                 <TableCell className="hidden lg:table-cell">{thesis.anio}</TableCell>
-                <TableCell className="hidden md:table-cell">{thesis.director}</TableCell>
+                <TableCell className="hidden md:table-cell" title={thesis.director}>
+                  <div className="truncate max-w-[150px]">{thesis.director}</div>
+                </TableCell>
                 <TableCell>
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${thesis.disponible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {thesis.disponible ? 'Disponible' : 'No disponible'}
@@ -58,6 +74,7 @@ const ThesisTable = ({ theses, onEdit }: ThesisTableProps) => {
                     variant="ghost"
                     size="icon"
                     onClick={() => onEdit(thesis)}
+                    aria-label={`Editar tesis ${thesis.titulo}`}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { BooksListTab } from '@/components/admin/books/BooksListTab';
 import { CategoriesTab } from '@/components/admin/books/CategoriesTab';
 import { useBooksManagement } from '@/hooks/use-books-management';
 import { useToast } from '@/hooks/use-toast';
+import { Suspense } from 'react';
 
 interface GestionLibrosProps {
   defaultTab?: 'libros' | 'categorias' | 'digital';
@@ -20,6 +21,7 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
   const { hasRole } = useAuth();
   const isStaff = hasRole(['administrador', 'bibliotecario']);
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<string>(defaultTab);
   
   const {
     books,
@@ -35,26 +37,30 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
     handleDeleteDigitalBook
   } = useBooksManagement();
 
-  const handleImportData = (data: any[]) => {
+  const handleImportData = useCallback((data: any[]) => {
     toast({
       title: "Datos importados",
       description: `Se importaron ${data.length} libros correctamente.`
     });
-  };
+  }, [toast]);
+
+  const handleTabChange = useCallback((value: string) => {
+    setActiveTab(value);
+  }, []);
 
   return (
     <MainLayout>
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-6 md:py-8">
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div>
                 <CardTitle>Gestión de Libros</CardTitle>
                 <CardDescription>
                   Administra el catálogo de libros de la biblioteca
                 </CardDescription>
               </div>
-              <div className="flex gap-2 items-center">
+              <div className="flex flex-wrap gap-2 items-center">
                 <DataImport onImport={handleImportData} />
                 <DataExport 
                   data={books} 
@@ -69,69 +75,71 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue={defaultTab}>
-              <TabsList className="mb-4">
+            <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={handleTabChange}>
+              <TabsList className="mb-4 w-full sm:w-auto flex overflow-x-auto">
                 <TabsTrigger value="libros">Libros</TabsTrigger>
                 <TabsTrigger value="categorias">Categorías</TabsTrigger>
                 <TabsTrigger value="digital">Libros digitales</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="libros">
-                <BooksListTab 
-                  books={books}
-                  categories={categories}
-                  digitalBooks={digitalBooks}
-                  onDeleteBook={handleDeleteBook}
-                  onEditBook={handleEditBook}
-                  onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
-                />
-              </TabsContent>
-              
-              <TabsContent value="categorias">
-                <CategoriesTab 
-                  categories={categories}
-                  onAddCategoria={handleAddCategoria}
-                  onDeleteCategory={handleDeleteCategory}
-                  onEditCategory={handleEditCategory}
-                />
-              </TabsContent>
+              <Suspense fallback={<div className="py-4 text-center">Cargando...</div>}>
+                <TabsContent value="libros">
+                  <BooksListTab 
+                    books={books}
+                    categories={categories}
+                    digitalBooks={digitalBooks}
+                    onDeleteBook={handleDeleteBook}
+                    onEditBook={handleEditBook}
+                    onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="categorias">
+                  <CategoriesTab 
+                    categories={categories}
+                    onAddCategoria={handleAddCategoria}
+                    onDeleteCategory={handleDeleteCategory}
+                    onEditCategory={handleEditCategory}
+                  />
+                </TabsContent>
 
-              <TabsContent value="digital">
-                <BooksListTab 
-                  books={books}
-                  categories={categories}
-                  digitalBooks={digitalBooks}
-                  onDeleteBook={handleDeleteBook}
-                  onEditBook={handleEditBook}
-                  onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
-                />
-                <div className="mt-4">
-                  <div className="flex justify-between">
-                    <div>
-                      <h3 className="text-lg font-medium">Exportar/Importar libros digitales</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Gestiona tu base de datos de libros digitales
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <DataImport 
-                        onImport={(data) => {
-                          toast({
-                            title: "Libros digitales importados",
-                            description: `Se importaron ${data.length} archivos digitales correctamente.`
-                          });
-                        }} 
-                      />
-                      <DataExport 
-                        data={digitalBooks} 
-                        filename="libros-digitales" 
-                        buttonLabel="Exportar libros digitales"
-                        variant="default"
-                      />
+                <TabsContent value="digital">
+                  <BooksListTab 
+                    books={books}
+                    categories={categories}
+                    digitalBooks={digitalBooks}
+                    onDeleteBook={handleDeleteBook}
+                    onEditBook={handleEditBook}
+                    onDeleteDigitalBook={isStaff ? handleDeleteDigitalBook : undefined}
+                  />
+                  <div className="mt-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-medium">Exportar/Importar libros digitales</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Gestiona tu base de datos de libros digitales
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <DataImport 
+                          onImport={(data) => {
+                            toast({
+                              title: "Libros digitales importados",
+                              description: `Se importaron ${data.length} archivos digitales correctamente.`
+                            });
+                          }} 
+                        />
+                        <DataExport 
+                          data={digitalBooks} 
+                          filename="libros-digitales" 
+                          buttonLabel="Exportar libros digitales"
+                          variant="default"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </TabsContent>
+                </TabsContent>
+              </Suspense>
             </Tabs>
           </CardContent>
         </Card>

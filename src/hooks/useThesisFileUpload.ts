@@ -1,131 +1,92 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-const BUCKET_NAME = 'thesis-files';
 
 export const useThesisFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
-  const { user } = useAuth();
-
-  const validateFile = (file: File) => {
-    if (!file.type.includes('pdf')) {
-      throw new Error('Solo se permiten archivos PDF');
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      throw new Error('El archivo no debe exceder 50MB');
-    }
-  };
-
-  const deleteThesisFile = async (filePath: string) => {
+  
+  const uploadThesisFile = async (file: File, thesisId?: string): Promise<string> => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    
     try {
-      if (!user) {
-        throw new Error('Debe iniciar sesión para eliminar archivos');
+      // Validar que el archivo sea un PDF
+      if (!file.type.includes('pdf')) {
+        throw new Error('El archivo debe ser un PDF');
       }
-
-      const fileName = filePath.split('/').pop();
-      if (!fileName) {
-        throw new Error('Ruta de archivo inválida');
-      }
-
-      const { error } = await supabase.storage
-        .from(BUCKET_NAME)
-        .remove([fileName]);
-
+      
+      // Generar un nombre único para el archivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `thesis-${thesisId || Date.now()}.${fileExt}`;
+      
+      // Subir el archivo a Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('thesis-files')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true,
+          onUploadProgress: (progress) => {
+            const percentage = Math.round((progress.loaded / progress.total) * 100);
+            setUploadProgress(percentage);
+          }
+        });
+      
       if (error) {
         throw error;
       }
-
-      console.log('Archivo eliminado exitosamente:', fileName);
+      
+      // Obtener la URL pública del archivo
+      const { data: { publicUrl } } = supabase.storage
+        .from('thesis-files')
+        .getPublicUrl(data?.path || fileName);
+      
+      return publicUrl;
     } catch (error) {
-      console.error('Error al eliminar archivo:', error);
-      throw error;
-    }
-  };
-
-  const uploadThesisFile = async (file: File, thesisId?: string, oldFilePath?: string) => {
-    try {
-      if (!user) {
-        throw new Error('Debe iniciar sesión para subir archivos');
-      }
-
-      validateFile(file);
-      setIsUploading(true);
-      setUploadProgress(0);
-      
-      if (oldFilePath) {
-        try {
-          await deleteThesisFile(oldFilePath);
-        } catch (error) {
-          console.error('Error al eliminar archivo anterior:', error);
-        }
-      }
-
-      const fileExt = file.name.split('.').pop();
-      const fileName = `thesis-${thesisId ? `${thesisId}-` : ''}${Date.now()}.${fileExt}`;
-      
-      console.log('Iniciando carga de archivo:', fileName);
-      
-      const startProgressSimulation = () => {
-        let progress = 0;
-        const interval = setInterval(() => {
-          progress += 5;
-          if (progress >= 90) {
-            clearInterval(interval);
-            progress = 90;
-          }
-          setUploadProgress(progress);
-        }, 300);
-        return interval;
-      };
-      
-      const progressInterval = startProgressSimulation();
-
-      const { data, error } = await supabase.storage
-        .from(BUCKET_NAME)
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-      
-      clearInterval(progressInterval);
-
-      if (error) {
-        console.error('Error al cargar archivo:', error);
-        throw new Error(`Error al subir el archivo: ${error.message}`);
-      }
-
-      setUploadProgress(100);
-      console.log(`Archivo subido completamente (100%)`);
-
-      const { data: publicUrlData } = supabase.storage
-        .from(BUCKET_NAME)
-        .getPublicUrl(fileName);
-      
-      console.log('URL generada:', publicUrlData.publicUrl);
-      
+      console.error('Error uploading thesis file:', error);
       toast({
-        title: "Archivo subido exitosamente",
-        description: "El archivo PDF ha sido guardado correctamente.",
-      });
-
-      return publicUrlData.publicUrl;
-    } catch (error) {
-      console.error('Error al subir archivo:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Error al subir el archivo",
-        variant: "destructive"
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'No se pudo subir el archivo',
+        variant: 'destructive'
       });
       throw error;
     } finally {
       setIsUploading(false);
     }
   };
-
-  return { uploadThesisFile, deleteThesisFile, isUploading, uploadProgress };
+  
+  // Función para eliminar un archivo de Supabase Storage
+  const deleteThesisFile = async (fileUrl: string): Promise<void> => {
+    try {
+      // Extraer el nombre del archivo de la URL
+      const urlParts = fileUrl.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      
+      // Eliminar el archivo de Supabase Storage
+      const { error } = await supabase.storage
+        .from('thesis-files')
+        .remove([fileName]);
+      
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error deleting thesis file:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'No se pudo eliminar el archivo',
+        variant: 'destructive'
+      });
+      throw error;
+    }
+  };
+  
+  return {
+    uploadThesisFile,
+    deleteThesisFile,
+    isUploading,
+    uploadProgress
+  };
 };

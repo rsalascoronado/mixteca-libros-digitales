@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Thesis } from '@/types';
 import { useToast } from '@/hooks/use-toast';
@@ -15,16 +16,17 @@ interface EditThesisDialogProps {
 
 const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditThesisDialogProps) => {
   const { toast } = useToast();
-  const { uploadThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
+  const { uploadThesisFile, deleteThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingThesis, setEditingThesis] = useState<Thesis | null>(thesis);
-
+  
+  // Reset state when thesis changes
   useEffect(() => {
     setEditingThesis(thesis);
     setSelectedFile(null);
   }, [thesis]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = useCallback((field: string, value: any) => {
     if (!editingThesis) return;
     
     setEditingThesis(prev => {
@@ -34,15 +36,25 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
         [field]: value
       };
     });
-  };
+  }, [editingThesis]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!editingThesis) return;
     
     try {
       let publicUrl = editingThesis.archivoPdf;
 
       if (selectedFile) {
+        // Si ya había un archivo, eliminarlo primero
+        if (publicUrl) {
+          try {
+            await deleteThesisFile(publicUrl);
+          } catch (error) {
+            console.warn('Error deleting previous file:', error);
+            // Continuar con la actualización incluso si falla la eliminación
+          }
+        }
+        
         publicUrl = await uploadThesisFile(selectedFile, editingThesis.id);
       }
 
@@ -67,7 +79,7 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
         variant: "destructive"
       });
     }
-  };
+  }, [editingThesis, selectedFile, deleteThesisFile, uploadThesisFile, onThesisUpdated, onOpenChange, toast]);
 
   if (!editingThesis) return null;
 
