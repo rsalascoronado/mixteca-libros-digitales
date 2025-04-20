@@ -19,14 +19,14 @@ export function UploadProgressIndicator({
     <div className="space-y-2">
       <Progress 
         value={uploadProgress} 
-        className={`${hasError ? "bg-red-100" : isComplete ? "bg-green-100" : ""} transition-all duration-300`}
+        className={`transition-all duration-300 ${hasError ? "bg-red-100" : isComplete ? "bg-green-100" : ""}`}
       />
       
-      <div className="flex justify-between items-center text-xs">
-        <div className="flex items-center max-w-[90%]">
+      <div className="flex justify-between items-start text-xs">
+        <div className="flex items-start max-w-[90%]">
           {hasError && (
             <div className="flex items-start text-destructive gap-1">
-              <AlertCircle className="h-3 w-3 mt-1 shrink-0" />
+              <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
               <span className="break-words">{error}</span>
             </div>
           )}

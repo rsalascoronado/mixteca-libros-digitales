@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { createBucketIfNotExists, uploadFile, getPublicUrl } from '@/utils/supabaseStorage';
 import { isLibrarian } from '@/lib/user-utils';
 import { User, UserRole } from '@/types';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 function mapSupabaseUserToAppUser(supabaseUser: any): User {
   return {
@@ -24,7 +24,7 @@ export const uploadDigitalBookFile = async (
   console.log(`Iniciando proceso de carga para: "${fileName}" en bucket "${bucketName}"`);
   
   try {
-    // Bypass authentication check in development mode or for testing
+    // En modo desarrollo, no verificamos autenticación
     const isDevelopmentMode = true; 
     
     let appUser: User | null = null;
@@ -53,7 +53,6 @@ export const uploadDigitalBookFile = async (
       }
 
       appUser = mapSupabaseUserToAppUser(supabaseUser);
-      console.log('Usuario autenticado:', appUser);
       
       // Verificar rol de bibliotecario
       if (!isLibrarian(appUser)) {
@@ -80,32 +79,17 @@ export const uploadDigitalBookFile = async (
     }
 
     // Asegurar que el bucket existe
+    console.log(`Verificando si el bucket "${bucketName}" existe...`);
     const bucketExists = await createBucketIfNotExists(bucketName);
+    
     if (!bucketExists) {
       console.error(`Error: El bucket "${bucketName}" no pudo ser verificado o creado`);
       toast({
         title: 'Error de almacenamiento',
-        description: `No se pudo acceder al almacenamiento "${bucketName}". El sistema intentará crear el bucket automáticamente.`,
+        description: `No se pudo acceder al almacenamiento "${bucketName}". Intente nuevamente.`,
         variant: 'destructive'
       });
-      
-      // Intentar crear el bucket manualmente
-      try {
-        await supabase.storage.createBucket(bucketName, {
-          public: true,
-          fileSizeLimit: 52428800, // 50MB
-          allowedMimeTypes: ['application/pdf', 'application/epub+zip', 'application/x-mobipocket-ebook', 'text/html']
-        });
-        console.log(`Bucket "${bucketName}" creado manualmente`);
-      } catch (bucketError) {
-        console.error('Error al crear bucket manualmente:', bucketError);
-        toast({
-          title: 'Error crítico',
-          description: `No se pudo crear el bucket "${bucketName}". Contacte al administrador.`,
-          variant: 'destructive'
-        });
-        throw new Error(`No se pudo crear el bucket "${bucketName}"`);
-      }
+      throw new Error(`No se pudo acceder o crear el bucket "${bucketName}"`);
     }
 
     // Subir archivo

@@ -3,33 +3,35 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const createBucketIfNotExists = async (bucketName: string): Promise<boolean> => {
   try {
-    // Verificar si el bucket ya existe
-    const { data: bucket, error: bucketError } = await supabase.storage.getBucket(bucketName);
+    // Primero intentamos obtener el bucket para ver si existe
+    const { data: existingBucket, error: getBucketError } = await supabase.storage.getBucket(bucketName);
     
-    if (bucketError) {
-      console.error('Error al verificar bucket:', bucketError);
-      
-      // Si el bucket no existe, intentar crearlo
-      if (bucketError.message.includes('does not exist')) {
-        const { error: createError } = await supabase.storage.createBucket(bucketName, {
-          public: true,
-          fileSizeLimit: 52428800, // 50MB
-          allowedMimeTypes: ['application/pdf', 'application/epub+zip', 'application/x-mobipocket-ebook', 'text/html']
-        });
-        
-        if (createError) {
-          console.error('Error al crear bucket:', createError);
-          return false;
-        }
-        
-        console.log(`Bucket "${bucketName}" creado exitosamente`);
-        return true;
-      }
-      
+    // Si no hay error, el bucket existe y podemos retornar true
+    if (existingBucket && !getBucketError) {
+      console.log(`Bucket "${bucketName}" ya existe`);
+      return true;
+    }
+    
+    // Si hay un error diferente a "not found", lo registramos y devolvemos false
+    if (getBucketError && !getBucketError.message.includes('not found')) {
+      console.error('Error al verificar bucket:', getBucketError);
       return false;
     }
     
-    console.log(`Bucket "${bucketName}" ya existe`);
+    // Intentar crear el bucket ya que no existe
+    console.log(`Bucket "${bucketName}" no encontrado, creando...`);
+    const { data: newBucket, error: createError } = await supabase.storage.createBucket(bucketName, {
+      public: true,
+      fileSizeLimit: 52428800, // 50MB
+      allowedMimeTypes: ['application/pdf', 'application/epub+zip', 'application/x-mobipocket-ebook', 'text/html']
+    });
+    
+    if (createError) {
+      console.error('Error al crear bucket:', createError);
+      return false;
+    }
+    
+    console.log(`Bucket "${bucketName}" creado exitosamente`);
     return true;
   } catch (err) {
     console.error('Error al verificar/crear bucket:', err);
@@ -41,14 +43,14 @@ export const uploadFile = async (bucketName: string, fileName: string, file: Fil
   try {
     console.log(`Iniciando carga de archivo "${fileName}" al bucket "${bucketName}"`);
     
-    // Verificar que el bucket existe antes de intentar cargar
-    const { data: bucketData, error: bucketError } = await supabase.storage.getBucket(bucketName);
+    // Primero verificamos que el bucket exista o lo creamos
+    const bucketExists = await createBucketIfNotExists(bucketName);
     
-    if (bucketError) {
-      console.error(`Error: El bucket "${bucketName}" no existe:`, bucketError);
+    if (!bucketExists) {
+      console.error(`Error: El bucket "${bucketName}" no pudo ser verificado o creado`);
       return { 
         data: null, 
-        error: new Error(`El bucket "${bucketName}" no existe: ${bucketError.message}`) 
+        error: new Error(`No se pudo acceder o crear el bucket "${bucketName}"`) 
       };
     }
     
