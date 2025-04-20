@@ -3,17 +3,32 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { mockTheses } from "@/types/thesis";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Componente temporal para importar todas las mockTheses a la tabla de Supabase
  * Verifica por título y autor que no haya duplicados
+ * Requiere autenticación debido a las políticas de RLS
  */
 export default function ImportMockTheses() {
   const [importing, setImporting] = useState(false);
   const [done, setDone] = useState(false);
   const [result, setResult] = useState("");
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
   const handleImport = async () => {
+    // Verificar que el usuario esté autenticado
+    if (!isAuthenticated) {
+      toast({
+        title: "Error de autenticación",
+        description: "Debes iniciar sesión para importar tesis.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setImporting(true);
     setResult("");
     let successCount = 0;
@@ -30,6 +45,7 @@ export default function ImportMockTheses() {
         .maybeSingle();
 
       if (findError) {
+        console.error("Error al verificar duplicados:", findError);
         failCount++;
         continue;
       }
@@ -50,10 +66,11 @@ export default function ImportMockTheses() {
           disponible: thesis.disponible !== false,
           resumen: thesis.resumen ?? null,
           archivo_pdf: thesis.archivoPdf ?? null,
-          created_at: new Date().toISOString(),
         },
       ]);
+      
       if (insertError) {
+        console.error("Error al insertar tesis:", insertError);
         failCount++;
       } else {
         successCount++;
@@ -69,10 +86,21 @@ export default function ImportMockTheses() {
 
   return (
     <div className="flex flex-col items-center my-8">
-      <Button onClick={handleImport} disabled={importing || done}>
+      {!isAuthenticated ? (
+        <div className="text-red-500 mb-4">
+          Debes iniciar sesión para importar tesis
+        </div>
+      ) : null}
+      
+      <Button 
+        onClick={handleImport} 
+        disabled={importing || done || !isAuthenticated}
+      >
         {importing ? "Importando..." : done ? "Finalizado" : "Importar tesis simuladas"}
       </Button>
+      
       {result && <div className="mt-3 text-sm">{result}</div>}
+      
       {done && (
         <div className="mt-2 text-green-600">
           ¡Proceso completado! Ya puedes eliminar este componente.
