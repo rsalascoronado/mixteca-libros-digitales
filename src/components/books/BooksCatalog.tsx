@@ -54,7 +54,7 @@ export function BooksCatalog({
         resetFilters={resetFilters}
       />
 
-      <BookList libros={libros} />
+      <BookList libros={libros} searchTerm={searchTerm} />
 
       <BooksCatalogSummary
         isLoading={isLoading}
@@ -72,3 +72,4 @@ export function BooksCatalog({
     </div>
   );
 }
+
