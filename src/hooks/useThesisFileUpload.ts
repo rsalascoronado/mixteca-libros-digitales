@@ -22,23 +22,31 @@ export const useThesisFileUpload = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `thesis-${thesisId || Date.now()}.${fileExt}`;
       
-      // Subir el archivo a Supabase Storage
+      // Custom upload progress handling
+      const xhr = new XMLHttpRequest();
+      let uploadUrl = '';
+
+      // Set up progress monitoring
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentage = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percentage);
+        }
+      });
+
+      // Upload the file to Supabase Storage
       const { data, error } = await supabase.storage
         .from('thesis-files')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: true,
-          onUploadProgress: (progress) => {
-            const percentage = Math.round((progress.loaded / progress.total) * 100);
-            setUploadProgress(percentage);
-          }
+          upsert: true
         });
       
       if (error) {
         throw error;
       }
       
-      // Obtener la URL pública del archivo
+      // Obtain the public URL of the file
       const { data: { publicUrl } } = supabase.storage
         .from('thesis-files')
         .getPublicUrl(data?.path || fileName);
@@ -57,14 +65,14 @@ export const useThesisFileUpload = () => {
     }
   };
   
-  // Función para eliminar un archivo de Supabase Storage
+  // Function to delete a file from Supabase Storage
   const deleteThesisFile = async (fileUrl: string): Promise<void> => {
     try {
-      // Extraer el nombre del archivo de la URL
+      // Extract the filename from the URL
       const urlParts = fileUrl.split('/');
       const fileName = urlParts[urlParts.length - 1];
       
-      // Eliminar el archivo de Supabase Storage
+      // Delete the file from Supabase Storage
       const { error } = await supabase.storage
         .from('thesis-files')
         .remove([fileName]);
