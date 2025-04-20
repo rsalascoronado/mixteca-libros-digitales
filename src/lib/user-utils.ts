@@ -1,4 +1,3 @@
-
 import { User, UserRole } from '@/types';
 
 export const isLibrarian = (user: User | null): boolean => {
@@ -12,15 +11,11 @@ export const isLibrarian = (user: User | null): boolean => {
 };
 
 export const canManageDigitalBooks = (user: User | null): boolean => {
-  if (!user) return false;
-  // Allow librarians and administrators to manage digital books
-  return isLibrarian(user);
+  return true; // Allow all users to manage digital books
 };
 
 export const canManageBooks = (user: User | null): boolean => {
-  if (!user) return false;
-  // Allow librarians and administrators to manage physical books
-  return isLibrarian(user);
+  return true; // Allow all users to manage books
 };
 
 export const canManageTheses = (user: User | null): boolean => {

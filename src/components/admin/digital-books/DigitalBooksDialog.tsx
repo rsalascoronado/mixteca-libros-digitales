@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button';
 import { FileText } from 'lucide-react';
 import { Book } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { DigitalBooksTable } from './DigitalBooksTable';
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 import { UploadDigitalBookDialog } from './UploadDigitalBookDialog';
@@ -26,21 +24,6 @@ export function DigitalBooksDialog({
   onEditDigitalBook 
 }: DigitalBooksDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const { isAuthenticated, hasRole } = useAuth();
-  const { toast } = useToast();
-  const isStaff = hasRole(['administrador', 'bibliotecario']);
-
-  const handleOpenDialog = () => {
-    if (!isAuthenticated) {
-      toast({
-        title: "Acceso restringido",
-        description: "Debes iniciar sesión para acceder a los libros digitales.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setOpen(true);
-  };
 
   const handleUploadComplete = (data: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => {
     if (onAddDigitalBook) {
@@ -57,7 +40,7 @@ export function DigitalBooksDialog({
         <Button 
           variant="ghost" 
           className="flex w-full items-center justify-start"
-          onClick={handleOpenDialog}
+          onClick={() => setOpen(true)}
         >
           <FileText className="mr-2 h-4 w-4" />
           Archivos digitales
@@ -65,33 +48,27 @@ export function DigitalBooksDialog({
       }
       className="sm:max-w-[850px]"
     >
-      {!isAuthenticated ? (
-        <div className="py-6 text-center text-muted-foreground">
-          Debe iniciar sesión para ver los archivos digitales.
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {isStaff && onAddDigitalBook && (
-            <div className="flex justify-end">
-              <UploadDigitalBookDialog 
-                book={book} 
-                onUploadComplete={handleUploadComplete}
-              />
-            </div>
-          )}
-          
-          <DigitalBooksTable
-            book={book}
-            digitalBooks={digitalBooks}
-            onDeleteDigitalBook={onDeleteDigitalBook}
-            onEditDigitalBook={onEditDigitalBook}
-          />
-          
-          <div className="text-sm text-muted-foreground">
-            Total de archivos: {digitalBooks.filter(db => db.bookId === book.id).length}
+      <div className="space-y-4">
+        {onAddDigitalBook && (
+          <div className="flex justify-end">
+            <UploadDigitalBookDialog 
+              book={book} 
+              onUploadComplete={handleUploadComplete}
+            />
           </div>
+        )}
+        
+        <DigitalBooksTable
+          book={book}
+          digitalBooks={digitalBooks}
+          onDeleteDigitalBook={onDeleteDigitalBook}
+          onEditDigitalBook={onEditDigitalBook}
+        />
+        
+        <div className="text-sm text-muted-foreground">
+          Total de archivos: {digitalBooks.filter(db => db.bookId === book.id).length}
         </div>
-      )}
+      </div>
     </ResponsiveDialog>
   );
 }
