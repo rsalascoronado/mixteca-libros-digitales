@@ -54,8 +54,15 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
     };
     
     let result;
-    
+
+    // Para la inserción, solo incluir created_at, para update no modificar created_at.
     if (thesis.id && thesis.id.length > 0 && thesis.id !== 'new') {
+      // Validar que el id es un UUID válido, si no, lanzar un error
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidPattern.test(thesis.id)) {
+        throw new Error(`ID de tesis inválido (UUID esperado): ${thesis.id}`);
+      }
+      
       const { data, error } = await supabase
         .from('theses')
         .update(thesisData)
@@ -66,9 +73,15 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
       if (error) throw error;
       result = data;
     } else {
+      // Insert
+      const dataToInsert = {
+        ...thesisData,
+        created_at: new Date().toISOString()
+      };
+
       const { data, error } = await supabase
         .from('theses')
-        .insert([thesisData])
+        .insert([dataToInsert])
         .select()
         .single();
         
@@ -90,7 +103,9 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
     };
   } catch (error) {
     console.error('Error saving thesis:', error);
-    throw error;
+    // Aclarar el error para el usuario
+    const message = error instanceof Error ? error.message : JSON.stringify(error);
+    throw new Error(`Error al guardar la tesis: ${message}`);
   }
 }
 
@@ -107,3 +122,4 @@ export async function deleteThesis(id: string): Promise<void> {
     throw error;
   }
 }
+

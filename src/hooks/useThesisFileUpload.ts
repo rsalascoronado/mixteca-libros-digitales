@@ -41,13 +41,17 @@ export const useThesisFileUpload = () => {
       
       if (error) {
         console.error('Error uploading file:', error);
-        throw error;
+        throw new Error(`Error subiendo el archivo: ${error.message}`);
       }
       
       // Get the public URL of the file
       const { data: { publicUrl } } = supabase.storage
         .from('thesis-files')
         .getPublicUrl(data?.path || fileName);
+      
+      if (!publicUrl) {
+        throw new Error('No se pudo obtener la URL pública del archivo');
+      }
       
       console.log('File uploaded successfully. Public URL:', publicUrl);
       setUploadProgress(100);
@@ -81,7 +85,7 @@ export const useThesisFileUpload = () => {
       
       if (error) {
         console.error('Error deleting file:', error);
-        throw error;
+        throw new Error(`Error eliminando el archivo: ${error.message}`);
       }
       
       console.log('File deleted successfully:', fileName);
@@ -98,7 +102,7 @@ export const useThesisFileUpload = () => {
   
   const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
     try {
-      let publicUrl = thesis.archivoPdf;
+      let publicUrl = thesis.archivoPdf || null;
       
       // Si hay un archivo nuevo, subir primero el archivo
       if (file) {
