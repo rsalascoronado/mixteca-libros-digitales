@@ -1,27 +1,39 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { saveThesis, deleteThesis } from '@/lib/theses-db'; // Updated import path
+import { saveThesis, deleteThesis } from '@/lib/theses-db';
 import { Thesis } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useThesisFileUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
+  
+  // Check authentication status on mount
+  const [sessionChecked, setSessionChecked] = useState(false);
+  
+  useEffect(() => {
+    // Verify session on hook initialization
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSessionChecked(true);
+    };
+    
+    checkSession();
+  }, []);
   
   const uploadThesisFile = async (file: File): Promise<string> => {
+    if (!isAuthenticated) {
+      throw new Error('Debes iniciar sesión para subir archivos');
+    }
+    
     setIsUploading(true);
     setUploadProgress(0);
     
     try {
-      // Check if user is authenticated
-      const { data: authData } = await supabase.auth.getSession();
-      
-      if (!authData.session) {
-        throw new Error('Debes iniciar sesión para subir archivos');
-      }
-      
       // Validar que el archivo sea un PDF
       if (!file.type.includes('pdf')) {
         throw new Error('El archivo debe ser un PDF');
@@ -77,14 +89,11 @@ export const useThesisFileUpload = () => {
   };
   
   const deleteThesisFile = async (fileUrl: string): Promise<void> => {
+    if (!isAuthenticated) {
+      throw new Error('Debes iniciar sesión para eliminar archivos');
+    }
+    
     try {
-      // Check if user is authenticated
-      const { data: authData } = await supabase.auth.getSession();
-      
-      if (!authData.session) {
-        throw new Error('Debes iniciar sesión para eliminar archivos');
-      }
-      
       // Extract the filename from the URL
       const fileName = fileUrl.split('/').pop();
       
@@ -115,14 +124,17 @@ export const useThesisFileUpload = () => {
   };
   
   const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
+    // Verify authentication status before continuing
+    if (!isAuthenticated) {
+      toast({
+        title: "Error de autenticación",
+        description: "Debes iniciar sesión para guardar tesis",
+        variant: "destructive"
+      });
+      throw new Error('Debes iniciar sesión para guardar tesis');
+    }
+
     try {
-      // Check if user is authenticated
-      const { data: authData } = await supabase.auth.getSession();
-      
-      if (!authData.session) {
-        throw new Error('Debes iniciar sesión para guardar tesis');
-      }
-      
       let publicUrl = thesis.archivoPdf || null;
       
       // Si hay un archivo nuevo, subir primero el archivo
@@ -185,6 +197,7 @@ export const useThesisFileUpload = () => {
     deleteThesisFile,
     saveThesisWithFile,
     isUploading,
-    uploadProgress
+    uploadProgress,
+    sessionChecked
   };
 };
