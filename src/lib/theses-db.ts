@@ -66,28 +66,52 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
 
     // Para la inserción, solo incluir created_at, para update no modificar created_at.
     if (thesis.id && thesis.id.length > 0 && thesis.id !== 'new') {
-      // Validar que el id es un UUID válido, si no, lanzar un error
+      // Si es un ID de los datos de ejemplo (no un UUID válido), tratar como nueva tesis
       if (!isValidUUID(thesis.id)) {
-        throw new Error(`ID de tesis inválido (UUID esperado): ${thesis.id}`);
-      }
-      
-      const { data, error } = await supabase
-        .from('theses')
-        .update(thesisData)
-        .eq('id', thesis.id)
-        .select()
-        .single();
+        console.log(`ID no es un UUID válido: ${thesis.id}, tratando como nueva tesis`);
         
-      if (error) {
-        console.error('Error updating thesis:', error);
-        throw new Error(`Error actualizando tesis: ${error.message}`);
+        // Crear una nueva tesis en lugar de actualizar
+        const dataToInsert = {
+          ...thesisData,
+          created_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabase
+          .from('theses')
+          .insert([dataToInsert])
+          .select()
+          .single();
+          
+        if (error) {
+          console.error('Error inserting thesis:', error);
+          throw new Error(`Error creando tesis: ${error.message}`);
+        }
+        
+        if (!data) {
+          throw new Error('No se pudo crear la tesis, respuesta vacía del servidor');
+        }
+        
+        result = data;
+      } else {
+        // Actualizar tesis existente con ID válido
+        const { data, error } = await supabase
+          .from('theses')
+          .update(thesisData)
+          .eq('id', thesis.id)
+          .select()
+          .single();
+          
+        if (error) {
+          console.error('Error updating thesis:', error);
+          throw new Error(`Error actualizando tesis: ${error.message}`);
+        }
+        
+        if (!data) {
+          throw new Error(`No se encontró la tesis con ID: ${thesis.id}`);
+        }
+        
+        result = data;
       }
-      
-      if (!data) {
-        throw new Error(`No se encontró la tesis con ID: ${thesis.id}`);
-      }
-      
-      result = data;
     } else {
       // Insert
       const dataToInsert = {
@@ -135,9 +159,10 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
 
 export async function deleteThesis(id: string): Promise<void> {
   try {
-    // Validar que el ID es un UUID válido
+    // Si es un ID de los datos de ejemplo, simplemente retornar sin error
     if (!isValidUUID(id)) {
-      throw new Error(`ID de tesis inválido (UUID esperado): ${id}`);
+      console.log(`Intentando eliminar tesis con ID no válido: ${id}, operación simulada`);
+      return;
     }
     
     const { error } = await supabase
