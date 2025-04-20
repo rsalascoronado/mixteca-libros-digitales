@@ -1,100 +1,52 @@
 
 import { useState } from 'react';
-import { useToast } from './use-toast';
+import { toast } from '@/components/ui/use-toast';
 import { Book } from '@/types';
-import { validateFileFormat, validateFileSize, getFormattedSize } from '@/utils/fileValidation';
-import { createBucketIfNotExists, uploadFile, getPublicUrl } from '@/utils/supabaseStorage';
+import { validateUploadableFile, generateDigitalBookFileName } from './use-digital-book-upload/file-validation';
+import { uploadDigitalBookFile } from './use-digital-book-upload/storage-upload';
+import { getFormattedSize } from '@/utils/fileValidation';
 
-export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
-  formato: string;
-  url: string;
-  tamanioMb: number;
-  resumen?: string;
-  storage_path?: string;
-}) => void) {
+export function useDigitalBookUpload(
+  book: Book, 
+  onUploadComplete: (data: {
+    formato: string;
+    url: string;
+    tamanioMb: number;
+    resumen?: string;
+    storage_path?: string;
+  }) => void
+) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const { toast } = useToast();
 
   const handleUpload = async (file: File, formato: string, resumen?: string) => {
     try {
-      // Validate file format and size
-      const formatError = validateFileFormat(file, formato);
-      if (formatError) {
-        toast({
-          title: "Formato incorrecto",
-          description: formatError,
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      const sizeError = validateFileSize(file);
-      if (sizeError) {
-        toast({
-          title: "Error de tamaño",
-          description: sizeError,
-          variant: "destructive"
-        });
-        return false;
-      }
+      const validationResult = validateUploadableFile(file, formato, book);
+      if (!validationResult.isValid) return false;
 
       setIsUploading(true);
       setUploadProgress(10);
       
-      const fileName = `book-${book.id}-${Date.now()}.${file.name.split('.').pop()}`;
-      
-      // Create bucket if needed
-      const bucketCreated = await createBucketIfNotExists('digital-books');
-      if (!bucketCreated) {
-        setUploadProgress(0);
-        return false;
-      }
+      const fileName = generateDigitalBookFileName(book, file);
       
       setUploadProgress(30);
       
-      // Upload file
-      const { error: uploadError } = await uploadFile('digital-books', fileName, file);
+      const { publicUrl, error } = await uploadDigitalBookFile('digital-books', fileName, file);
       
-      if (uploadError) {
-        console.error('Error al subir el archivo:', uploadError);
-        
-        if (uploadError.message.includes('violates row-level security policy')) {
-          toast({
-            title: "Error de permisos",
-            description: "No tiene permisos para subir archivos. Utilizando URL alternativa.",
-            variant: "default"
-          });
-          
-          const mockUrl = `https://example.com/digital-books/${fileName}`;
-          setUploadProgress(100);
-          
-          onUploadComplete({
-            formato,
-            url: mockUrl,
-            tamanioMb: getFormattedSize(file.size),
-            resumen,
-            storage_path: fileName
-          });
-          
-          return true;
-        }
-        
+      if (error) {
         toast({
           title: "Error",
-          description: "No se pudo guardar el archivo digital: " + uploadError.message,
+          description: "No se pudo guardar el archivo digital: " + error.message,
           variant: "destructive"
         });
         return false;
       }
       
       setUploadProgress(90);
-      const publicUrl = getPublicUrl('digital-books', fileName);
-      setUploadProgress(100);
       
       onUploadComplete({
         formato,
-        url: publicUrl,
+        url: publicUrl || '', 
         tamanioMb: getFormattedSize(file.size),
         resumen,
         storage_path: fileName
@@ -105,37 +57,21 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
         description: "Se ha guardado el archivo digital correctamente."
       });
 
+      setUploadProgress(100);
       return true;
     } catch (error) {
-      console.error('Error al subir el archivo:', error);
-      
-      if (process.env.NODE_ENV === 'development') {
-        const mockUrl = `https://example.com/digital-books/mock-${Date.now()}.${file.name.split('.').pop()}`;
-        setUploadProgress(100);
-        
-        onUploadComplete({
-          formato,
-          url: mockUrl,
-          tamanioMb: getFormattedSize(file.size),
-          resumen
-        });
-        
-        toast({
-          title: "Archivo digital guardado (modo desarrollo)",
-          description: "Se ha simulado la carga del archivo digital en modo desarrollo."
-        });
-        
-        return true;
-      }
+      console.error('Upload error:', error);
       
       toast({
         title: "Error",
         description: "No se pudo guardar el archivo digital. Intente nuevamente.",
         variant: "destructive"
       });
+      
       return false;
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
