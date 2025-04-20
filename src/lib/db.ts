@@ -82,8 +82,9 @@ export async function fetchTheses(): Promise<Thesis[]> {
   try {
     console.log("Fetching theses from database...");
     
+    // Usando la forma genérica de from para evitar errores de tipo
     const { data, error } = await supabase
-      .from('theses')
+      .from('theses' as any)
       .select('*');
     
     if (error) {
@@ -98,7 +99,7 @@ export async function fetchTheses(): Promise<Thesis[]> {
     
     console.log(`Retrieved ${data.length} theses from database`);
     
-    return data.map((thesis) => ({
+    return data.map((thesis: any) => ({
       id: thesis.id || '',
       titulo: thesis.titulo || '',
       autor: thesis.autor || '',
@@ -141,7 +142,7 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
     if (thesis.id && thesis.id.length > 0 && thesis.id !== 'new') {
       // Update existing thesis
       const { data, error } = await supabase
-        .from('theses')
+        .from('theses' as any)
         .update(thesisData)
         .eq('id', thesis.id)
         .select()
@@ -153,7 +154,7 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
     } else {
       // Insert new thesis
       const { data, error } = await supabase
-        .from('theses')
+        .from('theses' as any)
         .insert([thesisData])
         .select()
         .single();
@@ -187,7 +188,7 @@ export async function deleteThesis(id: string): Promise<void> {
     console.log("Deleting thesis with ID:", id);
     
     const { error } = await supabase
-      .from('theses')
+      .from('theses' as any)
       .delete()
       .eq('id', id);
     
