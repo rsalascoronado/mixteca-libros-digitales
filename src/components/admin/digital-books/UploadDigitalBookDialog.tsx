@@ -61,6 +61,7 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
         <UploadDigitalBookForm 
           onSubmit={handleSubmit}
           isUploading={isUploading}
+          uploadProgress={uploadProgress}
         />
         
         {isUploading && (

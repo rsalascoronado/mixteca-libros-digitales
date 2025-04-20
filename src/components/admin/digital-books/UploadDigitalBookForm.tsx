@@ -13,9 +13,10 @@ import { uploadFormSchema, UploadDigitalBookFormData } from './schema';
 interface UploadDigitalBookFormProps {
   onSubmit: (data: UploadDigitalBookFormData) => Promise<void>;
   isUploading: boolean;
+  uploadProgress: number; // Add the missing uploadProgress prop
 }
 
-export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBookFormProps) {
+export function UploadDigitalBookForm({ onSubmit, isUploading, uploadProgress }: UploadDigitalBookFormProps) {
   const [isFileSelected, setIsFileSelected] = React.useState(false);
   const [selectedFileName, setSelectedFileName] = React.useState<string | null>(null);
   const [fileError, setFileError] = React.useState<string | null>(null);

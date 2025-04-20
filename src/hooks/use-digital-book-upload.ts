@@ -106,7 +106,7 @@ export function useDigitalBookUpload(book: Book, onUploadComplete: (data: {
           toast({
             title: "Error de permisos",
             description: "No tiene permisos para subir archivos. Utilizando URL alternativa.",
-            variant: "warning"
+            variant: "default" // Changed from "warning" to "default"
           });
           
           // Fallback to using a mock URL for development

@@ -68,7 +68,11 @@ export function BooksListTab({
             book={selectedBook}
             onUploadComplete={(data) => {
               if (onAddDigitalBook) {
-                onAddDigitalBook(selectedBook.id, data);
+                // Cast the formato to the correct type since we validate it in the form
+                onAddDigitalBook(selectedBook.id, {
+                  ...data,
+                  formato: data.formato as "PDF" | "EPUB" | "MOBI" | "HTML"
+                });
               }
               setSelectedBookId(null);
             }}
