@@ -1,15 +1,14 @@
 
 import React, { useState } from "react";
 import { BooksCatalog } from "@/components/books/BooksCatalog";
-import { useBooksData } from "@/components/books/hooks/useBooksData"; // Hook de prueba integrado
+import { useBooksData } from "@/components/books/hooks/useBooksData";
 
 /**
- * Modo PRUEBA: Buscamos y filtramos los libros localmente.
- * Se usa el hook useBooksData que trae los libros (de supabase o mocks), y la lógica de paginación/filtro está en BooksCatalog.
- * No hay fetching react-query en este archivo.
+ * La búsqueda de libros ahora utiliza la misma configuración de filtro que la búsqueda de tesis,
+ * con debounce y filtros desacoplados.
  */
 const BooksTab: React.FC = () => {
-  const { books, digitalBooks } = useBooksData();
+  const { books } = useBooksData();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoria, setCategoria] = useState("");
   const [disponibilidad, setDisponibilidad] = useState("");
@@ -22,7 +21,7 @@ const BooksTab: React.FC = () => {
       setCategoria={setCategoria}
       disponibilidad={disponibilidad}
       setDisponibilidad={setDisponibilidad}
-      booksProp={books} // Entregamos los libros para filtrar localmente
+      booksProp={books}
     />
   );
 };
