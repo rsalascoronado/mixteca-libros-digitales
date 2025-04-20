@@ -1,8 +1,8 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { createBucketIfNotExists, uploadFile, getPublicUrl } from '@/utils/supabaseStorage';
 import { isLibrarian } from '@/lib/user-utils';
 import { User } from '@/types';
+import { UserRole } from '@/types/user';
 
 function mapSupabaseUserToAppUser(supabaseUser: any): User {
   return {

@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Save } from 'lucide-react';
 import { Book } from '@/types';
@@ -9,9 +8,8 @@ import { useDigitalBookUpload } from '@/hooks/use-digital-book-upload';
 import { uploadFormSchema, UploadDigitalBookFormData } from './schema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Textarea } from '@/components/ui/textarea';
-import { FileUploadField } from './FileUploadField';
-import { UploadDigitalBookFormats } from './UploadDigitalBookFormats';
+import { UploadProgressIndicator } from './UploadProgressIndicator';
+import { UploadDigitalBookForm } from './UploadDigitalBookForm';
 
 interface UploadDigitalBookDialogProps {
   book: Book;
@@ -48,7 +46,6 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
     setFileError(null);
     
     if (file) {
-      // Validate file extension
       const fileExt = file.name.split('.').pop()?.toLowerCase();
       const formatExtMap: Record<string, string[]> = {
         'PDF': ['pdf'],
@@ -116,74 +113,20 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
           <DialogTitle>Subir versión digital de "{book.titulo}"</DialogTitle>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="formato"
-              render={({ field }) => (
-                <UploadDigitalBookFormats
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  onFormatChange={clearFileSelection}
-                />
-              )}
-            />
-            
-            <FileUploadField
-              selectedFormat={form.getValues('formato')}
-              selectedFileName={selectedFileName}
-              fileError={fileError}
-              onFileSelect={handleFileSelect}
-              fileInputRef={fileInputRef}
-            />
-            
-            <FormField
-              control={form.control}
-              name="resumen"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Resumen</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder="Ingrese un resumen del archivo digital"
-                      className="min-h-[80px]"
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={!isFileSelected || isUploading || !!fileError}
-            >
-              {isUploading ? (
-                <>Subiendo archivo ({Math.round(uploadProgress)}%)...</>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Guardar archivo
-                </>
-              )}
-            </Button>
-          </form>
-        </Form>
+        <UploadDigitalBookForm
+          form={form}
+          isUploading={isUploading}
+          isFileSelected={isFileSelected}
+          fileError={fileError}
+          selectedFileName={selectedFileName}
+          fileInputRef={fileInputRef}
+          onFileSelect={handleFileSelect}
+          onSubmit={handleSubmit}
+          clearFileSelection={clearFileSelection}
+        />
         
         {isUploading && (
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-            <div 
-              className="bg-primary h-2.5 rounded-full transition-all duration-300" 
-              style={{ width: `${uploadProgress}%` }}
-            ></div>
-            <p className="text-xs text-muted-foreground mt-1 text-right">
-              {Math.round(uploadProgress)}%
-            </p>
-          </div>
+          <UploadProgressIndicator uploadProgress={uploadProgress} />
         )}
       </DialogContent>
     </Dialog>
