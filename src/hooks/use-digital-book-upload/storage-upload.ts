@@ -28,13 +28,7 @@ export const uploadDigitalBookFile = async (
       throw new Error('Could not create or access bucket');
     }
 
-    // Verificar que el usuario está autenticado y tiene los permisos necesarios
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error('User must be authenticated to upload files');
-    }
-
-    // Obtener el usuario y verificar si tiene el rol adecuado
+    // Verificar que el usuario tiene el rol adecuado
     const { data: { user: supabaseUser } } = await supabase.auth.getUser();
     if (!supabaseUser) {
       throw new Error('Unauthorized: User not found');
@@ -61,3 +55,4 @@ export const uploadDigitalBookFile = async (
     return { publicUrl: null, error: err };
   }
 };
+
