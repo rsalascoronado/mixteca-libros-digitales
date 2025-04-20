@@ -39,15 +39,6 @@ const Catalogo = () => {
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold">Catálogo</h1>
-            <Button
-              variant="secondary"
-              className="flex items-center gap-2 text-base sm:text-base"
-              onClick={goToTesis}
-              aria-label="Buscar tesis"
-            >
-              <FileText className="h-5 w-5" />
-              Búsqueda de Tesis
-            </Button>
           </div>
           <div ref={tabsRef}>
             <Tabs defaultValue="libros" className="w-full">
@@ -76,3 +67,4 @@ const Catalogo = () => {
 };
 
 export default Catalogo;
+
