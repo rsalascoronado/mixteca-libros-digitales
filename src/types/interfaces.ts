@@ -1,3 +1,4 @@
+
 // Common interfaces for database models
 
 // Book related interfaces
@@ -46,7 +47,7 @@ export interface IDigitalBook {
   tamanioMb: number;
   fechaSubida: Date;
   resumen?: string;
-  storage_path?: string;
+  storage_path?: string; // Added this property to fix the type error
 }
 
 // Loan related interfaces
