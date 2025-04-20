@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Book, BookCategory } from '@/types';
 import { DigitalBook } from '@/types/digitalBook';
@@ -13,6 +14,7 @@ import { BookActionsMenu } from './BookActionsMenu';
 import { Badge } from '@/components/ui/badge';
 import { Book as BookIcon, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface BooksTableProps {
   books: Book[];
@@ -24,6 +26,8 @@ interface BooksTableProps {
   onAddDigitalBook?: (bookId: string) => void;
   onEditDigitalBook?: (id: string, data: Partial<DigitalBook>) => void;
   showUploadButton?: boolean;
+  selectedBooks?: string[];
+  onSelectBook?: (bookId: string, checked: boolean) => void;
 }
 
 export function BooksTable({
@@ -35,7 +39,9 @@ export function BooksTable({
   onDeleteDigitalBook,
   onAddDigitalBook,
   onEditDigitalBook,
-  showUploadButton = true
+  showUploadButton = true,
+  selectedBooks = [],
+  onSelectBook
 }: BooksTableProps) {
   if (books.length === 0) {
     return (
@@ -55,6 +61,11 @@ export function BooksTable({
         <Table>
           <TableHeader>
             <TableRow>
+              {onSelectBook && (
+                <TableHead className="w-[50px]">
+                  <span className="sr-only">Seleccionar</span>
+                </TableHead>
+              )}
               <TableHead>Título</TableHead>
               <TableHead>Autor</TableHead>
               <TableHead>ISBN</TableHead>
@@ -69,9 +80,20 @@ export function BooksTable({
             {books.map((book) => {
               const bookDigitalVersions = digitalBooks.filter(db => db.bookId === book.id);
               const hasDigitalVersion = bookDigitalVersions.length > 0;
+              const isSelected = selectedBooks?.includes(book.id) || false;
               
               return (
                 <TableRow key={book.id}>
+                  {onSelectBook && (
+                    <TableCell>
+                      <Checkbox 
+                        checked={isSelected} 
+                        onCheckedChange={(checked) => {
+                          onSelectBook(book.id, checked === true);
+                        }}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell className="font-medium">{book.titulo}</TableCell>
                   <TableCell>{book.autor}</TableCell>
                   <TableCell>{book.isbn}</TableCell>
