@@ -1,8 +1,8 @@
-
 import React, { useMemo } from 'react';
-import { AlertTriangle, Pencil, Trash2 } from 'lucide-react';
+import { AlertTriangle, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/hooks/use-toast';
 import { Thesis } from '@/types';
 import PDFViewer from '@/components/shared/PDFViewer';
 
@@ -13,6 +13,8 @@ interface ThesisTableProps {
 }
 
 const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
+  const { toast } = useToast();
+  
   // Memoize the sorted theses to avoid unnecessary re-renders
   const sortedTheses = useMemo(() => {
     return [...theses].sort((a, b) => {
@@ -20,6 +22,13 @@ const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
       return b.anio - a.anio;
     });
   }, [theses]);
+
+  const handleLoanRequest = (thesis: Thesis) => {
+    toast({
+      title: "Solicitud de préstamo enviada",
+      description: `Tu solicitud para "${thesis.titulo}" ha sido registrada. El personal de biblioteca te notificará cuando esté disponible.`,
+    });
+  };
   
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -72,16 +81,32 @@ const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
                   )}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete && onDelete(thesis)}
-                    aria-label={`Eliminar tesis ${thesis.titulo}`}
-                    disabled={!onDelete}
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
+                  {thesis.disponible ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                      onClick={() => handleLoanRequest(thesis)}
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      <span className="hidden sm:inline">Solicitar</span>
+                    </Button>
+                  ) : (
+                    <span className="text-gray-400 text-sm">No disponible</span>
+                  )}
                 </TableCell>
+                {onDelete && (
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(thesis)}
+                      aria-label={`Eliminar tesis ${thesis.titulo}`}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </TableCell>
+                )}
                 <TableCell>
                   <Button
                     variant="ghost"
