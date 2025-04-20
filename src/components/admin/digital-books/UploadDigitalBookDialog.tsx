@@ -7,6 +7,9 @@ import { Book } from '@/types';
 import { useDigitalBookUpload } from '@/hooks/use-digital-book-upload';
 import { UploadDigitalBookForm } from './UploadDigitalBookForm';
 import { UploadDigitalBookFormData } from './schema';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { isLibrarian } from '@/lib/user-utils';
 
 interface UploadDigitalBookDialogProps {
   book: Book;
@@ -25,9 +28,20 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
     onUploadComplete(data);
     setOpen(false);
   });
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (data: UploadDigitalBookFormData) => {
     try {
+      if (!user || !isLibrarian(user)) {
+        toast({
+          title: "Error de autorización",
+          description: "Solo los bibliotecarios y administradores pueden subir libros digitales.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       if (data.file) {
         const result = await handleUpload(data.file, data.formato, data.resumen);
         if (result) {
@@ -40,6 +54,11 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
       console.error('Error handling submission:', error);
     }
   };
+
+  // Si el usuario no está autorizado, no mostrar el botón de subida
+  if (!user || !isLibrarian(user)) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={(newOpen) => {
