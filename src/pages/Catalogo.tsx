@@ -7,8 +7,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Microscope } from "lucide-react";
+import { Microscope, BookOpen } from "lucide-react";
 import TestTab from "@/components/catalog/TestTab";
+import BooksTab from "@/components/catalog/BooksTab";
 
 const Catalogo = () => {
   return (
@@ -24,9 +25,16 @@ const Catalogo = () => {
                 <Microscope className="h-4 w-4" />
                 Prueba
               </TabsTrigger>
+              <TabsTrigger value="libros" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Libros
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="test" className="mt-0">
               <TestTab />
+            </TabsContent>
+            <TabsContent value="libros" className="mt-0">
+              <BooksTab />
             </TabsContent>
           </Tabs>
         </div>

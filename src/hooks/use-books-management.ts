@@ -15,16 +15,13 @@ export const useBooksManagement = () => {
   const [digitalBooks, setLocalDigitalBooks] = useState<DigitalBook[]>([]);
   const [categories, setCategories] = useState<BookCategory[]>([]);
   
-  // Subscribe to realtime updates
   useBooksRealtime(setBooks, setDigitalBooks);
 
-  // Initialize local state from fetched data
   useEffect(() => {
     if (initialBooks.length > 0) {
       setLocalBooks(initialBooks);
     }
     
-    // Fetch and set digital books
     const fetchDigitalBooks = async () => {
       try {
         const { data, error } = await supabase
@@ -42,7 +39,7 @@ export const useBooksManagement = () => {
             tamanioMb: item.tamanio_mb,
             fechaSubida: new Date(item.fecha_subida),
             resumen: item.resumen || undefined,
-            storage_path: item.storage_path || undefined // Added undefined as fallback
+            storage_path: item.storage_path || undefined
           }));
           setLocalDigitalBooks(mappedDigitalBooks);
         } else {
@@ -54,10 +51,8 @@ export const useBooksManagement = () => {
       }
     };
     
-    // Fetch and set categories
     const fetchCategories = async () => {
       try {
-        // Since we don't have a categories table yet, we'll extract unique categories from books
         const uniqueCategories = [...new Set(initialBooks.map(book => book.categoria))];
         const mappedCategories = uniqueCategories.map((category, index) => ({
           id: index.toString(),
@@ -78,24 +73,6 @@ export const useBooksManagement = () => {
 
   const handleAddCategoria = useCallback(async (newCategory: Omit<BookCategory, 'id'>) => {
     try {
-      // Since book_categories table doesn't exist in the database, we'll use mock data for now
-      // In the future, uncomment this code when the table is created
-      // const { data, error } = await supabase
-      //   .from('book_categories')
-      //   .insert([newCategory])
-      //   .select();
-
-      // if (error) {
-      //   console.error("Error adding category:", error);
-      //   toast({
-      //     title: "Error al agregar categoría",
-      //     description: "No se pudo agregar la categoría. Intente nuevamente.",
-      //     variant: "destructive",
-      //   });
-      //   return;
-      // }
-
-      // Mock implementation for now
       const newId = (categories.length + 1).toString();
       setCategories((prevCategories) => [...prevCategories, { ...newCategory, id: newId }]);
       
@@ -115,24 +92,6 @@ export const useBooksManagement = () => {
 
   const handleDeleteCategory = useCallback(async (categoryId: string) => {
     try {
-      // Since book_categories table doesn't exist in the database, we'll use mock data for now
-      // In the future, uncomment this code when the table is created
-      // const { error } = await supabase
-      //   .from('book_categories')
-      //   .delete()
-      //   .eq('id', categoryId);
-
-      // if (error) {
-      //   console.error("Error deleting category:", error);
-      //   toast({
-      //     title: "Error al eliminar categoría",
-      //     description: "No se pudo eliminar la categoría. Intente nuevamente.",
-      //     variant: "destructive",
-      //   });
-      //   return;
-      // }
-
-      // Mock implementation for now
       setCategories((prevCategories) => prevCategories.filter((category) => category.id !== categoryId));
       
       toast({
@@ -151,24 +110,6 @@ export const useBooksManagement = () => {
 
   const handleEditCategory = useCallback(async (categoryId: string, updatedCategory: Partial<BookCategory>) => {
     try {
-      // Since book_categories table doesn't exist in the database, we'll use mock data for now
-      // In the future, uncomment this code when the table is created
-      // const { error } = await supabase
-      //   .from('book_categories')
-      //   .update(updatedCategory)
-      //   .eq('id', categoryId);
-
-      // if (error) {
-      //   console.error("Error editing category:", error);
-      //   toast({
-      //     title: "Error al editar categoría",
-      //     description: "No se pudo editar la categoría. Intente nuevamente.",
-      //     variant: "destructive",
-      //   });
-      //   return;
-      // }
-
-      // Mock implementation for now
       setCategories((prevCategories) =>
         prevCategories.map((category) =>
           category.id === categoryId ? { ...category, ...updatedCategory } : category
@@ -223,7 +164,6 @@ export const useBooksManagement = () => {
 
   const handleEditBook = useCallback(async (bookId: string, updatedBook: Partial<Book>) => {
     try {
-      // Convert camelCase to snake_case for database
       const dbUpdatedBook: Record<string, any> = {};
       
       if ('anioPublicacion' in updatedBook) {
@@ -231,7 +171,6 @@ export const useBooksManagement = () => {
         delete updatedBook.anioPublicacion;
       }
       
-      // Add the rest of the fields
       Object.entries(updatedBook).forEach(([key, value]) => {
         dbUpdatedBook[key] = value;
       });
@@ -272,7 +211,6 @@ export const useBooksManagement = () => {
 
   const handleAddBook = useCallback(async (newBook: Omit<Book, 'id'>) => {
     try {
-      // Convert camelCase to snake_case for database
       const dbNewBook: Record<string, any> = {
         titulo: newBook.titulo,
         autor: newBook.autor,
@@ -293,10 +231,9 @@ export const useBooksManagement = () => {
         dbNewBook.imagen = newBook.imagen;
       }
 
-      // Fixed: We need to pass the object as an array for insert
       const { data, error } = await supabase
         .from('books')
-        .insert([dbNewBook]) // Wrapped in array to fix type error
+        .insert([dbNewBook])
         .select();
 
       if (error) {
@@ -310,7 +247,6 @@ export const useBooksManagement = () => {
       }
 
       if (data && data.length > 0) {
-        // Convert snake_case back to camelCase
         const addedBook: Book = {
           id: data[0].id,
           titulo: data[0].titulo,
@@ -324,7 +260,6 @@ export const useBooksManagement = () => {
           ubicacion: data[0].ubicacion,
           descripcion: data[0].descripcion || undefined,
           imagen: data[0].imagen || undefined,
-          // Removed archivo as it doesn't exist in the schema
         };
         
         setLocalBooks((prevBooks) => [...prevBooks, addedBook]);
@@ -346,21 +281,19 @@ export const useBooksManagement = () => {
 
   const handleAddDigitalBook = useCallback(async (bookId: string, newDigitalBook: Omit<DigitalBook, 'id' | 'bookId' | 'fechaSubida'>) => {
     try {
-      // Convert camelCase to snake_case for database
       const dbNewDigitalBook = {
         book_id: bookId,
         formato: newDigitalBook.formato,
         url: newDigitalBook.url,
         tamanio_mb: newDigitalBook.tamanioMb,
-        fecha_subida: new Date().toISOString(), // Convert Date to ISO string
+        fecha_subida: new Date().toISOString(),
         resumen: newDigitalBook.resumen,
-        storage_path: newDigitalBook.storage_path // Added this line
+        storage_path: newDigitalBook.storage_path
       };
   
-      // Fixed: We need to pass the object as an array for insert
       const { data, error } = await supabase
         .from('digital_books')
-        .insert([dbNewDigitalBook]) // Wrapped in array to fix type error
+        .insert([dbNewDigitalBook])
         .select();
   
       if (error) {
@@ -379,13 +312,12 @@ export const useBooksManagement = () => {
         const newDigitalBookWithId: DigitalBook = {
           id: insertedDigitalBook.id,
           bookId: bookId,
-          // Ensure formato is one of the valid types
           formato: insertedDigitalBook.formato as 'PDF' | 'EPUB' | 'MOBI' | 'HTML',
           url: insertedDigitalBook.url,
           tamanioMb: insertedDigitalBook.tamanio_mb,
           fechaSubida: new Date(insertedDigitalBook.fecha_subida),
           resumen: insertedDigitalBook.resumen || undefined,
-          storage_path: insertedDigitalBook.storage_path || undefined // Added undefined as fallback
+          storage_path: insertedDigitalBook.storage_path || undefined
         };
         
         setLocalDigitalBooks(prevDigitalBooks => [...prevDigitalBooks, newDigitalBookWithId]);
@@ -445,7 +377,6 @@ export const useBooksManagement = () => {
 
   const handleEditDigitalBook = useCallback(async (digitalBookId: string, updatedDigitalBook: Partial<DigitalBook>) => {
     try {
-      // Convert camelCase to snake_case for database
       const dbUpdatedDigitalBook: Record<string, any> = {};
       
       if ('tamanioMb' in updatedDigitalBook) {
@@ -460,7 +391,6 @@ export const useBooksManagement = () => {
         dbUpdatedDigitalBook.book_id = updatedDigitalBook.bookId;
       }
       
-      // Add any remaining fields (formato, url, resumen)
       if ('formato' in updatedDigitalBook) {
         dbUpdatedDigitalBook.formato = updatedDigitalBook.formato;
       }

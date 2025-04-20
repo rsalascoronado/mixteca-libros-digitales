@@ -61,6 +61,7 @@ export type Database = {
           formato: string
           id: string
           resumen: string | null
+          storage_path: string | null
           tamanio_mb: number
           url: string
         }
@@ -70,6 +71,7 @@ export type Database = {
           formato: string
           id?: string
           resumen?: string | null
+          storage_path?: string | null
           tamanio_mb: number
           url: string
         }
@@ -79,6 +81,7 @@ export type Database = {
           formato?: string
           id?: string
           resumen?: string | null
+          storage_path?: string | null
           tamanio_mb?: number
           url?: string
         }
