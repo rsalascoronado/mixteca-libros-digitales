@@ -12,9 +12,10 @@ interface ThesisTableProps {
   theses: Thesis[];
   onEdit?: (thesis: Thesis) => void;
   onDelete?: (thesis: Thesis) => void;
+  renderActions?: (thesis: Thesis) => React.ReactNode;
 }
 
-const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
+const ThesisTable = ({ theses, onEdit, onDelete, renderActions }: ThesisTableProps) => {
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
 
@@ -81,7 +82,9 @@ const ThesisTable = ({ theses, onEdit, onDelete }: ThesisTableProps) => {
                   )}
                 </TableCell>
                 <TableCell>
-                  {thesis.disponible ? (
+                  {renderActions ? (
+                    renderActions(thesis)
+                  ) : thesis.disponible ? (
                     <Button
                       variant="outline"
                       size="sm"
