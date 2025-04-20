@@ -2,7 +2,7 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 import { mockBooks } from '@/types/book';
-import { BookCard } from './BookCard';
+import BookCard from './BookCard';  // Changed import to default
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
@@ -110,3 +110,4 @@ const BookSearchResultTest = () => {
 };
 
 export default BookSearchResultTest;
+
