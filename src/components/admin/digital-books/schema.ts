@@ -1,7 +1,7 @@
 
 import { z } from 'zod';
 
-export const digitalBookSchema = z.object({
+export const uploadFormSchema = z.object({
   formato: z.enum(['PDF', 'EPUB', 'MOBI', 'HTML'], {
     required_error: 'Debe seleccionar un formato',
   }),
@@ -9,4 +9,4 @@ export const digitalBookSchema = z.object({
   resumen: z.string().optional(),
 });
 
-export type DigitalBookFormData = z.infer<typeof digitalBookSchema>;
+export type UploadDigitalBookFormData = z.infer<typeof uploadFormSchema>;

@@ -8,19 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Upload, Save } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import React from 'react';
-
-const uploadFormSchema = z.object({
-  formato: z.enum(['PDF', 'EPUB', 'MOBI', 'HTML'], {
-    required_error: 'Debe seleccionar un formato',
-  }),
-  file: z.instanceof(File).refine((file) => file.size <= 100 * 1024 * 1024, `El archivo debe ser menor a 100MB`),
-  resumen: z.string().optional(),
-});
-
-type UploadFormData = z.infer<typeof uploadFormSchema>;
+import { uploadFormSchema, UploadDigitalBookFormData } from './schema';
 
 interface UploadDigitalBookFormProps {
-  onSubmit: (data: UploadFormData) => Promise<void>;
+  onSubmit: (data: UploadDigitalBookFormData) => Promise<void>;
   isUploading: boolean;
 }
 
@@ -28,7 +19,7 @@ export function UploadDigitalBookForm({ onSubmit, isUploading }: UploadDigitalBo
   const [isFileSelected, setIsFileSelected] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const form = useForm<UploadFormData>({
+  const form = useForm<UploadDigitalBookFormData>({
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
       formato: 'PDF',

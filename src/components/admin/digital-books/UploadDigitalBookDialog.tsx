@@ -6,6 +6,7 @@ import { Upload } from 'lucide-react';
 import { Book } from '@/types';
 import { useDigitalBookUpload } from '@/hooks/use-digital-book-upload';
 import { UploadDigitalBookForm } from './UploadDigitalBookForm';
+import { UploadDigitalBookFormData } from './schema';
 
 interface UploadDigitalBookDialogProps {
   book: Book;
@@ -25,8 +26,10 @@ export function UploadDigitalBookDialog({ book, onUploadComplete }: UploadDigita
     setOpen(false);
   });
 
-  const handleSubmit = async (data: { formato: string; file: File; resumen?: string }) => {
-    await handleUpload(data.file, data.formato, data.resumen);
+  const handleSubmit = async (data: UploadDigitalBookFormData) => {
+    if (data.file) {
+      await handleUpload(data.file, data.formato, data.resumen);
+    }
   };
 
   return (
