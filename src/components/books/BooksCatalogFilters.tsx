@@ -15,6 +15,8 @@ interface BooksCatalogFiltersProps {
   disponibilidad: string;
   setDisponibilidad: (availability: string) => void;
   resetFilters: () => void;
+  onBuscar: () => void;                 // NUEVO: función para buscar
+  isUserLoggedIn: boolean;              // NUEVO: saber si el usuario puede buscar (siempre true para este caso)
 }
 
 const BooksCatalogFilters: React.FC<BooksCatalogFiltersProps> = ({
@@ -26,13 +28,23 @@ const BooksCatalogFilters: React.FC<BooksCatalogFiltersProps> = ({
   disponibilidad,
   setDisponibilidad,
   resetFilters,
+  onBuscar,
+  isUserLoggedIn
 }) => (
   <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-4">
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <form
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      onSubmit={e => {
+        e.preventDefault();
+        if (isUserLoggedIn) onBuscar();
+      }}
+    >
       <div className="sm:col-span-2">
         <Label htmlFor="search">Buscar por título, autor o ISBN</Label>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+        <div className="relative flex gap-2">
+          <span className="absolute left-2.5 top-2.5">
+            <Search className="h-4 w-4 text-gray-500" />
+          </span>
           <Input
             id="search"
             type="text"
@@ -41,6 +53,13 @@ const BooksCatalogFilters: React.FC<BooksCatalogFiltersProps> = ({
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
           />
+          <Button
+            type="submit"
+            className="ml-2"
+            disabled={!isUserLoggedIn}
+          >
+            Buscar
+          </Button>
         </div>
       </div>
 
@@ -73,12 +92,17 @@ const BooksCatalogFilters: React.FC<BooksCatalogFiltersProps> = ({
           </SelectContent>
         </Select>
       </div>
-    </div>
-    <div className="flex justify-end mt-4">
-      <Button variant="outline" onClick={resetFilters} className="w-full sm:w-auto">
-        Limpiar filtros
-      </Button>
-    </div>
+      <div className="flex justify-end col-span-full sm:col-start-2 sm:col-span-2 mt-4 gap-2">
+        <Button
+          variant="outline"
+          type="button"
+          onClick={resetFilters}
+          className="w-full sm:w-auto"
+        >
+          Limpiar filtros
+        </Button>
+      </div>
+    </form>
   </div>
 );
 

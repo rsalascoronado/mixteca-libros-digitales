@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import BooksCatalogFilters from './BooksCatalogFilters';
 import BookList from './BooksCatalogBookList';
 import BooksCatalogSummary from './BooksCatalogSummary';
@@ -23,6 +22,8 @@ export function BooksCatalog({
   disponibilidad,
   setDisponibilidad,
 }: BooksCatalogProps) {
+  const [pendingSearchTerm, setPendingSearchTerm] = useState(searchTerm);
+
   const {
     libros,
     filteredBooks,
@@ -34,7 +35,13 @@ export function BooksCatalog({
     setCurrentPage,
   } = useBooksCatalog({ searchTerm, categoria, disponibilidad });
 
+  const handleBuscar = () => {
+    setSearchTerm(pendingSearchTerm);
+    setCurrentPage(1);
+  };
+
   const resetFilters = () => {
+    setPendingSearchTerm('');
     setSearchTerm('');
     setCategoria('');
     setDisponibilidad('');
@@ -44,14 +51,16 @@ export function BooksCatalog({
   return (
     <div>
       <BooksCatalogFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
+        searchTerm={pendingSearchTerm}
+        setSearchTerm={setPendingSearchTerm}
         categoria={categoria}
         setCategoria={setCategoria}
         categorias={categorias}
         disponibilidad={disponibilidad}
         setDisponibilidad={setDisponibilidad}
         resetFilters={resetFilters}
+        onBuscar={handleBuscar}
+        isUserLoggedIn={true}
       />
 
       <BookList libros={libros} searchTerm={searchTerm} />
@@ -72,4 +81,3 @@ export function BooksCatalog({
     </div>
   );
 }
-
