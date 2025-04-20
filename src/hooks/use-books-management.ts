@@ -42,7 +42,8 @@ export const useBooksManagement = () => {
             url: item.url,
             tamanioMb: item.tamanio_mb,
             fechaSubida: new Date(item.fecha_subida),
-            resumen: item.resumen || undefined
+            resumen: item.resumen || undefined,
+            storage_path: item.storage_path // This property might not exist in the database
           }));
           setLocalDigitalBooks(mappedDigitalBooks);
         } else {
@@ -293,9 +294,10 @@ export const useBooksManagement = () => {
         dbNewBook.imagen = newBook.imagen;
       }
 
+      // Fix: Pass the array as a single object for single book insertion
       const { data, error } = await supabase
         .from('books')
-        .insert([dbNewBook])
+        .insert(dbNewBook) // No need for array brackets for a single object
         .select();
 
       if (error) {
@@ -323,7 +325,7 @@ export const useBooksManagement = () => {
           ubicacion: data[0].ubicacion,
           descripcion: data[0].descripcion || undefined,
           imagen: data[0].imagen || undefined,
-          archivo: data[0].archivo || undefined
+          // Fix: Remove archivo as it doesn't exist in the database schema
         };
         
         setLocalBooks((prevBooks) => [...prevBooks, addedBook]);
@@ -352,12 +354,14 @@ export const useBooksManagement = () => {
         url: newDigitalBook.url,
         tamanio_mb: newDigitalBook.tamanioMb,
         fecha_subida: new Date().toISOString(), // Convert Date to ISO string
-        resumen: newDigitalBook.resumen
+        resumen: newDigitalBook.resumen,
+        // Include storage_path if it exists in the digitalBook object
+        ...(newDigitalBook.storage_path && { storage_path: newDigitalBook.storage_path })
       };
   
       const { data, error } = await supabase
         .from('digital_books')
-        .insert([dbNewDigitalBook])
+        .insert(dbNewDigitalBook)
         .select();
   
       if (error) {
@@ -376,11 +380,14 @@ export const useBooksManagement = () => {
         const newDigitalBookWithId: DigitalBook = {
           id: insertedDigitalBook.id,
           bookId: bookId,
-          formato: insertedDigitalBook.formato,
+          // Fix: Ensure formato is one of the valid types
+          formato: insertedDigitalBook.formato as 'PDF' | 'EPUB' | 'MOBI' | 'HTML',
           url: insertedDigitalBook.url,
           tamanioMb: insertedDigitalBook.tamanio_mb,
           fechaSubida: new Date(insertedDigitalBook.fecha_subida),
-          resumen: insertedDigitalBook.resumen || undefined
+          resumen: insertedDigitalBook.resumen || undefined,
+          // Include storage_path if it exists in the database response
+          ...(insertedDigitalBook.storage_path && { storage_path: insertedDigitalBook.storage_path })
         };
         
         setLocalDigitalBooks(prevDigitalBooks => [...prevDigitalBooks, newDigitalBookWithId]);
