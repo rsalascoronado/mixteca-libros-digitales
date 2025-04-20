@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { BooksCatalogFilters } from './BooksCatalogFilters';
-import BookCard from './BookCard';
-import CatalogPagination from './CatalogPagination';
+import BooksCatalogFilters from './BooksCatalogFilters';
+import BookList from './BooksCatalogBookList';
 import BooksCatalogSummary from './BooksCatalogSummary';
+import CatalogPagination from './CatalogPagination';
 import { useBooksCatalog } from './useBooksCatalog';
 
 interface BooksCatalogProps {
@@ -54,11 +54,7 @@ export function BooksCatalog({
         resetFilters={resetFilters}
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        {libros.map((libro) => (
-          <BookCard key={libro.id} libro={libro} />
-        ))}
-      </div>
+      <BookList libros={libros} />
 
       <BooksCatalogSummary
         isLoading={isLoading}
