@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,6 +7,21 @@ import ThesisSearch from '@/components/thesis/ThesisSearch';
 import { mockTheses } from '@/types';
 import { BooksCatalog } from '@/components/books/BooksCatalog';
 import BookSearchResultTest from '@/components/books/BookSearchResultTest';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Book, Thesis } from "@/types";
+
+const fetchBooks = async () => {
+  const { data, error } = await supabase.from("books").select("*");
+  if (error) throw error;
+  return data as Book[];
+};
+
+const fetchTheses = async () => {
+  const { data, error } = await supabase.from("theses").select("*");
+  if (error) throw error;
+  return data as Thesis[];
+};
 
 const Catalogo = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -17,19 +31,41 @@ const Catalogo = () => {
   const [thesisTipoFiltro, setThesisTipoFiltro] = useState('');
   const [showTestMode, setShowTestMode] = useState(false);
   
+  const { data: books = [], isLoading: booksLoading, error: booksError } = useQuery({
+    queryKey: ['books'],
+    queryFn: fetchBooks,
+  });
+  const { data: theses = [], isLoading: thesesLoading, error: thesesError } = useQuery({
+    queryKey: ['theses'],
+    queryFn: fetchTheses,
+  });
+
+  const filteredBooks = React.useMemo(() => {
+    return books.filter(book => {
+      const matchSearch =
+        !searchTerm ||
+        book.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.autor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.isbn.includes(searchTerm) ||
+        book.editorial.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchCategory = !categoria || book.categoria === categoria;
+      return matchSearch && matchCategory;
+    });
+  }, [books, searchTerm, categoria]);
+
   const filteredTheses = React.useMemo(() => {
-    return mockTheses.filter(thesis => {
-      const matchesSearch = thesisSearchTerm.trim() === '' || 
+    return theses.filter(thesis => {
+      const matchesSearch = thesisSearchTerm.trim() === '' ||
         thesis.titulo.toLowerCase().includes(thesisSearchTerm.toLowerCase()) ||
         thesis.autor.toLowerCase().includes(thesisSearchTerm.toLowerCase()) ||
         thesis.director.toLowerCase().includes(thesisSearchTerm.toLowerCase());
-        
-      const matchesTipo = !thesisTipoFiltro || thesisTipoFiltro === 'all' || 
+
+      const matchesTipo = !thesisTipoFiltro || thesisTipoFiltro === 'all' ||
         thesis.tipo === thesisTipoFiltro;
-        
+
       return matchesSearch && matchesTipo;
     });
-  }, [thesisSearchTerm, thesisTipoFiltro]);
+  }, [theses, thesisSearchTerm, thesisTipoFiltro]);
 
   return (
     <MainLayout>
@@ -64,23 +100,21 @@ const Catalogo = () => {
             </TabsList>
             
             <TabsContent value="books" className="mt-0">
-              {showTestMode ? (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md mb-4">
-                  <p className="text-sm text-yellow-800">
-                    Mostrando la versión normal del catálogo de libros. 
-                    Esta es la implementación actual del buscador.
-                  </p>
-                </div>
-              ) : null}
-              
-              <BooksCatalog
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                categoria={categoria}
-                setCategoria={setCategoria}
-                disponibilidad={disponibilidad}
-                setDisponibilidad={setDisponibilidad}
-              />
+              {booksLoading ? (
+                <div className="p-4 text-center text-muted-foreground">Cargando libros...</div>
+              ) : booksError ? (
+                <div className="p-4 text-red-500 text-sm">Error obteniendo libros: {booksError.message}</div>
+              ) : (
+                <BooksCatalog
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  categoria={categoria}
+                  setCategoria={setCategoria}
+                  disponibilidad={disponibilidad}
+                  setDisponibilidad={setDisponibilidad}
+                  booksProp={filteredBooks}
+                />
+              )}
             </TabsContent>
             
             <TabsContent value="theses" className="mt-0">
@@ -101,10 +135,16 @@ const Catalogo = () => {
                 </p>
               </div>
               
-              <ThesisTable 
-                theses={filteredTheses} 
-                onEdit={() => {}} 
-              />
+              {thesesLoading ? (
+                <div className="p-4 text-center text-muted-foreground">Cargando tesis...</div>
+              ) : thesesError ? (
+                <div className="p-4 text-red-500 text-sm">Error obteniendo tesis: {thesesError.message}</div>
+              ) : (
+                <ThesisTable 
+                  theses={filteredTheses} 
+                  onEdit={() => {}} 
+                />
+              )}
             </TabsContent>
             
             {showTestMode && (

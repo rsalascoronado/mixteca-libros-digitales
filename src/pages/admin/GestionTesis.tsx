@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Plus } from 'lucide-react';
@@ -14,6 +13,7 @@ import AddThesisDialog from '@/components/thesis/AddThesisDialog';
 import EditThesisDialog from '@/components/thesis/EditThesisDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
+import { supabase } from "@/integrations/supabase/client";
 
 const GestionTesis = () => {
   const navigate = useNavigate();
@@ -91,17 +91,34 @@ const GestionTesis = () => {
     setEditDialogOpen(true);
   };
 
-  const handleImportTesis = (importedData: any[]) => {
-    try {
-      const newTesis = importedData.map((item: any) => ({
-        ...item,
-        anio: Number(item.anio),
-        disponible: item.disponible === 'true' || item.disponible === true
-      }));
-      setTesis(prev => [...prev, ...newTesis]);
-    } catch (error) {
-      console.error('Error importing thesis:', error);
+  const handleImportTesis = async (importedData: any[]) => {
+    let successCount = 0;
+    let failCount = 0;
+    for (const raw of importedData) {
+      try {
+        // Prevent duplicate thesis by title, director, or id
+        const { data: existing } = await supabase.from("theses").select("id").eq("titulo", raw.titulo).maybeSingle();
+        if (existing) continue;
+        await supabase.from("theses").insert([{
+          titulo: raw.titulo,
+          autor: raw.autor,
+          carrera: raw.carrera,
+          anio: Number(raw.anio),
+          director: raw.director,
+          tipo: raw.tipo,
+          disponible: raw.disponible === "true" || raw.disponible === true,
+          resumen: raw.resumen,
+          archivo_pdf: raw.archivoPdf || null
+        }]);
+        successCount++;
+      } catch (e) {
+        failCount++;
+      }
     }
+    toast({
+      title: "Importación de tesis",
+      description: `Tesis importadas: ${successCount}, Fallos: ${failCount}`
+    });
   };
 
   return (

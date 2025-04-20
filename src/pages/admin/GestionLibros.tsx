@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +11,7 @@ import { CategoriesTab } from '@/components/admin/books/CategoriesTab';
 import { useBooksManagement } from '@/hooks/use-books-management';
 import { useToast } from '@/hooks/use-toast';
 import { Suspense } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface GestionLibrosProps {
   defaultTab?: 'libros' | 'categorias' | 'digital';
@@ -38,10 +38,35 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
     handleEditDigitalBook
   } = useBooksManagement();
 
-  const handleImportData = useCallback((data: any[]) => {
+  const handleImportData = useCallback(async (data: any[]) => {
+    let successCount = 0;
+    let failCount = 0;
+    for (const rawBook of data) {
+      try {
+        const { titulo, autor, isbn, categoria, editorial, anioPublicacion, copias, disponibles, ubicacion, descripcion, consultas } = rawBook;
+        const { data: existingBook } = await supabase.from("books").select("id").eq("isbn", isbn).maybeSingle();
+        if (existingBook) continue;
+        await supabase.from("books").insert([{
+          titulo,
+          autor,
+          isbn,
+          categoria,
+          editorial,
+          anio_publicacion: anioPublicacion,
+          copias: copias ?? 1,
+          disponibles: disponibles ?? 1,
+          ubicacion,
+          descripcion,
+          consultas: consultas ?? 0,
+        }]);
+        successCount++;
+      } catch (e) {
+        failCount++;
+      }
+    }
     toast({
-      title: "Datos importados",
-      description: `Se importaron ${data.length} libros correctamente.`
+      title: "Importación finalizada",
+      description: `Éxitos: ${successCount}, Fallos: ${failCount}`
     });
   }, [toast]);
 

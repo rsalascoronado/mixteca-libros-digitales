@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import BooksCatalogFilters from './BooksCatalogFilters';
 import BookList from './BooksCatalogBookList';
 import BooksCatalogSummary from './BooksCatalogSummary';
 import CatalogPagination from './CatalogPagination';
 import { useBooksCatalog } from './useBooksCatalog';
+import { Book } from '@/types/book';
 
 interface BooksCatalogProps {
   searchTerm: string;
@@ -13,6 +13,7 @@ interface BooksCatalogProps {
   setCategoria: (category: string) => void;
   disponibilidad: string;
   setDisponibilidad: (availability: string) => void;
+  booksProp?: Book[]; // Nuevo parámetro opcional para datos externos (reales)
 }
 
 export function BooksCatalog({
@@ -22,23 +23,26 @@ export function BooksCatalog({
   setCategoria,
   disponibilidad,
   setDisponibilidad,
+  booksProp,
 }: BooksCatalogProps) {
+  // Si llegan datos reales, usarlos, si no, fallback al hook original
   const [pendingSearchTerm, setPendingSearchTerm] = useState(searchTerm);
 
-  const {
-    libros,
-    filteredBooks,
-    isLoading,
-    categorias,
-    totalPages,
-    currentPage,
-    goToPage,
-    setCurrentPage,
-  } = useBooksCatalog({ searchTerm, categoria, disponibilidad });
+  let libros = booksProp ?? [];
+  let isLoading = false;
+  let categorias: string[] = [];
+  if (booksProp) {
+    // obtener categorías a partir de los datos recibidos
+    categorias = Array.from(new Set(booksProp.map(b => b.categoria)));
+  } else {
+    const c = useBooksCatalog({ searchTerm, categoria, disponibilidad });
+    libros = c.libros;
+    isLoading = c.isLoading;
+    categorias = c.categorias;
+  }
 
   const handleBuscar = () => {
     setSearchTerm(pendingSearchTerm);
-    setCurrentPage(1);
     console.log(`Búsqueda ejecutada con término: "${pendingSearchTerm}"`);
   };
 
@@ -47,7 +51,6 @@ export function BooksCatalog({
     setSearchTerm('');
     setCategoria('');
     setDisponibilidad('');
-    setCurrentPage(1);
     console.log('Filtros de búsqueda reiniciados');
   };
 
@@ -72,7 +75,7 @@ export function BooksCatalog({
         <BooksCatalogSummary
           isLoading={isLoading}
           librosLength={libros.length}
-          filteredLength={filteredBooks.length}
+          filteredLength={libros.length}
         />
       </div>
 
@@ -88,14 +91,6 @@ export function BooksCatalog({
           <BookList libros={libros} searchTerm={searchTerm} />
         )}
       </div>
-
-      {totalPages > 0 && (
-        <CatalogPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={goToPage}
-        />
-      )}
     </div>
   );
 }
