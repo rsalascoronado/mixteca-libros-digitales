@@ -7,7 +7,7 @@ export const useThesisUploadHelpers = () => {
 
   const uploadThesisFile = async (
     file: File,
-    setUploadProgress: (val: number) => void,
+    setUploadProgress: React.Dispatch<React.SetStateAction<number>>,
     setIsUploading: (val: boolean) => void
   ): Promise<string> => {
     setIsUploading(true);
