@@ -45,14 +45,12 @@ export function useDigitalBookUpload(
 
   const handleUpload = async (file: File, formato: string, resumen?: string) => {
     try {
-      // Sesión/rol check extraída a helper
       const hasAuth = await checkUploadAuth();
       if (!hasAuth) {
         setUploadError("Debes iniciar sesión para subir archivos");
         return false;
       }
 
-      // Guardar los datos actuales para posible reintento
       setCurrentFile(file);
       setCurrentFormat(formato);
       setCurrentResumen(resumen);
@@ -60,7 +58,6 @@ export function useDigitalBookUpload(
       setUploadError(null);
       console.log('Starting upload process for:', file.name);
 
-      // Validar el archivo
       const validationResult = validateUploadableFile(file, formato, book);
       if (!validationResult.isValid) {
         console.error('Validation failed:', validationResult.error);
@@ -76,10 +73,8 @@ export function useDigitalBookUpload(
       setIsUploading(true);
       setUploadProgress(10);
 
-      // Generar nombre único para el archivo
       const fileName = generateDigitalBookFileName(book, file);
 
-      // Iniciar simulación de progreso
       const stopProgressSimulation = simulateProgress();
 
       try {
@@ -112,7 +107,6 @@ export function useDigitalBookUpload(
         setUploadProgress(100);
 
         try {
-          // Guardar en la base de datos
           const digitalBookData = {
             bookId: book.id,
             formato: formato as 'PDF' | 'EPUB' | 'MOBI' | 'HTML',
