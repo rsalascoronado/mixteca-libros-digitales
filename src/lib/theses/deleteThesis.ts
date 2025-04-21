@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
 
 // Auxiliary function to check UUID format
 function isValidUUID(id: string): boolean {
@@ -15,7 +16,16 @@ export async function deleteThesis(id: string): Promise<void> {
       throw new Error(`Error de autenticación: ${authError.message}`);
     }
 
-    if (!authData.session) {
+    // Verificar si se puede omitir autenticación para acciones de biblioteca
+    const skipAuth = await import('@/contexts/AuthContext').then(
+      async m => {
+        const { useAuth } = m;
+        const { user } = useAuth();
+        return canSkipAuthForLibraryActions(user);
+      }
+    ).catch(() => false);
+
+    if (!authData.session && !skipAuth) {
       throw new Error('Debes iniciar sesión para eliminar tesis');
     }
 

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
+import { createBucketIfNotExists } from '@/utils/supabaseStorage';
 
 export const useThesisUploadHelpers = () => {
   const { toast } = useToast();
@@ -18,13 +19,15 @@ export const useThesisUploadHelpers = () => {
 
     // Validar tipo PDF
     if (!file.type.includes('pdf')) {
+      setIsUploading(false);
       throw new Error('El archivo debe ser un PDF');
     }
 
     const { data: authData } = await supabase.auth.getSession();
 
-    // Permitir si es admin o bibliotecario
-    if (!authData.session && !canSkipAuthForLibraryActions(user)) {
+    // Permitir si es admin o bibliotecario, o si se puede omitir autenticación
+    const skipAuth = canSkipAuthForLibraryActions(user);
+    if (!authData.session && !skipAuth) {
       setIsUploading(false);
       toast({
         title: "Error de autenticación",
@@ -32,6 +35,14 @@ export const useThesisUploadHelpers = () => {
         variant: "destructive"
       });
       throw new Error('Debes iniciar sesión para subir archivos');
+    }
+
+    // Intentar crear bucket si no existe
+    try {
+      await createBucketIfNotExists('thesis-files');
+    } catch (error) {
+      console.warn('Error al verificar bucket:', error);
+      // Continuamos incluso si no podemos crear el bucket
     }
 
     const fileExt = file.name.split('.').pop();
@@ -76,14 +87,16 @@ export const useThesisUploadHelpers = () => {
       throw error;
     } finally {
       setIsUploading(false);
+      clearInterval(progressInterval);
     }
   };
 
   const deleteThesisFile = async (fileUrl: string) => {
     const { data: authData } = await supabase.auth.getSession();
 
-    // Permitir si es admin o bibliotecario
-    if (!authData.session && !canSkipAuthForLibraryActions(user)) {
+    // Permitir si es admin o bibliotecario, o si se puede omitir autenticación
+    const skipAuth = canSkipAuthForLibraryActions(user);
+    if (!authData.session && !skipAuth) {
       toast({
         title: "Error de autenticación",
         description: "Debes iniciar sesión para eliminar archivos",

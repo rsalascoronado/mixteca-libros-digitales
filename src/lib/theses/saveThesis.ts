@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { Thesis } from '@/types';
+import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
 
 // Auxiliary function to check UUID format
 function isValidUUID(id: string): boolean {
@@ -17,7 +18,17 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
       throw new Error(`Error de autenticación: ${authError.message}`);
     }
 
-    if (!authData.session) {
+    // Si no hay sesión, verificar si se puede omitir autenticación para acciones de biblioteca
+    const skipAuth = await import('@/contexts/AuthContext').then(
+      async m => {
+        const { useAuth } = m;
+        const { user } = useAuth();
+        return canSkipAuthForLibraryActions(user);
+      }
+    ).catch(() => false);
+
+    if (!authData.session && !skipAuth) {
+      console.error('No session found and cannot skip auth');
       throw new Error('Debes iniciar sesión para guardar tesis');
     }
 

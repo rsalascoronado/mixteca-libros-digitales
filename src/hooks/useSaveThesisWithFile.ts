@@ -17,6 +17,7 @@ export const useSaveThesisWithFile = (
   const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
     const { data: authData } = await import("@/integrations/supabase/client").then(m => m.supabase.auth.getSession());
 
+    // Verificar permisos incluso sin sesión (para demo o casos especiales)
     if (!authData.session && !canSkipAuthForLibraryActions(user)) {
       toast({
         title: "Error de autenticación",
