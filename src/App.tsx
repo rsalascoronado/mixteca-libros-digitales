@@ -24,6 +24,7 @@ import GestionLibros from "./pages/admin/GestionLibros";
 import GestionTesis from "./pages/admin/GestionTesis";
 import GestionUsuarios from "./pages/admin/GestionUsuarios";
 import GestionPermisos from "./pages/admin/GestionPermisos";
+import LibrosEnBaseDeDatos from "@/pages/admin/LibrosEnBaseDeDatos";
 
 const queryClient = new QueryClient();
 
@@ -61,73 +62,76 @@ const AdminOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Rutas públicas */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/catalogo" element={<Catalogo />} />
-            <Route path="/libro/:id" element={<DetalleLibro />} />
-            <Route path="/ayuda" element={<Ayuda />} />
-            <Route path="/catalogo/consultados" element={<MostConsultedBooks />} />
-            
-            {/* Rutas protegidas para usuarios autenticados */}
-            <Route path="/mis-prestamos" element={
-              <ProtectedRoute>
-                <MisPrestamos />
-              </ProtectedRoute>
-            } />
-            
-            {/* Rutas de administración */}
-            <Route path="/admin/prestamos" element={
-              <AdminRoute>
-                <GestionPrestamos />
-              </AdminRoute>
-            } />
-            <Route path="/admin/libros" element={
-              <AdminRoute>
-                <GestionLibros />
-              </AdminRoute>
-            } />
-            <Route path="/admin/usuarios" element={
-              <AdminRoute>
-                <GestionUsuarios />
-              </AdminRoute>
-            } />
-            <Route path="/admin/tesis" element={
-              <AdminRoute>
-                <GestionTesis />
-              </AdminRoute>
-            } />
-            <Route path="/admin/ebooks" element={
-              <AdminRoute>
-                <GestionLibros defaultTab="digital" />
-              </AdminRoute>
-            } />
-            <Route path="/admin/configuracion" element={
-              <AdminOnlyRoute>
-                <Configuracion />
-              </AdminOnlyRoute>
-            } />
-            <Route path="/admin/permisos" element={
-              <AdminOnlyRoute>
-                <GestionPermisos />
-              </AdminOnlyRoute>
-            } />
-            
-            {/* Ruta de 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Rutas públicas */}
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/catalogo" element={<Catalogo />} />
+              <Route path="/libro/:id" element={<DetalleLibro />} />
+              <Route path="/ayuda" element={<Ayuda />} />
+              <Route path="/catalogo/consultados" element={<MostConsultedBooks />} />
+              
+              {/* Rutas protegidas para usuarios autenticados */}
+              <Route path="/mis-prestamos" element={
+                <ProtectedRoute>
+                  <MisPrestamos />
+                </ProtectedRoute>
+              } />
+              
+              {/* Rutas de administración */}
+              <Route path="/admin/prestamos" element={
+                <AdminRoute>
+                  <GestionPrestamos />
+                </AdminRoute>
+              } />
+              <Route path="/admin/libros" element={
+                <AdminRoute>
+                  <GestionLibros />
+                </AdminRoute>
+              } />
+              <Route path="/admin/usuarios" element={
+                <AdminRoute>
+                  <GestionUsuarios />
+                </AdminRoute>
+              } />
+              <Route path="/admin/tesis" element={
+                <AdminRoute>
+                  <GestionTesis />
+                </AdminRoute>
+              } />
+              <Route path="/admin/ebooks" element={
+                <AdminRoute>
+                  <GestionLibros defaultTab="digital" />
+                </AdminRoute>
+              } />
+              <Route path="/admin/configuracion" element={
+                <AdminOnlyRoute>
+                  <Configuracion />
+                </AdminOnlyRoute>
+              } />
+              <Route path="/admin/permisos" element={
+                <AdminOnlyRoute>
+                  <GestionPermisos />
+                </AdminOnlyRoute>
+              } />
+              <Route path="/admin/libros-en-base" element={<LibrosEnBaseDeDatos />} />
+              
+              {/* Ruta de 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
