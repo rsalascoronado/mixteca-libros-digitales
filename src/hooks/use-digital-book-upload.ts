@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { Book } from '@/types';
@@ -8,6 +7,8 @@ import { getFormattedSize } from '@/utils/fileValidation';
 import { saveDigitalBook } from '@/lib/db';
 import { useUploadAuthCheck } from './use-digital-book-upload/useUploadAuthCheck';
 import { useUploadProgressSimulation } from './use-digital-book-upload/useUploadProgressSimulation';
+
+export * from './use-digital-book-upload/file-validation';
 
 export function useDigitalBookUpload(
   book: Book, 
