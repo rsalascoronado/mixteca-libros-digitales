@@ -68,7 +68,6 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
   const handleThesisAdded = async (newThesis: Thesis) => {
     try {
       await queryClient.invalidateQueries({ queryKey: ["theses"] });
-
       toast({
         title: "Tesis agregada",
         description: `La tesis "${newThesis.titulo}" ha sido agregada exitosamente.`,
@@ -87,7 +86,6 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
     try {
       await queryClient.invalidateQueries({ queryKey: ["theses"] });
       setEditingTesis(null);
-
       toast({
         title: "Tesis actualizada",
         description: `La tesis "${updatedThesis.titulo}" ha sido actualizada exitosamente.`,
@@ -109,7 +107,6 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
       }
       await deleteThesis(thesisToDelete.id);
       await queryClient.invalidateQueries({ queryKey: ["theses"] });
-
       toast({
         title: "Tesis eliminada",
         description: `La tesis "${thesisToDelete.titulo}" ha sido eliminada exitosamente.`,
@@ -141,43 +138,50 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
   };
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <div className="flex items-center justify-between mb-6">
+    <div className="container mx-auto py-4 px-2 sm:py-10 sm:px-4">
+      {/* Cabecera principal, responsiva */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="flex items-center">
           <GraduationCap className="h-8 w-8 text-primary mr-3" />
-          <h1 className="text-3xl font-bold">Gestión de Tesis</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Gestión de Tesis</h1>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
           <DataImport onImport={handleImportTesis} accept=".csv,.json,.xlsx" />
           <DataExport
             data={tesisFiltradas}
             filename="tesis-export"
             buttonLabel="Exportar tesis"
           />
-          <Button onClick={() => setAddDialogOpen(true)}>
+          <Button onClick={() => setAddDialogOpen(true)} className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             Agregar tesis
           </Button>
         </div>
       </div>
-      <ThesisSearch
-        busqueda={busqueda}
-        tipoFiltro={tipoFiltro}
-        onBusquedaChange={setBusqueda}
-        onTipoFiltroChange={setTipoFiltro}
-        onLimpiarFiltros={limpiarFiltros}
-      />
-      <div className="mb-4">
-        <p className="text-gray-600">
-          Mostrando {tesisFiltradas.length} {tesisFiltradas.length === 1 ? 'tesis' : 'tesis'}
-          {isLoading && ' (Cargando...)'}
-        </p>
+      {/* Filtros y resumen */}
+      <div>
+        <ThesisSearch
+          busqueda={busqueda}
+          tipoFiltro={tipoFiltro}
+          onBusquedaChange={setBusqueda}
+          onTipoFiltroChange={setTipoFiltro}
+          onLimpiarFiltros={limpiarFiltros}
+        />
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-2">
+          <p className="text-gray-600 text-sm sm:text-base">
+            Mostrando {tesisFiltradas.length} {tesisFiltradas.length === 1 ? 'tesis' : 'tesis'}
+            {isLoading && ' (Cargando...)'}
+          </p>
+        </div>
       </div>
-      <ThesisTable
-        theses={tesisFiltradas}
-        onEdit={handleEditTesis}
-        onDelete={handleThesisDelete}
-      />
+      {/* Tabla de tesis con scroll horizontal en móvil */}
+      <div className="overflow-x-auto">
+        <ThesisTable
+          theses={tesisFiltradas}
+          onEdit={handleEditTesis}
+          onDelete={handleThesisDelete}
+        />
+      </div>
       <AddThesisDialog
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
