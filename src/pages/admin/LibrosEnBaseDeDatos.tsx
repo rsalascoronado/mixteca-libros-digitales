@@ -6,6 +6,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Button } from "@/components/ui/button";
 import { BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import ImportMockBooks from "@/utils/importMockBooks";
 
 const LibrosEnBaseDeDatos = () => {
   const { books, isLoading } = useBooksData();
@@ -24,7 +25,12 @@ const LibrosEnBaseDeDatos = () => {
         {isLoading ? (
           <div className="text-center text-gray-500 py-6">Cargando libros...</div>
         ) : books.length === 0 ? (
-          <div className="text-center text-gray-500 py-6">No hay libros registrados en la base de datos real.</div>
+          <div>
+            <div className="text-center text-gray-500 py-6">
+              No hay libros registrados en la base de datos real.
+            </div>
+            <ImportMockBooks />
+          </div>
         ) : (
           <div className="bg-white p-2 rounded shadow">
             <Table>
