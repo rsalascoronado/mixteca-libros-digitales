@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -36,18 +35,15 @@ const MisPrestamos = () => {
   const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Redirigir si no está autenticado
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
     }
   }, [isAuthenticated, navigate]);
 
-  // Cargar préstamos del usuario
   useEffect(() => {
     if (user) {
       setLoading(true);
-      // Simular carga de datos
       setTimeout(() => {
         const userPrestamos = mockPrestamos.filter(prestamo => prestamo.userId === user.id);
         setPrestamos(userPrestamos);
@@ -56,19 +52,15 @@ const MisPrestamos = () => {
     }
   }, [user]);
 
-  // Obtener el título del libro a partir del ID
   const getBookTitle = (bookId: string) => {
     const book = mockBooks.find(book => book.id === bookId);
     return book ? book.titulo : 'Libro desconocido';
   };
 
-  // Renovar préstamo
   const handleRenovarPrestamo = (prestamoId: string) => {
-    // Simular renovación
     setPrestamos(prevPrestamos => 
       prevPrestamos.map(prestamo => {
         if (prestamo.id === prestamoId) {
-          // Agregar 14 días a la fecha de devolución
           const nuevaFechaDevolucion = new Date(prestamo.fechaDevolucion);
           nuevaFechaDevolucion.setDate(nuevaFechaDevolucion.getDate() + 14);
           
@@ -88,12 +80,33 @@ const MisPrestamos = () => {
     });
   };
 
-  // Verificar si un préstamo está vencido
   const isVencido = (fechaDevolucion: Date) => {
     return isAfter(new Date(), fechaDevolucion);
   };
 
-  // Filtrar préstamos por estado
+  const handleRegularizarPrestamo = (prestamoId: string) => {
+    setPrestamos(prevPrestamos => 
+      prevPrestamos.map(prestamo => {
+        if (prestamo.id === prestamoId) {
+          const nuevaFechaDevolucion = new Date(prestamo.fechaDevolucion);
+          nuevaFechaDevolucion.setDate(nuevaFechaDevolucion.getDate() + 14);
+          
+          return {
+            ...prestamo,
+            fechaDevolucion: nuevaFechaDevolucion,
+            estado: 'prestado' as const
+          };
+        }
+        return prestamo;
+      })
+    );
+
+    toast({
+      title: "Préstamo regularizado",
+      description: "El préstamo vencido ha sido regularizado y extendido.",
+    });
+  };
+
   const prestadosActuales = prestamos.filter(p => p.estado === 'prestado');
   const prestamosVencidos = prestamos.filter(p => p.estado === 'retrasado' || isVencido(p.fechaDevolucion));
   const prestamosDevueltos = prestamos.filter(p => p.estado === 'devuelto');
@@ -129,7 +142,6 @@ const MisPrestamos = () => {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Préstamos activos */}
             <div>
               <div className="flex items-center mb-4">
                 <BookOpen className="h-5 w-5 text-primary mr-2" />
@@ -202,7 +214,6 @@ const MisPrestamos = () => {
               )}
             </div>
             
-            {/* Préstamos vencidos */}
             {prestamosVencidos.length > 0 && (
               <div>
                 <div className="flex items-center mb-4">
@@ -240,7 +251,7 @@ const MisPrestamos = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Button size="sm" variant="secondary">
+                            <Button size="sm" variant="secondary" onClick={() => handleRegularizarPrestamo(prestamo.id)}>
                               <Clock className="h-4 w-4 mr-1" />
                               Regularizar
                             </Button>
@@ -253,7 +264,6 @@ const MisPrestamos = () => {
               </div>
             )}
             
-            {/* Historial de préstamos */}
             {prestamosDevueltos.length > 0 && (
               <div>
                 <div className="flex items-center mb-4">
