@@ -133,7 +133,7 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto py-6 md:py-8">
+      <div className="container mx-auto py-4 px-2 md:py-8 md:px-0">
         <Card>
           <LibrosHeader
             books={books}
@@ -142,7 +142,7 @@ const GestionLibros = ({ defaultTab = 'libros' }: GestionLibrosProps) => {
             onAddBook={handleAddBook}
           />
 
-          <CardContent>
+          <CardContent className="p-2 sm:p-6 pt-0">
             <LibrosTabs
               books={books}
               categories={categories}

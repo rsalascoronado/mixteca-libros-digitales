@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { CardTitle, CardDescription, CardHeader } from '@/components/ui/card';
 import DataImport from '@/components/admin/DataImport';
@@ -21,24 +22,26 @@ const LibrosHeader: React.FC<LibrosHeaderProps> = ({
 }) => {
   return (
     <CardHeader className="pb-3">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <CardTitle>Gestión de Libros</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">Gestión de Libros</CardTitle>
           <CardDescription>
             Administra el catálogo de libros de la biblioteca
           </CardDescription>
         </div>
-        <div className="flex flex-wrap gap-2 items-center">
-          <DataImport onImport={onImport} />
-          <DataExport
-            data={books}
-            filename="libros-biblioteca"
-            buttonLabel="Exportar libros"
-          />
-          <NewBookDialog
-            categories={categories}
-            onAddBook={onAddBook}
-          />
+        <div className="flex flex-col gap-2 xs:flex-row xs:flex-wrap sm:flex-row items-stretch sm:items-center">
+          <div className="flex gap-2 flex-wrap">
+            <DataImport onImport={onImport} />
+            <DataExport
+              data={books}
+              filename="libros-biblioteca"
+              buttonLabel="Exportar libros"
+            />
+            <NewBookDialog
+              categories={categories}
+              onAddBook={onAddBook}
+            />
+          </div>
         </div>
       </div>
     </CardHeader>
@@ -46,3 +49,4 @@ const LibrosHeader: React.FC<LibrosHeaderProps> = ({
 };
 
 export default LibrosHeader;
+

@@ -1,5 +1,6 @@
 
-import React, { Suspense, useCallback } from "react";
+
+import React, { Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BulkActionsBar from "@/components/admin/books/BulkActionsBar";
 import { BooksListTab } from "@/components/admin/books/BooksListTab";
@@ -50,22 +51,30 @@ const LibrosTabs: React.FC<LibrosTabsProps> = ({
   onEditCategory,
   isStaff,
 }) => (
-  <>
+  <div>
     {activeTab === 'libros' && (
-      <BulkActionsBar
-        selectedCount={selectedBooks.length}
-        totalCount={books.length}
-        onSelectAll={onSelectAll}
-        onBulkDelete={onBulkDelete}
-        onExportSelected={onExportSelected}
-        disabled={selectedBooks.length === 0}
-      />
+      <div className="mb-4 sm:mb-4">
+        <BulkActionsBar
+          selectedCount={selectedBooks.length}
+          totalCount={books.length}
+          onSelectAll={onSelectAll}
+          onBulkDelete={onBulkDelete}
+          onExportSelected={onExportSelected}
+          disabled={selectedBooks.length === 0}
+        />
+      </div>
     )}
     <Tabs value={activeTab} onValueChange={onTabChange} defaultValue="libros">
-      <TabsList className="mb-4 w-full sm:w-auto flex overflow-x-auto">
-        <TabsTrigger value="libros">Libros</TabsTrigger>
-        <TabsTrigger value="categorias">Categorías</TabsTrigger>
-        <TabsTrigger value="digital">Libros digitales</TabsTrigger>
+      <TabsList className="mb-4 w-full sm:w-auto flex overflow-x-auto gap-1">
+        <TabsTrigger value="libros" className="flex-1 sm:flex-none min-w-[100px]">
+          Libros
+        </TabsTrigger>
+        <TabsTrigger value="categorias" className="flex-1 sm:flex-none min-w-[100px]">
+          Categorías
+        </TabsTrigger>
+        <TabsTrigger value="digital" className="flex-1 sm:flex-none min-w-[140px]">
+          Libros digitales
+        </TabsTrigger>
       </TabsList>
       <Suspense fallback={<div className="py-4 text-center">Cargando...</div>}>
         <TabsContent value="libros">
@@ -107,7 +116,8 @@ const LibrosTabs: React.FC<LibrosTabsProps> = ({
         </TabsContent>
       </Suspense>
     </Tabs>
-  </>
+  </div>
 );
 
 export default LibrosTabs;
+
