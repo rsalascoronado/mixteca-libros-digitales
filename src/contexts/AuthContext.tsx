@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, mockUsers, UserRole, assignRoleBasedOnEmail } from '@/types';
 
@@ -57,14 +58,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           nombre: 'Administrador',
           apellidos: 'Sistema',
           role: 'administrador',
-          createdAt: new Date()
+          createdAt: new Date(),
+          canSkipAuth: true // Set canSkipAuth for admin users
         };
       }
       
       if (foundUser) {
         const userWithAssignedRole: User = {
           ...foundUser,
-          role: isAdminEmail ? 'administrador' : assignRoleBasedOnEmail(email)
+          role: isAdminEmail ? 'administrador' : assignRoleBasedOnEmail(email),
+          canSkipAuth: isAdminEmail || foundUser.email === 'biblioteca@mixteco.utm.mx' // Set canSkipAuth for admin and bibliotecario
         };
         
         setUser(userWithAssignedRole);

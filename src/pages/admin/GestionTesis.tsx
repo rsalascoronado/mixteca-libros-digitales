@@ -21,7 +21,7 @@ const GestionTesis = () => {
 
   return (
     <MainLayout>
-      {!isAuthenticated && !user?.canSkipAuth ? (
+      {!isAuthenticated && !(user?.canSkipAuth) ? (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
           <p className="font-bold">Autenticación requerida</p>
           <p>Debes iniciar sesión para gestionar las tesis.</p>

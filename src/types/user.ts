@@ -1,3 +1,4 @@
+
 export type UserRole = 'estudiante' | 'profesor' | 'tecnico' | 'administrativo' | 'operativo' | 'bibliotecario' | 'administrador';
 
 export interface User {
@@ -8,6 +9,7 @@ export interface User {
   role: UserRole;
   avatar?: string;
   createdAt: Date;
+  canSkipAuth?: boolean;
 }
 
 export function assignRoleBasedOnEmail(email: string): UserRole {
@@ -40,6 +42,7 @@ export const mockUsers: User[] = [
     apellidos: 'Sistema',
     role: 'administrador',
     createdAt: new Date('2023-01-01'),
+    canSkipAuth: true
   },
   {
     id: '2',
@@ -48,6 +51,7 @@ export const mockUsers: User[] = [
     apellidos: 'Principal',
     role: 'bibliotecario',
     createdAt: new Date('2023-01-02'),
+    canSkipAuth: true
   },
   {
     id: '3',
