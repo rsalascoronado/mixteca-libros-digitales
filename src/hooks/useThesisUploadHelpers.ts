@@ -2,11 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-
-function canSkipAuthForThesisActions(user: any): boolean {
-  if (!user) return false;
-  return user.role === 'administrador' || user.role === 'bibliotecario';
-}
+import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
 
 export const useThesisUploadHelpers = () => {
   const { toast } = useToast();
@@ -28,7 +24,7 @@ export const useThesisUploadHelpers = () => {
     const { data: authData } = await supabase.auth.getSession();
 
     // Permitir si es admin o bibliotecario
-    if (!authData.session && !canSkipAuthForThesisActions(user)) {
+    if (!authData.session && !canSkipAuthForLibraryActions(user)) {
       setIsUploading(false);
       toast({
         title: "Error de autenticación",
@@ -87,7 +83,7 @@ export const useThesisUploadHelpers = () => {
     const { data: authData } = await supabase.auth.getSession();
 
     // Permitir si es admin o bibliotecario
-    if (!authData.session && !canSkipAuthForThesisActions(user)) {
+    if (!authData.session && !canSkipAuthForLibraryActions(user)) {
       toast({
         title: "Error de autenticación",
         description: "Debes iniciar sesión para eliminar archivos",

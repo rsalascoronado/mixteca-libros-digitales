@@ -112,3 +112,9 @@ export const hasModuleAccess = (user: User | null, moduleId: string): 'permitir'
   // Default to 'ocultar' if the module is not found
   return defaultPermissions[moduleId]?.[user.role] || 'ocultar';
 };
+
+// Función para determinar si un usuario puede omitir la autenticación para acciones de biblioteca
+export const canSkipAuthForLibraryActions = (user: any): boolean => {
+  if (!user) return false;
+  return user.role === 'administrador' || user.role === 'bibliotecario';
+};

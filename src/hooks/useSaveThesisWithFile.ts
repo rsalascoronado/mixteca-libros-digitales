@@ -4,11 +4,7 @@ import { useThesisUploadHelpers } from './useThesisUploadHelpers';
 import type { Thesis } from '@/types';
 import { saveThesis } from '@/lib/theses-db';
 import { useAuth } from '@/contexts/AuthContext';
-
-function canSkipAuthForThesisActions(user: any): boolean {
-  if (!user) return false;
-  return user.role === 'administrador' || user.role === 'bibliotecario';
-}
+import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
 
 export const useSaveThesisWithFile = (
   setUploadProgress: (val: number) => void,
@@ -21,7 +17,7 @@ export const useSaveThesisWithFile = (
   const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
     const { data: authData } = await import("@/integrations/supabase/client").then(m => m.supabase.auth.getSession());
 
-    if (!authData.session && !canSkipAuthForThesisActions(user)) {
+    if (!authData.session && !canSkipAuthForLibraryActions(user)) {
       toast({
         title: "Error de autenticación",
         description: "Debes iniciar sesión para guardar tesis",

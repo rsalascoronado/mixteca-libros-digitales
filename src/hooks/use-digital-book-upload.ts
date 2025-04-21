@@ -6,6 +6,8 @@ import { validateUploadableFile, generateDigitalBookFileName } from './use-digit
 import { uploadDigitalBookFile } from './use-digital-book-upload/storage-upload';
 import { getFormattedSize } from '@/utils/fileValidation';
 import { saveDigitalBook } from '@/lib/db';
+import { useAuth } from '@/contexts/AuthContext';
+import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
 
 export function useDigitalBookUpload(
   book: Book, 
@@ -23,6 +25,7 @@ export function useDigitalBookUpload(
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [currentFormat, setCurrentFormat] = useState<string | null>(null);
   const [currentResumen, setCurrentResumen] = useState<string | undefined>(undefined);
+  const { user } = useAuth();
 
   const simulateProgress = useCallback(() => {
     // Esta función simula el progreso de carga ya que Supabase no proporciona eventos de progreso
@@ -56,6 +59,19 @@ export function useDigitalBookUpload(
 
   const handleUpload = async (file: File, formato: string, resumen?: string) => {
     try {
+      // Verificar la sesión primero pero permitir a administradores o bibliotecarios saltársela
+      const { data: authData } = await import("@/integrations/supabase/client").then(m => m.supabase.auth.getSession());
+      
+      if (!authData.session && !canSkipAuthForLibraryActions(user)) {
+        setUploadError("Debes iniciar sesión para subir archivos");
+        toast({
+          title: "Error de autenticación",
+          description: "Debes iniciar sesión para subir archivos digitales",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
       // Guardar los datos actuales para posible reintento
       setCurrentFile(file);
       setCurrentFormat(formato);
