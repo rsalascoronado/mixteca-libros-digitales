@@ -6,7 +6,7 @@ import { useBooksRealtime } from "./hooks/useBooksRealtime";
 import { useBookFilters } from "./hooks/useBookFilters";
 import { usePagination } from "./hooks/usePagination";
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 6; // Cambiado de 9 a 6 para limitar libros por página
 
 type UseBooksCatalogProps = {
   searchTerm: string;
@@ -80,3 +80,4 @@ export function useBooksCatalog({
     setCurrentPage,
   };
 }
+
