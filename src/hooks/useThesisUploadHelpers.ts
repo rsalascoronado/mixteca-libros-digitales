@@ -1,9 +1,16 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+
+function canSkipAuthForThesisActions(user: any): boolean {
+  if (!user) return false;
+  return user.role === 'administrador' || user.role === 'bibliotecario';
+}
 
 export const useThesisUploadHelpers = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const uploadThesisFile = async (
     file: File,
@@ -18,9 +25,10 @@ export const useThesisUploadHelpers = () => {
       throw new Error('El archivo debe ser un PDF');
     }
 
-    // Check auth
     const { data: authData } = await supabase.auth.getSession();
-    if (!authData.session) {
+
+    // Permitir si es admin o bibliotecario
+    if (!authData.session && !canSkipAuthForThesisActions(user)) {
       setIsUploading(false);
       toast({
         title: "Error de autenticación",
@@ -35,7 +43,7 @@ export const useThesisUploadHelpers = () => {
 
     // Simular progreso
     const progressInterval = setInterval(() => {
-      setUploadProgress(prev => Math.min(prev + 10, 90));
+      setUploadProgress((prev: number) => Math.min(prev + 10, 90));
     }, 500);
 
     try {
@@ -76,9 +84,10 @@ export const useThesisUploadHelpers = () => {
   };
 
   const deleteThesisFile = async (fileUrl: string) => {
-    // Check auth
     const { data: authData } = await supabase.auth.getSession();
-    if (!authData.session) {
+
+    // Permitir si es admin o bibliotecario
+    if (!authData.session && !canSkipAuthForThesisActions(user)) {
       toast({
         title: "Error de autenticación",
         description: "Debes iniciar sesión para eliminar archivos",

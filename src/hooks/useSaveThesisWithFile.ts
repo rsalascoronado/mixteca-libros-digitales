@@ -3,6 +3,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useThesisUploadHelpers } from './useThesisUploadHelpers';
 import type { Thesis } from '@/types';
 import { saveThesis } from '@/lib/theses-db';
+import { useAuth } from '@/contexts/AuthContext';
+
+function canSkipAuthForThesisActions(user: any): boolean {
+  if (!user) return false;
+  return user.role === 'administrador' || user.role === 'bibliotecario';
+}
 
 export const useSaveThesisWithFile = (
   setUploadProgress: (val: number) => void,
@@ -10,11 +16,12 @@ export const useSaveThesisWithFile = (
 ) => {
   const { toast } = useToast();
   const { uploadThesisFile, deleteThesisFile } = useThesisUploadHelpers();
+  const { user } = useAuth();
 
   const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
-    // Check auth
     const { data: authData } = await import("@/integrations/supabase/client").then(m => m.supabase.auth.getSession());
-    if (!authData.session) {
+
+    if (!authData.session && !canSkipAuthForThesisActions(user)) {
       toast({
         title: "Error de autenticación",
         description: "Debes iniciar sesión para guardar tesis",
@@ -28,7 +35,7 @@ export const useSaveThesisWithFile = (
     if (file) {
       try {
         publicUrl = await uploadThesisFile(file, setUploadProgress, setIsUploading);
-      } catch (uploadError) {
+      } catch (uploadError: any) {
         throw new Error(uploadError?.message || 'Error subiendo archivo');
       }
     }
@@ -50,8 +57,7 @@ export const useSaveThesisWithFile = (
     try {
       const savedThesis = await saveThesis(thesisToSave);
       return savedThesis;
-    } catch (dbError) {
-      // Si se subió archivo pero la tesis falla guardar, eliminar el archivo recién subido
+    } catch (dbError: any) {
       if (file && publicUrl) {
         try { await deleteThesisFile(publicUrl); } catch { /* silent */ }
       }
