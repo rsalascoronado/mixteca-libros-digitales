@@ -55,7 +55,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'SELECT',
       policy_definition: 'true',
       policy_name: `${bucketName}_public_select`
-    });
+    } as any);
 
     // Permitir acceso público para descargar archivos
     await supabase.rpc('create_or_update_storage_policy', {
@@ -63,7 +63,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'READ',
       policy_definition: 'true',
       policy_name: `${bucketName}_public_read`
-    });
+    } as any);
 
     // Permitir a usuarios autenticados subir archivos
     await supabase.rpc('create_or_update_storage_policy', {
@@ -71,7 +71,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'INSERT',
       policy_definition: 'auth.role() = \'authenticated\'',
       policy_name: `${bucketName}_auth_insert`
-    });
+    } as any);
 
     // Permitir a usuarios autenticados actualizar sus propios archivos
     await supabase.rpc('create_or_update_storage_policy', {
@@ -79,7 +79,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'UPDATE',
       policy_definition: 'auth.role() = \'authenticated\'',
       policy_name: `${bucketName}_auth_update`
-    });
+    } as any);
 
     // Permitir a usuarios autenticados eliminar sus propios archivos
     await supabase.rpc('create_or_update_storage_policy', {
@@ -87,7 +87,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'DELETE',
       policy_definition: 'auth.role() = \'authenticated\'',
       policy_name: `${bucketName}_auth_delete`
-    });
+    } as any);
 
     console.log(`Políticas públicas configuradas para el bucket ${bucketName}`);
   } catch (error) {
