@@ -1,3 +1,4 @@
+
 import { User, UserRole } from '@/types';
 
 export const isLibrarian = (user: User | null): boolean => {
@@ -11,26 +12,29 @@ export const isLibrarian = (user: User | null): boolean => {
 };
 
 export const canSkipAuthForLibraryActions = (user: User | null): boolean => {
-  // Permitir acciones de biblioteca en modo demostración para usuarios autenticados o staff
+  // Permitir acciones para usuarios con rol de bibliotecario o administrador
   if (user && (user.role === 'bibliotecario' || user.role === 'administrador')) {
     return true;
   }
   
   // En modo de desarrollo/demostración, permitir acciones sin autenticación
-  return import.meta.env.DEV || import.meta.env.MODE === 'development' || true;
+  // Al eliminar "|| true" aseguramos que solo los usuarios autenticados puedan realizar acciones
+  return import.meta.env.DEV || import.meta.env.MODE === 'development';
 };
 
 export const canManageDigitalBooks = (user: User | null): boolean => {
-  return true; // Allow all users to manage digital books
+  // Permitir a usuarios autenticados gestionar libros digitales
+  return !!user;
 };
 
 export const canManageBooks = (user: User | null): boolean => {
-  return true; // Allow all users to manage books
+  // Permitir a usuarios autenticados gestionar libros
+  return !!user;
 };
 
 export const canManageTheses = (user: User | null): boolean => {
   if (!user) return false;
-  // Allow librarians and administrators to manage theses
+  // Permitir a bibliotecarios y administradores gestionar tesis
   return isLibrarian(user);
 };
 

@@ -44,14 +44,9 @@ export const useThesisUploadHelpers = () => {
         throw new Error('Debes iniciar sesión para subir archivos');
       }
 
-      // Intentar crear/verificar bucket
-      try {
-        await createBucketIfNotExists('thesis-files');
-      } catch (error) {
-        console.warn('Error al verificar bucket:', error);
-        // Continuamos incluso si no podemos crear el bucket
-      }
-
+      // Crear bucket si no existe
+      await createBucketIfNotExists('thesis-files');
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `thesis-${Date.now()}.${fileExt}`;
 

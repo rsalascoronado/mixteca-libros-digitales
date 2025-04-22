@@ -11,6 +11,7 @@ function isValidUUID(id: string): boolean {
 
 export async function saveThesis(thesis: Thesis): Promise<Thesis> {
   try {
+    console.log("saveThesis iniciado con:", thesis);
     const { data: authData, error: authError } = await supabase.auth.getSession();
 
     if (authError) {
@@ -28,8 +29,8 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
       console.log("Verificación de autenticación: Usuario", user?.role || "no encontrado", "skipAuth:", skipAuth);
     } catch (err) {
       console.warn("No se pudo verificar el contexto de autenticación:", err);
-      // En caso de error, permitir operación en modo de desarrollo/demostración
-      skipAuth = true;
+      // En caso de error, NO permitir operación en modo no autenticado
+      skipAuth = false;
     }
 
     if (!authData.session && !skipAuth) {
@@ -50,6 +51,7 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
       updated_at: new Date().toISOString()
     };
 
+    console.log("Datos preparados para guardar:", thesisData);
     let result;
 
     if (thesis.id && thesis.id.length > 0 && thesis.id !== 'new') {
@@ -62,7 +64,10 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
           .insert([dataToInsert])
           .select()
           .single();
-        if (error) throw new Error(`Error creando tesis: ${error.message}`);
+        if (error) {
+          console.error("Error insertando tesis:", error);
+          throw new Error(`Error creando tesis: ${error.message}`);
+        }
         if (!data) throw new Error('No se pudo crear la tesis, respuesta vacía del servidor');
         result = data;
       } else {
@@ -74,7 +79,10 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
           .eq('id', thesis.id)
           .select()
           .single();
-        if (error) throw new Error(`Error actualizando tesis: ${error.message}`);
+        if (error) {
+          console.error("Error actualizando tesis:", error);
+          throw new Error(`Error actualizando tesis: ${error.message}`);
+        }
         if (!data) throw new Error(`No se encontró la tesis con ID: ${thesis.id}`);
         result = data;
       }
@@ -87,11 +95,15 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
         .insert([dataToInsert])
         .select()
         .single();
-      if (error) throw new Error(`Error creando tesis: ${error.message}`);
+      if (error) {
+        console.error("Error insertando tesis:", error);
+        throw new Error(`Error creando tesis: ${error.message}`);
+      }
       if (!data) throw new Error('No se pudo crear la tesis, respuesta vacía del servidor');
       result = data;
     }
 
+    console.log("Operación completada con éxito, resultado:", result);
     return {
       id: result.id,
       titulo: result.titulo,
