@@ -17,6 +17,7 @@ interface ThesisFormProps {
   onChange: (field: string, value: any) => void;
   selectedFile: File | null;
   uploadProgress?: number;
+  isStaff?: boolean;
 }
 
 export const ThesisForm = ({
@@ -24,7 +25,8 @@ export const ThesisForm = ({
   onFileChange,
   onChange,
   selectedFile,
-  uploadProgress = 0
+  uploadProgress = 0,
+  isStaff = false
 }: ThesisFormProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
@@ -65,6 +67,7 @@ export const ThesisForm = ({
           onChange('archivoPdf', null);
         }}
         uploadProgress={uploadProgress}
+        isStaff={isStaff}
       />
     </div>
   );

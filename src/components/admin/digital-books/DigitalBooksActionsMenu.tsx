@@ -3,7 +3,7 @@ import React from 'react';
 import { EditDigitalBookDialog } from '../EditDigitalBookDialog';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Replace } from 'lucide-react';
 import { DigitalBook } from '@/types/digitalBook';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,6 +22,7 @@ export function DigitalBooksActionsMenu({
 }: DigitalBooksActionsMenuProps) {
   const { toast } = useToast();
   
+  // Mostrar menú solo a staff
   if (!isStaff) return null;
 
   const handleEdit = (data: Partial<DigitalBook>) => {
@@ -51,6 +52,7 @@ export function DigitalBooksActionsMenu({
 
   return (
     <>
+      {/* Botón reemplazar archivo solo si es staff */}
       <EditDigitalBookDialog
         digitalBook={digitalBook}
         onEdit={handleEdit}

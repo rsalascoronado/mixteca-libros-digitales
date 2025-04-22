@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Thesis } from '@/types';
@@ -17,12 +16,11 @@ interface EditThesisDialogProps {
 
 const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditThesisDialogProps) => {
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { saveThesisWithFile, deleteThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingThesis, setEditingThesis] = useState<Thesis | null>(thesis);
   
-  // Reset state when thesis changes
   useEffect(() => {
     setEditingThesis(thesis);
     setSelectedFile(null);
@@ -43,7 +41,6 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
   const handleSave = useCallback(async () => {
     if (!editingThesis) return;
     
-    // Check if user is authenticated before proceeding
     if (!isAuthenticated) {
       toast({
         title: "Error de autenticación",
@@ -54,17 +51,14 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
     }
     
     try {
-      // Si hay un nuevo archivo seleccionado y ya existía un archivo anterior, eliminar el anterior
       if (selectedFile && editingThesis.archivoPdf) {
         try {
           await deleteThesisFile(editingThesis.archivoPdf);
         } catch (error) {
           console.warn('Error deleting previous file:', error);
-          // Continuar con la actualización incluso si falla la eliminación
         }
       }
       
-      // Guardar la tesis actualizada
       const updatedThesis = await saveThesisWithFile(editingThesis, selectedFile || undefined);
       
       onThesisUpdated(updatedThesis);
@@ -84,6 +78,8 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
       });
     }
   }, [editingThesis, selectedFile, deleteThesisFile, saveThesisWithFile, onThesisUpdated, onOpenChange, toast, isAuthenticated]);
+
+  const isStaff = user?.role === "administrador" || user?.role === "bibliotecario";
 
   if (!editingThesis) return null;
 
@@ -108,6 +104,7 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
         onChange={handleChange}
         selectedFile={selectedFile}
         uploadProgress={isUploading ? uploadProgress : 0}
+        isStaff={isStaff}
       />
     </ResponsiveDialog>
   );

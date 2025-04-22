@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Upload, FileX } from 'lucide-react';
+import { Upload, FileX, Replace } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
@@ -13,6 +13,7 @@ interface ThesisFileUploadProps {
   onFileChange: (file: File | null) => void;
   onDeleteFile: () => void;
   uploadProgress?: number;
+  isStaff?: boolean;
 }
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
@@ -22,7 +23,8 @@ const ThesisFileUpload = ({
   selectedFile,
   onFileChange,
   onDeleteFile,
-  uploadProgress = 0
+  uploadProgress = 0,
+  isStaff = false,
 }: ThesisFileUploadProps) => {
   const { toast } = useToast();
 
@@ -80,6 +82,23 @@ const ThesisFileUpload = ({
             onChange={handleFileChange}
             className="flex-1"
           />
+          {/* Botón de reemplazar solo staff y si ya hay archivo */}
+          {archivoPdf && isStaff && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="ml-2 flex-shrink-0"
+              onClick={() => {
+                onFileChange(null);
+                onDeleteFile();
+              }}
+              title="Reemplazar archivo existente"
+            >
+              <Replace className="h-4 w-4" />
+              <span className="sr-only">Reemplazar archivo</span>
+            </Button>
+          )}
         </div>
         {selectedFile && (
           <div className="space-y-2">
