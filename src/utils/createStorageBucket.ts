@@ -47,6 +47,14 @@ export const createBucketIfNotExists = async (bucketName: string) => {
   }
 };
 
+// Definir interfaz para el parámetro de política
+interface StoragePolicyParams {
+  bucket_name: string;
+  policy_action: 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'READ';
+  policy_definition: string;
+  policy_name: string;
+}
+
 const setPublicBucketPolicy = async (bucketName: string) => {
   try {
     // Permitir acceso público para listar archivos
@@ -55,7 +63,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'SELECT',
       policy_definition: 'true',
       policy_name: `${bucketName}_public_select`
-    } as any);
+    } as StoragePolicyParams);
 
     // Permitir acceso público para descargar archivos
     await supabase.rpc('create_or_update_storage_policy', {
@@ -63,7 +71,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'READ',
       policy_definition: 'true',
       policy_name: `${bucketName}_public_read`
-    } as any);
+    } as StoragePolicyParams);
 
     // Permitir a usuarios autenticados subir archivos
     await supabase.rpc('create_or_update_storage_policy', {
@@ -71,7 +79,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'INSERT',
       policy_definition: 'auth.role() = \'authenticated\'',
       policy_name: `${bucketName}_auth_insert`
-    } as any);
+    } as StoragePolicyParams);
 
     // Permitir a usuarios autenticados actualizar sus propios archivos
     await supabase.rpc('create_or_update_storage_policy', {
@@ -79,7 +87,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'UPDATE',
       policy_definition: 'auth.role() = \'authenticated\'',
       policy_name: `${bucketName}_auth_update`
-    } as any);
+    } as StoragePolicyParams);
 
     // Permitir a usuarios autenticados eliminar sus propios archivos
     await supabase.rpc('create_or_update_storage_policy', {
@@ -87,7 +95,7 @@ const setPublicBucketPolicy = async (bucketName: string) => {
       policy_action: 'DELETE',
       policy_definition: 'auth.role() = \'authenticated\'',
       policy_name: `${bucketName}_auth_delete`
-    } as any);
+    } as StoragePolicyParams);
 
     console.log(`Políticas públicas configuradas para el bucket ${bucketName}`);
   } catch (error) {
