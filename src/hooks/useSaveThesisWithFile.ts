@@ -4,7 +4,7 @@ import { useThesisUploadHelpers } from './useThesisUploadHelpers';
 import type { Thesis } from '@/types';
 import { saveThesis } from '@/lib/theses-db';
 import { useAuth } from '@/contexts/AuthContext';
-import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
+import { canSkipAuthForLibraryActions, isStaffUser } from '@/lib/user-utils';
 
 export const useSaveThesisWithFile = (
   setUploadProgress: (val: number) => void,
@@ -18,8 +18,22 @@ export const useSaveThesisWithFile = (
     try {
       const { data: authData } = await import("@/integrations/supabase/client").then(m => m.supabase.auth.getSession());
 
-      // Verificar permisos incluso sin sesión (para demo o casos especiales)
-      if (!authData.session && !canSkipAuthForLibraryActions(user)) {
+      // Verificar primero si estamos en modo de desarrollo
+      const isDevMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
+      
+      // Verificar permisos: o está autenticado, o es staff, o estamos en modo desarrollo
+      const isUserStaff = isStaffUser(user);
+      const canSkipSessionCheck = canSkipAuthForLibraryActions(user) || isDevMode;
+      
+      console.log("Verificación de permisos:", {
+        isAuthenticated: !!authData.session,
+        isStaff: isUserStaff,
+        isDev: isDevMode,
+        canSkip: canSkipSessionCheck
+      });
+      
+      // Solo verificar la autenticación si no es staff y no estamos en desarrollo
+      if (!authData.session && !canSkipSessionCheck && !isUserStaff) {
         toast({
           title: "Error de autenticación",
           description: "Debes iniciar sesión para guardar tesis",

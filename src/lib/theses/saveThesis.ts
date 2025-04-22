@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { Thesis } from '@/types';
-import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
+import { canSkipAuthForLibraryActions, isStaffUser } from '@/lib/user-utils';
 
 // Auxiliary function to check UUID format
 function isValidUUID(id: string): boolean {
@@ -21,18 +21,43 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
 
     // Si no hay sesión, verificar si se puede omitir autenticación para acciones de biblioteca
     let skipAuth = false;
+    let currentUser = null;
+    
     try {
-      const authContext = await import('@/contexts/AuthContext');
-      const { useAuth } = authContext;
-      const { user } = useAuth();
-      skipAuth = canSkipAuthForLibraryActions(user);
-      console.log("Verificación de autenticación: Usuario", user?.role || "no encontrado", "skipAuth:", skipAuth);
+      // En lugar de importar dinámicamente, usamos la información que ya tenemos
+      // Verificar primero si estamos en modo de desarrollo para permitir operaciones sin autenticación
+      if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
+        console.log("Modo de desarrollo detectado, permitiendo operaciones sin autenticación");
+        skipAuth = true;
+      } else if (authData.session) {
+        // Si hay sesión, verificar si el usuario tiene los permisos adecuados
+        const userId = authData.session.user.id;
+        // Obtener datos adicionales de usuario si es necesario para verificar roles
+        const { data: userData } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', userId)
+          .single();
+          
+        if (userData) {
+          currentUser = {
+            id: userId,
+            role: userData.role,
+            // Otros campos necesarios para isStaffUser
+          };
+          // Verificar si es administrador o bibliotecario
+          skipAuth = isStaffUser(currentUser);
+        }
+      }
+      
+      console.log("Verificación de autenticación: skipAuth:", skipAuth);
     } catch (err) {
       console.warn("No se pudo verificar el contexto de autenticación:", err);
-      // En caso de error, NO permitir operación en modo no autenticado
-      skipAuth = false;
+      // En modo de desarrollo, permitir operaciones sin autenticación
+      skipAuth = import.meta.env.DEV || import.meta.env.MODE === 'development';
     }
 
+    // En desarrollo o con sesión válida, permitir la operación
     if (!authData.session && !skipAuth) {
       console.error('No session found and cannot skip auth');
       throw new Error('Debes iniciar sesión para guardar tesis');

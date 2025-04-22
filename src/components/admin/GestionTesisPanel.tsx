@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { GraduationCap, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTheses, deleteThesis } from "@/lib/theses-db";
 import { createStorageBuckets } from "@/utils/createStorageBucket";
 import { useAuth } from "@/contexts/AuthContext";
+import { isStaffUser } from "@/lib/user-utils";
 
 interface GestionTesisPanelProps {
   isAuthenticated: boolean;
@@ -29,19 +29,22 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingTesis, setEditingTesis] = useState<Thesis | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const { user } = useAuth();
 
-  // Create storage bucket if it doesn't exist
+  const userIsStaff = isStaffUser(user);
+  const isDev = import.meta.env.DEV || import.meta.env.MODE === 'development';
+  const canManageThesis = userIsStaff || isDev;
+
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated || isDev) {
       createStorageBuckets();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isDev]);
 
-  // Obtener las tesis de la base de datos
   const { data: tesis = [], isLoading } = useQuery({
     queryKey: ["theses"],
     queryFn: fetchTheses,
-    enabled: isAuthenticated,
+    enabled: isAuthenticated || isDev,
   });
 
   const limpiarFiltros = () => {
@@ -122,6 +125,15 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
   };
 
   const handleEditTesis = (thesis: Thesis) => {
+    if (!canManageThesis) {
+      toast({
+        title: "Acceso denegado",
+        description: "Solo bibliotecarios y administradores pueden editar tesis.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setEditingTesis(thesis);
     setEditDialogOpen(true);
   };
@@ -137,9 +149,23 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
     queryClient.invalidateQueries({ queryKey: ["theses"] });
   };
 
+  if (!canManageThesis && !isDev) {
+    return (
+      <div className="container mx-auto py-10 px-4">
+        <div className="flex items-center mb-6">
+          <GraduationCap className="h-8 w-8 text-primary mr-3" />
+          <h1 className="text-2xl font-bold">Gestión de Tesis</h1>
+        </div>
+        <div className="bg-destructive/10 p-4 rounded-lg border border-destructive">
+          <h2 className="text-lg font-semibold text-destructive mb-2">Acceso denegado</h2>
+          <p>Solo los bibliotecarios y administradores pueden acceder a la gestión de tesis.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-4 px-2 sm:py-10 sm:px-4">
-      {/* Cabecera principal, responsiva */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="flex items-center">
           <GraduationCap className="h-8 w-8 text-primary mr-3" />
@@ -158,7 +184,6 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
           </Button>
         </div>
       </div>
-      {/* Filtros y resumen */}
       <div>
         <ThesisSearch
           busqueda={busqueda}
@@ -174,7 +199,6 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
           </p>
         </div>
       </div>
-      {/* Tabla de tesis con scroll horizontal en móvil */}
       <div className="overflow-x-auto">
         <ThesisTable
           theses={tesisFiltradas}

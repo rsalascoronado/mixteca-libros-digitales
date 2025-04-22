@@ -8,6 +8,7 @@ import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { Save } from "lucide-react";
+import { isStaffUser } from '@/lib/user-utils';
 
 interface EditThesisDialogProps {
   thesis: Thesis | null;
@@ -43,10 +44,14 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
   const handleSave = useCallback(async () => {
     if (!editingThesis) return;
     
-    if (!isAuthenticated) {
+    // Verificar si estamos en modo desarrollo
+    const isDevMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
+    
+    // Comprobar si el usuario es staff o si estamos en modo desarrollo
+    if (!isDevMode && !isStaffUser(user)) {
       toast({
-        title: "Error de autenticación",
-        description: "Debes iniciar sesión para guardar tesis.",
+        title: "Acceso denegado",
+        description: "Solo bibliotecarios y administradores pueden editar tesis.",
         variant: "destructive"
       });
       return;
@@ -79,9 +84,9 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
         variant: "destructive"
       });
     }
-  }, [editingThesis, selectedFile, deleteThesisFile, saveThesisWithFile, onThesisUpdated, onOpenChange, toast, isAuthenticated]);
+  }, [editingThesis, selectedFile, deleteThesisFile, saveThesisWithFile, onThesisUpdated, onOpenChange, toast, user]);
 
-  const isStaff = user?.role === "administrador" || user?.role === "bibliotecario";
+  const isStaff = isStaffUser(user);
 
   if (!editingThesis) return null;
 
