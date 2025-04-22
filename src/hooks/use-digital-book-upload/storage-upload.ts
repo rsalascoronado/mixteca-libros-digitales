@@ -8,15 +8,15 @@ export async function uploadDigitalBookFile(
   file: File
 ): Promise<{ publicUrl: string | null; error: Error | null }> {
   try {
-    // Asegurar que el bucket existe
-    const bucketExists = await createBucketIfNotExists(bucketName);
+    console.log(`Iniciando carga de archivo digital: ${fileName} al bucket ${bucketName}`);
     
-    if (!bucketExists) {
-      return { 
-        publicUrl: null, 
-        error: new Error(`No se pudo acceder al bucket "${bucketName}"`) 
-      };
-    }
+    // Verificar sesión activa
+    const { data: session } = await supabase.auth.getSession();
+    console.log("Estado de sesión para carga de libro digital:", 
+      session?.session ? `Usuario autenticado: ${session.session.user.id}` : "No hay sesión activa");
+    
+    // Verificar que el bucket existe (aunque con las políticas actualizadas esto debería ser menos problemático)
+    await createBucketIfNotExists(bucketName);
     
     // Realizar la carga del archivo al Storage
     const { data, error } = await uploadFile(bucketName, fileName, file);
@@ -27,7 +27,8 @@ export async function uploadDigitalBookFile(
     }
     
     // Obtener la URL pública del archivo
-    const publicUrl = getPublicUrl(bucketName, fileName);
+    const filePath = data?.path || fileName;
+    const publicUrl = getPublicUrl(bucketName, filePath);
     
     if (!publicUrl) {
       return { 
@@ -36,6 +37,7 @@ export async function uploadDigitalBookFile(
       };
     }
     
+    console.log(`Archivo digital cargado exitosamente. URL pública: ${publicUrl}`);
     return { publicUrl, error: null };
   } catch (error) {
     console.error('Unexpected error in uploadDigitalBookFile:', error);
