@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Thesis } from '@/types';
@@ -6,6 +7,7 @@ import { ThesisForm } from './ThesisForm';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 import { useAuth } from '@/contexts/AuthContext';
+import { Save } from "lucide-react";
 
 interface EditThesisDialogProps {
   thesis: Thesis | null;
@@ -94,6 +96,7 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
           onClick={handleSave}
           disabled={isUploading}
         >
+          <Save className="mr-2 h-4 w-4" />
           {isUploading ? 'Guardando...' : 'Guardar cambios'}
         </Button>
       }

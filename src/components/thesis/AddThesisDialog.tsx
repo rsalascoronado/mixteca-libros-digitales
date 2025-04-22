@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ThesisForm } from './ThesisForm';
 import { useThesisFileUpload } from '@/hooks/useThesisFileUpload';
 import { useAuth } from '@/contexts/AuthContext';
+import { Save } from "lucide-react";
 
 interface AddThesisDialogProps {
   open: boolean;
@@ -120,6 +121,7 @@ const AddThesisDialog = ({ open, onOpenChange, onThesisAdded }: AddThesisDialogP
             onClick={handleSubmit}
             disabled={isUploading}
           >
+            <Save className="mr-2 h-4 w-4" />
             {isUploading ? 'Subiendo...' : 'Agregar tesis'}
           </Button>
         </DialogFooter>
