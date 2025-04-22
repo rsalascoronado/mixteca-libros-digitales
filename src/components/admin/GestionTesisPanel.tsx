@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useThesisFileUpload } from "@/hooks/useThesisFileUpload";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTheses, deleteThesis } from "@/lib/theses-db";
-import { createThesisStorageBucket } from "@/utils/createStorageBucket";
+import { createStorageBuckets } from "@/utils/createStorageBucket";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface GestionTesisPanelProps {
@@ -33,7 +33,7 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
   // Create storage bucket if it doesn't exist
   useEffect(() => {
     if (isAuthenticated) {
-      createThesisStorageBucket();
+      createStorageBuckets();
     }
   }, [isAuthenticated]);
 

@@ -63,6 +63,7 @@ export const useThesisUploadHelpers = () => {
       try {
         console.log("Iniciando carga de archivo de tesis...");
         
+        // Usando opciones de cacheControl y upsert para mejorar la carga
         const { data, error } = await supabase.storage
           .from('thesis-files')
           .upload(fileName, file, {

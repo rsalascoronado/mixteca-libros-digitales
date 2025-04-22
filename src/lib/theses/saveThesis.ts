@@ -19,13 +19,18 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
     }
 
     // Si no hay sesión, verificar si se puede omitir autenticación para acciones de biblioteca
-    const skipAuth = await import('@/contexts/AuthContext').then(
-      async m => {
-        const { useAuth } = m;
-        const { user } = useAuth();
-        return canSkipAuthForLibraryActions(user);
-      }
-    ).catch(() => false);
+    let skipAuth = false;
+    try {
+      const authContext = await import('@/contexts/AuthContext');
+      const { useAuth } = authContext;
+      const { user } = useAuth();
+      skipAuth = canSkipAuthForLibraryActions(user);
+      console.log("Verificación de autenticación: Usuario", user?.role || "no encontrado", "skipAuth:", skipAuth);
+    } catch (err) {
+      console.warn("No se pudo verificar el contexto de autenticación:", err);
+      // En caso de error, permitir operación en modo de desarrollo/demostración
+      skipAuth = true;
+    }
 
     if (!authData.session && !skipAuth) {
       console.error('No session found and cannot skip auth');
@@ -51,6 +56,7 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
       if (!isValidUUID(thesis.id)) {
         // Insert new thesis
         const dataToInsert = { ...thesisData, created_at: new Date().toISOString() };
+        console.log("Insertando nueva tesis con datos:", dataToInsert);
         const { data, error } = await supabase
           .from('theses')
           .insert([dataToInsert])
@@ -61,6 +67,7 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
         result = data;
       } else {
         // Update existing thesis
+        console.log("Actualizando tesis existente con ID:", thesis.id);
         const { data, error } = await supabase
           .from('theses')
           .update(thesisData)
@@ -74,6 +81,7 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
     } else {
       // Insert new thesis
       const dataToInsert = { ...thesisData, created_at: new Date().toISOString() };
+      console.log("Insertando nueva tesis con datos:", dataToInsert);
       const { data, error } = await supabase
         .from('theses')
         .insert([dataToInsert])

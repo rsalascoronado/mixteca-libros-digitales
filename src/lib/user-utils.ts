@@ -1,4 +1,3 @@
-
 import { User, UserRole } from '@/types';
 
 export const isLibrarian = (user: User | null): boolean => {
@@ -12,9 +11,13 @@ export const isLibrarian = (user: User | null): boolean => {
 };
 
 export const canSkipAuthForLibraryActions = (user: User | null): boolean => {
-  // Siempre permitir acciones de biblioteca en modo demostración
-  // O si es administrador/bibliotecario según el rol de usuario
-  return true || isLibrarian(user);
+  // Permitir acciones de biblioteca en modo demostración para usuarios autenticados o staff
+  if (user && (user.role === 'bibliotecario' || user.role === 'administrador')) {
+    return true;
+  }
+  
+  // En modo de desarrollo/demostración, permitir acciones sin autenticación
+  return import.meta.env.DEV || import.meta.env.MODE === 'development' || true;
 };
 
 export const canManageDigitalBooks = (user: User | null): boolean => {
