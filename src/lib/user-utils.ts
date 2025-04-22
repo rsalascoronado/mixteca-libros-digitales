@@ -1,4 +1,3 @@
-
 import { User, UserRole } from '@/types';
 
 export const isLibrarian = (user: User | null): boolean => {
@@ -42,4 +41,10 @@ export const canManageUsers = (user: User | null): boolean => {
   if (!user) return false;
   // Solo administradores y bibliotecarios pueden gestionar usuarios
   return isLibrarian(user);
+};
+
+// Nuevo helper para verificar staff
+export const isStaffUser = (user: User | null): boolean => {
+  // Administrador o bibliotecario explícitamente
+  return user?.role === 'administrador' || user?.role === 'bibliotecario';
 };

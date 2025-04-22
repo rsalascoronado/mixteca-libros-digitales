@@ -1,9 +1,9 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
 import { createBucketIfNotExists } from '@/utils/supabaseStorage';
+import { isStaffUser } from '@/lib/user-utils';
 
 export const useThesisUploadHelpers = () => {
   const { toast } = useToast();
@@ -26,6 +26,17 @@ export const useThesisUploadHelpers = () => {
 
       const { data: authData } = await supabase.auth.getSession();
       console.log("Estado de sesión para carga de tesis:", authData.session ? "Autenticado" : "No autenticado");
+
+      // Nuevo: solo staff puede subir
+      if (!isStaffUser(user)) {
+        setIsUploading(false);
+        toast({
+          title: "Acceso denegado",
+          description: "Solo administradores o bibliotecarios pueden subir archivos de tesis.",
+          variant: "destructive"
+        });
+        throw new Error('Solo administradores o bibliotecarios pueden subir archivos de tesis');
+      }
 
       // Permitir si es admin o bibliotecario, o si se puede omitir autenticación
       const skipAuth = canSkipAuthForLibraryActions(user);

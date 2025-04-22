@@ -1,8 +1,8 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { isStaffUser } from '@/lib/user-utils';
 
 export function useUploadAuthCheck() {
   const { user } = useAuth();
@@ -16,6 +16,16 @@ export function useUploadAuthCheck() {
       console.log("Estado de autenticación:", isAuthenticated ? "Autenticado" : "No autenticado");
       console.log("Usuario actual:", user ? `Rol: ${user.role}` : "No hay datos de usuario en el contexto");
       
+      // Chequeo explícito staff
+      if (!isStaffUser(user)) {
+        toast({
+          title: "Acceso denegado",
+          description: "Solo administradores o bibliotecarios pueden subir archivos digitales.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
       // Permitir acceso si está autenticado o puede omitir autenticación
       const canSkipAuth = canSkipAuthForLibraryActions(user);
       
