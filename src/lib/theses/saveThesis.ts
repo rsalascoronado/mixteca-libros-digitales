@@ -19,38 +19,14 @@ export async function saveThesis(thesis: Thesis): Promise<Thesis> {
       throw new Error(`Error de autenticación: ${authError.message}`);
     }
 
-    // Si no hay sesión, verificar si se puede omitir autenticación para acciones de biblioteca
-    let skipAuth = false;
-    let currentUser = null;
+    // Simplificar verificación de autenticación
+    // En modo desarrollo o con sesión de usuario, permitir la operación
+    const isDevelopmentMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
+    const hasActiveSession = !!authData.session;
     
-    try {
-      // En lugar de importar dinámicamente, usamos la información que ya tenemos
-      // Verificar primero si estamos en modo de desarrollo para permitir operaciones sin autenticación
-      if (import.meta.env.DEV || import.meta.env.MODE === 'development') {
-        console.log("Modo de desarrollo detectado, permitiendo operaciones sin autenticación");
-        skipAuth = true;
-      } else if (authData.session) {
-        // Si hay sesión, verificar si el usuario tiene los permisos adecuados
-        const userId = authData.session.user.id;
-        
-        // En lugar de consultar la tabla de usuarios, confiar en el contexto de autenticación
-        // y verificar si es modo de desarrollo o el usuario es admin/bibliotecario
-        skipAuth = true; // Permitimos si hay sesión activa
-        
-        // Nota: La información de roles debería manejarse a través del contexto de autenticación
-        // en lugar de consultar la base de datos aquí
-      }
-      
-      console.log("Verificación de autenticación: skipAuth:", skipAuth);
-    } catch (err) {
-      console.warn("No se pudo verificar el contexto de autenticación:", err);
-      // En modo de desarrollo, permitir operaciones sin autenticación
-      skipAuth = import.meta.env.DEV || import.meta.env.MODE === 'development';
-    }
-
-    // En desarrollo o con sesión válida, permitir la operación
-    if (!authData.session && !skipAuth) {
-      console.error('No session found and cannot skip auth');
+    // Si no hay sesión y no estamos en modo desarrollo, rechazar la operación
+    if (!hasActiveSession && !isDevelopmentMode) {
+      console.error('No session found and not in development mode');
       throw new Error('Debes iniciar sesión para guardar tesis');
     }
 

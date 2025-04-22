@@ -1,7 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { canSkipAuthForLibraryActions } from '@/lib/user-utils';
 import { createBucketIfNotExists } from '@/utils/supabaseStorage';
 import { isStaffUser } from '@/lib/user-utils';
 
@@ -27,8 +27,18 @@ export const useThesisUploadHelpers = () => {
       const { data: authData } = await supabase.auth.getSession();
       console.log("Estado de sesión para carga de tesis:", authData.session ? "Autenticado" : "No autenticado");
 
-      // Nuevo: solo staff puede subir
-      if (!isStaffUser(user)) {
+      // Verificar si el usuario es staff o si estamos en modo desarrollo
+      const isDevelopmentMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
+      const userIsStaff = isStaffUser(user);
+      const canUpload = userIsStaff || isDevelopmentMode;
+
+      console.log("Verificación de permisos para carga:", {
+        isDev: isDevelopmentMode,
+        isStaff: userIsStaff,
+        canUpload
+      });
+
+      if (!canUpload) {
         setIsUploading(false);
         toast({
           title: "Acceso denegado",
@@ -36,23 +46,6 @@ export const useThesisUploadHelpers = () => {
           variant: "destructive"
         });
         throw new Error('Solo administradores o bibliotecarios pueden subir archivos de tesis');
-      }
-
-      // Permitir si es admin o bibliotecario, o si se puede omitir autenticación
-      const skipAuth = canSkipAuthForLibraryActions(user);
-      const isAuthenticated = !!authData.session;
-      
-      console.log("¿Puede omitir autenticación?:", skipAuth ? "Sí" : "No");
-      console.log("Usuario actual:", user ? `Rol: ${user.role}` : "No hay datos de usuario en el contexto");
-      
-      if (!isAuthenticated && !skipAuth) {
-        setIsUploading(false);
-        toast({
-          title: "Error de autenticación",
-          description: "Debes iniciar sesión para subir archivos",
-          variant: "destructive"
-        });
-        throw new Error('Debes iniciar sesión para subir archivos');
       }
 
       // Crear bucket si no existe
@@ -117,17 +110,18 @@ export const useThesisUploadHelpers = () => {
 
   const deleteThesisFile = async (fileUrl: string) => {
     try {
-      const { data: authData } = await supabase.auth.getSession();
+      // Verificar si el usuario es staff o si estamos en modo desarrollo
+      const isDevelopmentMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
+      const userIsStaff = isStaffUser(user);
+      const canDelete = userIsStaff || isDevelopmentMode;
 
-      // Permitir si es admin o bibliotecario, o si se puede omitir autenticación
-      const skipAuth = canSkipAuthForLibraryActions(user);
-      if (!authData.session && !skipAuth) {
+      if (!canDelete) {
         toast({
-          title: "Error de autenticación",
-          description: "Debes iniciar sesión para eliminar archivos",
+          title: "Acceso denegado",
+          description: "Solo administradores o bibliotecarios pueden eliminar archivos de tesis.",
           variant: "destructive"
         });
-        throw new Error('Debes iniciar sesión para eliminar archivos');
+        throw new Error('Solo administradores o bibliotecarios pueden eliminar archivos de tesis');
       }
 
       // Extraer nombre

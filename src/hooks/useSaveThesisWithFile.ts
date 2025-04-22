@@ -4,7 +4,7 @@ import { useThesisUploadHelpers } from './useThesisUploadHelpers';
 import type { Thesis } from '@/types';
 import { saveThesis } from '@/lib/theses-db';
 import { useAuth } from '@/contexts/AuthContext';
-import { canSkipAuthForLibraryActions, isStaffUser } from '@/lib/user-utils';
+import { isStaffUser } from '@/lib/user-utils';
 
 export const useSaveThesisWithFile = (
   setUploadProgress: (val: number) => void,
@@ -23,17 +23,17 @@ export const useSaveThesisWithFile = (
       
       // Verificar permisos: o está autenticado, o es staff, o estamos en modo desarrollo
       const isUserStaff = isStaffUser(user);
-      const canSkipSessionCheck = canSkipAuthForLibraryActions(user) || isDevMode;
+      const canSkipAuth = isDevMode || isUserStaff;
       
       console.log("Verificación de permisos:", {
         isAuthenticated: !!authData.session,
         isStaff: isUserStaff,
         isDev: isDevMode,
-        canSkip: canSkipSessionCheck
+        canSkip: canSkipAuth
       });
       
       // Solo verificar la autenticación si no es staff y no estamos en desarrollo
-      if (!authData.session && !canSkipSessionCheck && !isUserStaff) {
+      if (!authData.session && !canSkipAuth) {
         toast({
           title: "Error de autenticación",
           description: "Debes iniciar sesión para guardar tesis",
