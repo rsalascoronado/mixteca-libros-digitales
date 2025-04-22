@@ -47,55 +47,62 @@ export const createBucketIfNotExists = async (bucketName: string) => {
   }
 };
 
-// Definir interfaz para el parámetro de política
-interface StoragePolicyParams {
+// Interface for policy parameters with specific action types
+interface PolicyParams {
   bucket_name: string;
-  policy_action: 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'READ';
+  policy_action: string; // Using string instead of union type to avoid narrowing issues
   policy_definition: string;
   policy_name: string;
 }
 
 const setPublicBucketPolicy = async (bucketName: string) => {
   try {
+    // Using explicit typing with a temporary variable to help TypeScript
+    
     // Permitir acceso público para listar archivos
-    await supabase.rpc('create_or_update_storage_policy', {
+    const selectParams: PolicyParams = {
       bucket_name: bucketName,
       policy_action: 'SELECT',
       policy_definition: 'true',
       policy_name: `${bucketName}_public_select`
-    } as StoragePolicyParams);
+    };
+    await (supabase.rpc as any)('create_or_update_storage_policy', selectParams);
 
     // Permitir acceso público para descargar archivos
-    await supabase.rpc('create_or_update_storage_policy', {
+    const readParams: PolicyParams = {
       bucket_name: bucketName,
       policy_action: 'READ',
       policy_definition: 'true',
       policy_name: `${bucketName}_public_read`
-    } as StoragePolicyParams);
+    };
+    await (supabase.rpc as any)('create_or_update_storage_policy', readParams);
 
     // Permitir a usuarios autenticados subir archivos
-    await supabase.rpc('create_or_update_storage_policy', {
+    const insertParams: PolicyParams = {
       bucket_name: bucketName,
       policy_action: 'INSERT',
       policy_definition: 'auth.role() = \'authenticated\'',
       policy_name: `${bucketName}_auth_insert`
-    } as StoragePolicyParams);
+    };
+    await (supabase.rpc as any)('create_or_update_storage_policy', insertParams);
 
     // Permitir a usuarios autenticados actualizar sus propios archivos
-    await supabase.rpc('create_or_update_storage_policy', {
+    const updateParams: PolicyParams = {
       bucket_name: bucketName,
       policy_action: 'UPDATE',
       policy_definition: 'auth.role() = \'authenticated\'',
       policy_name: `${bucketName}_auth_update`
-    } as StoragePolicyParams);
+    };
+    await (supabase.rpc as any)('create_or_update_storage_policy', updateParams);
 
     // Permitir a usuarios autenticados eliminar sus propios archivos
-    await supabase.rpc('create_or_update_storage_policy', {
+    const deleteParams: PolicyParams = {
       bucket_name: bucketName,
       policy_action: 'DELETE',
       policy_definition: 'auth.role() = \'authenticated\'',
       policy_name: `${bucketName}_auth_delete`
-    } as StoragePolicyParams);
+    };
+    await (supabase.rpc as any)('create_or_update_storage_policy', deleteParams);
 
     console.log(`Políticas públicas configuradas para el bucket ${bucketName}`);
   } catch (error) {
