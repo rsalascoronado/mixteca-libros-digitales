@@ -7,9 +7,21 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 export const HeaderLogo = () => {
   const isMobile = useIsMobile();
-  
+
   return (
     <div className="flex items-center space-x-2">
+      {/* Logo UTM al lado izquierdo */}
+      <img
+        src="/lovable-uploads/c174f1e2-36e9-4062-8c41-e975c9886d5c.png"
+        alt="Logo UTM"
+        className="h-12 w-auto mr-2 hidden md:block bg-transparent"
+        style={{
+          filter: "drop-shadow(0 0 2px #fff)",
+          maxHeight: "52px",
+        }}
+        draggable={false}
+      />
+
       <Link to="/" className="flex items-center">
         <Button 
           variant="ghost" 
