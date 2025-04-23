@@ -23,7 +23,7 @@ export const createBucketIfNotExists = async (bucketName: string): Promise<boole
     try {
       const { data, error } = await supabase.storage.createBucket(bucketName, {
         public: true,
-        fileSizeLimit: 50 * 1024 * 1024 // 50MB
+        fileSizeLimit: 100 * 1024 * 1024 // 100MB
       });
       
       if (error) {
@@ -53,7 +53,7 @@ export const uploadFile = async (bucketName: string, fileName: string, file: Fil
     
     // Verificamos si hay sesión activa
     const { data: session } = await supabase.auth.getSession();
-    console.log("Estado de sesión:", session ? "Activa" : "No hay sesión");
+    console.log("Estado de sesión:", session?.session ? "Activa" : "No hay sesión");
     
     // Realizar la carga del archivo - no verificamos el bucket porque las políticas ya están configuradas
     const { data, error } = await supabase.storage

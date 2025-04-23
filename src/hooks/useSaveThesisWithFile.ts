@@ -16,6 +16,7 @@ export const useSaveThesisWithFile = (
 
   const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
     try {
+      // Verificar autenticación
       const { data: authData } = await import("@/integrations/supabase/client").then(m => m.supabase.auth.getSession());
 
       // Verificar primero si estamos en modo de desarrollo
@@ -43,15 +44,15 @@ export const useSaveThesisWithFile = (
       }
 
       let publicUrl = thesis.archivoPdf || null;
+      
       // Subir nuevo archivo si es necesario
       if (file) {
         try {
           setIsUploading(true);
           publicUrl = await uploadThesisFile(file, setUploadProgress, setIsUploading);
         } catch (uploadError: any) {
-          throw new Error(uploadError?.message || 'Error subiendo archivo');
-        } finally {
           setIsUploading(false);
+          throw new Error(uploadError?.message || 'Error subiendo archivo');
         }
       }
 
@@ -76,15 +77,24 @@ export const useSaveThesisWithFile = (
         return savedThesis;
       } catch (dbError: any) {
         console.error("Error guardando tesis:", dbError);
-        if (file && publicUrl) {
-          try { await deleteThesisFile(publicUrl); } catch { /* silent */ }
+        
+        // Si hubo error y habíamos subido un archivo, intentar eliminarlo
+        if (file && publicUrl && publicUrl !== thesis.archivoPdf) {
+          try { 
+            await deleteThesisFile(publicUrl); 
+          } catch (deleteError) { 
+            console.warn("No se pudo eliminar el archivo tras error:", deleteError);
+          }
         }
+        
         toast({
           title: 'Error',
           description: dbError instanceof Error ? dbError.message : 'No se pudo guardar la tesis con el archivo',
           variant: 'destructive'
         });
         throw dbError;
+      } finally {
+        setIsUploading(false);
       }
     } catch (error) {
       console.error("Error general en saveThesisWithFile:", error);

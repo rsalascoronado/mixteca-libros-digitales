@@ -19,7 +19,7 @@ interface EditThesisDialogProps {
 
 const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditThesisDialogProps) => {
   const { toast } = useToast();
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
   const { saveThesisWithFile, deleteThesisFile, isUploading, uploadProgress } = useThesisFileUpload();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingThesis, setEditingThesis] = useState<Thesis | null>(thesis);
@@ -48,7 +48,10 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
     const isDevMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
     
     // Comprobar si el usuario es staff o si estamos en modo desarrollo
-    if (!isDevMode && !isStaffUser(user)) {
+    const userIsStaff = isStaffUser(user);
+    const canManageThesis = userIsStaff || isDevMode;
+    
+    if (!canManageThesis) {
       toast({
         title: "Acceso denegado",
         description: "Solo bibliotecarios y administradores pueden editar tesis.",
@@ -58,16 +61,20 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
     }
     
     try {
+      // Si se seleccionó un nuevo archivo y ya existía uno anterior, eliminar el anterior
       if (selectedFile && editingThesis.archivoPdf) {
         try {
           await deleteThesisFile(editingThesis.archivoPdf);
         } catch (error) {
           console.warn('Error deleting previous file:', error);
+          // Continuamos con la operación aunque falle la eliminación del archivo anterior
         }
       }
       
+      // Guardar la tesis con el nuevo archivo (si existe)
       const updatedThesis = await saveThesisWithFile(editingThesis, selectedFile || undefined);
       
+      // Actualizar la UI y cerrar el diálogo
       onThesisUpdated(updatedThesis);
       onOpenChange(false);
       setSelectedFile(null);

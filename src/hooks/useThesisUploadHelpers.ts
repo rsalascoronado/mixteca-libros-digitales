@@ -49,7 +49,10 @@ export const useThesisUploadHelpers = () => {
       }
 
       // Crear bucket si no existe
-      await createBucketIfNotExists('thesis-files');
+      const bucketCreated = await createBucketIfNotExists('thesis-files');
+      if (!bucketCreated) {
+        console.warn("No se pudo confirmar la existencia del bucket, pero continuamos");
+      }
       
       const fileExt = file.name.split('.').pop();
       const fileName = `thesis-${Date.now()}.${fileExt}`;
@@ -60,7 +63,7 @@ export const useThesisUploadHelpers = () => {
       }, 500);
 
       try {
-        console.log("Iniciando carga de archivo de tesis...");
+        console.log("Iniciando carga de archivo de tesis:", fileName);
         
         // Usando opciones de cacheControl y upsert para mejorar la carga
         const { data, error } = await supabase.storage
@@ -90,11 +93,6 @@ export const useThesisUploadHelpers = () => {
         setUploadProgress(100);
         return publicUrl;
       } catch (error: any) {
-        toast({
-          title: 'Error',
-          description: error?.message || 'No se pudo subir el archivo',
-          variant: 'destructive'
-        });
         throw error;
       } finally {
         setIsUploading(false);
@@ -104,6 +102,11 @@ export const useThesisUploadHelpers = () => {
       console.error("Error en uploadThesisFile:", error);
       setIsUploading(false);
       setUploadProgress(0);
+      toast({
+        title: 'Error',
+        description: error?.message || 'No se pudo subir el archivo',
+        variant: 'destructive'
+      });
       throw error;
     }
   };
@@ -125,13 +128,21 @@ export const useThesisUploadHelpers = () => {
       }
 
       // Extraer nombre
-      const urlParts = fileUrl.split('/');
-      const fileName = urlParts[urlParts.length - 1];
+      let fileName = '';
+      
+      if (fileUrl.includes('/')) {
+        const urlParts = fileUrl.split('/');
+        fileName = urlParts[urlParts.length - 1];
+      } else {
+        fileName = fileUrl;
+      }
       
       if (!fileName) {
         throw new Error('No se pudo obtener el nombre del archivo');
       }
 
+      console.log("Intentando eliminar archivo:", fileName);
+      
       const { error } = await supabase.storage
         .from('thesis-files')
         .remove([fileName]);

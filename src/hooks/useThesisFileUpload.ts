@@ -19,11 +19,19 @@ export const useThesisFileUpload = () => {
   const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
-    import("@/integrations/supabase/client").then(({ supabase }) => {
-      supabase.auth.getSession().then(({ data }) => {
+    // Verificar sesión al iniciar
+    const checkSession = async () => {
+      try {
+        const { supabase } = await import("@/integrations/supabase/client");
+        const { data } = await supabase.auth.getSession();
         setSessionChecked(!!data.session);
-      });
-    });
+      } catch (error) {
+        console.error("Error checking session:", error);
+        setSessionChecked(false);
+      }
+    };
+
+    checkSession();
   }, []);
 
   return {

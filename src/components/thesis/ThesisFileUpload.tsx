@@ -38,16 +38,20 @@ const ThesisFileUpload = ({
         description: "Por favor seleccione un archivo PDF válido",
         variant: "destructive"
       });
+      e.target.value = '';
       return;
     }
+    
     if (file.size > MAX_FILE_SIZE) {
       toast({
         title: "Error",
         description: "El archivo no debe exceder 100MB",
         variant: "destructive"
       });
+      e.target.value = '';
       return;
     }
+    
     onFileChange(file);
   };
 
@@ -82,7 +86,7 @@ const ThesisFileUpload = ({
             onChange={handleFileChange}
             className="flex-1"
           />
-          {/* Botón de reemplazar solo staff y si ya hay archivo */}
+          {/* Botón de reemplazar solo visible para usuarios staff y si ya hay archivo */}
           {archivoPdf && isStaff && (
             <Button
               type="button"
@@ -136,15 +140,17 @@ const ThesisFileUpload = ({
               <Upload className="h-4 w-4 text-blue-600 flex-shrink-0" />
               <span className="truncate">{getFileNameFromUrl(archivoPdf)}</span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDeleteFile}
-              className="text-destructive hover:text-destructive ml-2 flex-shrink-0"
-            >
-              <FileX className="h-4 w-4" />
-              <span className="sr-only">Eliminar archivo</span>
-            </Button>
+            {isStaff && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDeleteFile}
+                className="text-destructive hover:text-destructive ml-2 flex-shrink-0"
+              >
+                <FileX className="h-4 w-4" />
+                <span className="sr-only">Eliminar archivo</span>
+              </Button>
+            )}
           </div>
         )}
       </div>
