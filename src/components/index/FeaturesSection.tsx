@@ -3,10 +3,11 @@ import React from 'react';
 import { Search, BookOpen, Clock, FileDown, Users, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { User, UserRole } from '@/types';
 
 interface FeaturesSectionProps {
-  user: any;
-  hasRole: (role: string) => boolean;
+  user: User | null;
+  hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
 
 const FeaturesSection = ({ user, hasRole }: FeaturesSectionProps) => (

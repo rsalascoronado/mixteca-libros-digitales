@@ -3,10 +3,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BookPlus } from 'lucide-react';
-import { Libro } from '@/types';
+import { Book } from '@/types';
 
 interface FeaturedBooksSectionProps {
-  librosDestacados: Libro[];
+  librosDestacados: Book[];
 }
 const FeaturedBooksSection = ({ librosDestacados }: FeaturedBooksSectionProps) => (
   <section className="py-16 bg-accent/50">

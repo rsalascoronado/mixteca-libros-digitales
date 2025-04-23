@@ -3,11 +3,11 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Search, BookOpen, Users } from 'lucide-react';
-import { User } from '@/types';
+import { User, UserRole } from '@/types';
 
 interface HeroSectionProps {
   user: User | null;
-  hasRole: (role: string) => boolean;
+  hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
 const HeroSection = ({ user, hasRole }: HeroSectionProps) => (
   <section className="bg-primary py-16 text-primary-foreground">
