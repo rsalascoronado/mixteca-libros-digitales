@@ -47,7 +47,7 @@ export const ReservationButton = ({ bookId, bookTitle, isAvailable }: Reservatio
 
   if (!isAvailable) {
     return (
-      <Button className="w-full" disabled>
+      <Button className="w-full bg-[#56070c] text-white" disabled>
         <AlertTriangle className="mr-2 h-4 w-4" />
         No disponible
       </Button>
@@ -59,7 +59,7 @@ export const ReservationButton = ({ bookId, bookTitle, isAvailable }: Reservatio
       {!isActive ? (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button className="w-full" variant="secondary">
+            <Button className="w-full bg-[#56070c] text-white">
               <Clock className="mr-2 h-4 w-4" />
               Reservar por 30 minutos
             </Button>
@@ -90,7 +90,7 @@ export const ReservationButton = ({ bookId, bookTitle, isAvailable }: Reservatio
           </div>
           <Button 
             variant="destructive" 
-            className="w-full"
+            className="w-full bg-[#56070c] text-white"
             onClick={handleCancelReservation}
           >
             Cancelar reserva
