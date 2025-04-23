@@ -7,7 +7,7 @@ interface CtaHelpSectionProps {
   onContactClick: (e: React.MouseEvent) => void;
 }
 const CtaHelpSection = ({ onContactClick }: CtaHelpSectionProps) => (
-  <section className="py-16 bg-[#8B5CF6] text-white">
+  <section className="py-16 bg-[#56070c] text-white">
     <div className="container mx-auto px-4 text-center">
       <h2 className="text-3xl font-bold mb-4 text-white">¿Necesitas ayuda?</h2>
       <p className="text-xl mb-8 max-w-2xl mx-auto text-white/90">
@@ -15,7 +15,7 @@ const CtaHelpSection = ({ onContactClick }: CtaHelpSectionProps) => (
       </p>
       <Button
         size="lg"
-        className="bg-white text-[#8B5CF6] hover:bg-gray-100"
+        className="bg-white text-[#56070c] hover:bg-gray-100"
         onClick={onContactClick}
         asChild
       >
