@@ -232,16 +232,16 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-secondary text-secondary-foreground">
+      {/* CTA Section con color de fondo de vino */}
+      <section className="py-16 bg-[#8B5CF6] text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">¿Necesitas ayuda?</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
+          <h2 className="text-3xl font-bold mb-4 text-white">¿Necesitas ayuda?</h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto text-white/90">
             Si necesitas asistencia para encontrar un libro o realizar un préstamo, nuestro personal bibliotecario está disponible para ayudarte.
           </p>
           <Button 
             size="lg" 
-            className="bg-white text-secondary hover:bg-gray-100"
+            className="bg-white text-[#8B5CF6] hover:bg-gray-100"
             onClick={handleContactClick}
             asChild
           >
