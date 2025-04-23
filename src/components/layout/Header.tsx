@@ -2,16 +2,15 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { HeaderLogo } from './HeaderLogo';
-import { DesktopNav } from './DesktopNav';
-import { UserMenu } from './UserMenu';
-import { MobileMenu } from './MobileMenu';
+import HeaderLeft from './HeaderLeft';
+import HeaderRight from './HeaderRight';
 
 const Header = () => {
   const { user, logout, hasRole } = useAuth();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  
+
+  // This helper is only needed in the right/user menu
   const getUserDisplayName = () => {
     if (!user) return '';
     if (user.email.endsWith('@gs.utm.mx')) {
@@ -23,23 +22,15 @@ const Header = () => {
   return (
     <header className="bg-[#56070c] text-primary-foreground py-2 px-4 shadow-md">
       <div className="container mx-auto flex items-center justify-between">
-        <HeaderLogo />
-        
-        <DesktopNav user={user} />
-
-        <MobileMenu 
-          isMobile={isMobile} 
-          mobileMenuOpen={mobileMenuOpen} 
-          setMobileMenuOpen={setMobileMenuOpen}
-          user={user} 
-        />
-
-        <UserMenu 
+        <HeaderLeft />
+        <HeaderRight
           user={user}
           logout={logout}
-          getUserDisplayName={getUserDisplayName}
-          isMobile={isMobile}
           hasRole={hasRole}
+          isMobile={isMobile}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          getUserDisplayName={getUserDisplayName}
         />
       </div>
     </header>
