@@ -21,7 +21,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-primary text-primary-foreground py-2 px-4 shadow-md">
+    <header className="bg-[#56070c] text-primary-foreground py-2 px-4 shadow-md">
       <div className="container mx-auto flex items-center justify-between">
         <HeaderLogo />
         
@@ -47,3 +47,4 @@ const Header = () => {
 };
 
 export default Header;
+
