@@ -10,7 +10,7 @@ interface HeroSectionProps {
   hasRole: (roles: UserRole | UserRole[]) => boolean;
 }
 const HeroSection = ({ user, hasRole }: HeroSectionProps) => (
-  <section className="bg-primary py-16 text-primary-foreground">
+  <section className="bg-[#56070c] text-primary-foreground py-16">
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center">
         <div className="md:w-1/2 mb-8 md:mb-0">
@@ -21,20 +21,20 @@ const HeroSection = ({ user, hasRole }: HeroSectionProps) => (
           {user ? (
             <div className="flex flex-wrap gap-4">
               <Link to="/catalogo">
-                <Button size="lg" className="bg-white text-primary hover:bg-gray-100">
+                <Button size="lg" className="bg-white text-[#56070c] hover:bg-gray-100">
                   <Search className="mr-2 h-5 w-5" />
                   Buscar libros
                 </Button>
               </Link>
               <Link to="/mis-prestamos">
-                <Button size="lg" variant="outline" className="border-white hover:bg-primary-foreground/10 text-blue-950">
+                <Button size="lg" variant="outline" className="border-white hover:bg-primary-foreground/10 text-white">
                   <BookOpen className="mr-2 h-5 w-5" />
                   Mis préstamos
                 </Button>
               </Link>
               {hasRole('administrador') && (
                 <Link to="/admin/usuarios">
-                  <Button size="lg" variant="outline" className="border-white hover:bg-primary-foreground/10 text-blue-950">
+                  <Button size="lg" variant="outline" className="border-white hover:bg-primary-foreground/10 text-white">
                     <Users className="mr-2 h-5 w-5" />
                     Gestionar usuarios
                   </Button>
@@ -44,12 +44,12 @@ const HeroSection = ({ user, hasRole }: HeroSectionProps) => (
           ) : (
             <div className="flex flex-wrap gap-4">
               <Link to="/login">
-                <Button size="lg" className="bg-white text-primary hover:bg-gray-100">
+                <Button size="lg" className="bg-white text-[#56070c] hover:bg-gray-100">
                   Iniciar sesión
                 </Button>
               </Link>
               <Link to="/catalogo">
-                <Button size="lg" variant="outline" className="border-white hover:bg-primary-foreground/10 text-blue-950">
+                <Button size="lg" variant="outline" className="border-white hover:bg-primary-foreground/10 text-white">
                   <Search className="mr-2 h-5 w-5" />
                   Explorar catálogo
                 </Button>
