@@ -1,20 +1,20 @@
+
 import React, { useState, useEffect } from "react";
-import { GraduationCap, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Thesis } from "@/types";
-import DataExport from "@/components/admin/DataExport";
-import DataImport from "@/components/admin/DataImport";
-import ThesisTable from "@/components/thesis/ThesisTable";
-import ThesisSearch from "@/components/thesis/ThesisSearch";
+import { useToast } from "@/hooks/use-toast";
+import type { Thesis } from "@/types";
 import AddThesisDialog from "@/components/thesis/AddThesisDialog";
 import EditThesisDialog from "@/components/thesis/EditThesisDialog";
-import { useToast } from "@/hooks/use-toast";
 import { useThesisFileUpload } from "@/hooks/useThesisFileUpload";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTheses, deleteThesis } from "@/lib/theses-db";
 import { createStorageBuckets } from "@/utils/createStorageBucket";
 import { useAuth } from "@/contexts/AuthContext";
 import { isStaffUser } from "@/lib/user-utils";
+import GestionTesisHeader from "./GestionTesisHeader";
+import GestionTesisActions from "./GestionTesisActions";
+import GestionTesisFilters from "./GestionTesisFilters";
+import GestionTesisSummary from "./GestionTesisSummary";
+import GestionTesisTableSection from "./GestionTesisTableSection";
 
 interface GestionTesisPanelProps {
   isAuthenticated: boolean;
@@ -22,8 +22,8 @@ interface GestionTesisPanelProps {
 
 const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
   const { toast } = useToast();
-  const { deleteThesisFile } = useThesisFileUpload();
   const queryClient = useQueryClient();
+  const { deleteThesisFile } = useThesisFileUpload();
   const [busqueda, setBusqueda] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -152,10 +152,7 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
   if (!canManageThesis && !isDev) {
     return (
       <div className="container mx-auto py-10 px-4">
-        <div className="flex items-center mb-6">
-          <GraduationCap className="h-8 w-8 text-primary mr-3" />
-          <h1 className="text-2xl font-bold">Gestión de Tesis</h1>
-        </div>
+        <GestionTesisHeader />
         <div className="bg-destructive/10 p-4 rounded-lg border border-destructive">
           <h2 className="text-lg font-semibold text-destructive mb-2">Acceso denegado</h2>
           <p>Solo los bibliotecarios y administradores pueden acceder a la gestión de tesis.</p>
@@ -167,45 +164,28 @@ const GestionTesisPanel = ({ isAuthenticated }: GestionTesisPanelProps) => {
   return (
     <div className="container mx-auto py-4 px-2 sm:py-10 sm:px-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div className="flex items-center">
-          <GraduationCap className="h-8 w-8 text-primary mr-3" />
-          <h1 className="text-2xl sm:text-3xl font-bold">Gestión de Tesis</h1>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-          <DataImport onImport={handleImportTesis} accept=".csv,.json,.xlsx" />
-          <DataExport
-            data={tesisFiltradas}
-            filename="tesis-export"
-            buttonLabel="Exportar tesis"
-          />
-          <Button onClick={() => setAddDialogOpen(true)} className="w-full sm:w-auto">
-            <Plus className="h-4 w-4 mr-2" />
-            Agregar tesis
-          </Button>
-        </div>
+        <GestionTesisHeader />
+        <GestionTesisActions
+          onImport={handleImportTesis}
+          exportData={tesisFiltradas}
+          onAdd={() => setAddDialogOpen(true)}
+        />
       </div>
       <div>
-        <ThesisSearch
+        <GestionTesisFilters
           busqueda={busqueda}
           tipoFiltro={tipoFiltro}
           onBusquedaChange={setBusqueda}
           onTipoFiltroChange={setTipoFiltro}
           onLimpiarFiltros={limpiarFiltros}
         />
-        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-2">
-          <p className="text-gray-600 text-sm sm:text-base">
-            Mostrando {tesisFiltradas.length} {tesisFiltradas.length === 1 ? 'tesis' : 'tesis'}
-            {isLoading && ' (Cargando...)'}
-          </p>
-        </div>
+        <GestionTesisSummary count={tesisFiltradas.length} isLoading={isLoading} />
       </div>
-      <div className="overflow-x-auto">
-        <ThesisTable
-          theses={tesisFiltradas}
-          onEdit={handleEditTesis}
-          onDelete={handleThesisDelete}
-        />
-      </div>
+      <GestionTesisTableSection
+        theses={tesisFiltradas}
+        onEdit={handleEditTesis}
+        onDelete={handleThesisDelete}
+      />
       <AddThesisDialog
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
