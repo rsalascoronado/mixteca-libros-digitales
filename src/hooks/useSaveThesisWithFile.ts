@@ -16,9 +16,6 @@ export const useSaveThesisWithFile = (
 
   const saveThesisWithFile = async (thesis: Partial<Thesis>, file?: File): Promise<Thesis> => {
     try {
-      // Verificar autenticación
-      const { data: authData } = await import("@/integrations/supabase/client").then(m => m.supabase.auth.getSession());
-
       // Verificar primero si estamos en modo de desarrollo
       const isDevMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
       
@@ -27,20 +24,24 @@ export const useSaveThesisWithFile = (
       const canSkipAuth = isDevMode || isUserStaff;
       
       console.log("Verificación de permisos:", {
-        isAuthenticated: !!authData.session,
         isStaff: isUserStaff,
         isDev: isDevMode,
         canSkip: canSkipAuth
       });
       
       // Solo verificar la autenticación si no es staff y no estamos en desarrollo
-      if (!authData.session && !canSkipAuth) {
-        toast({
-          title: "Error de autenticación",
-          description: "Debes iniciar sesión para guardar tesis",
-          variant: "destructive"
-        });
-        throw new Error('Debes iniciar sesión para guardar tesis');
+      if (!canSkipAuth) {
+        // Verificar autenticación
+        const { data: authData } = await import("@/integrations/supabase/client").then(m => m.supabase.auth.getSession());
+        
+        if (!authData.session) {
+          toast({
+            title: "Error de autenticación",
+            description: "Debes iniciar sesión para guardar tesis",
+            variant: "destructive"
+          });
+          throw new Error('Debes iniciar sesión para guardar tesis');
+        }
       }
 
       let publicUrl = thesis.archivoPdf || null;

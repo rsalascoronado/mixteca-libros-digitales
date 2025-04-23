@@ -24,9 +24,6 @@ export const useThesisUploadHelpers = () => {
         throw new Error('El archivo debe ser un PDF');
       }
 
-      const { data: authData } = await supabase.auth.getSession();
-      console.log("Estado de sesión para carga de tesis:", authData.session ? "Autenticado" : "No autenticado");
-
       // Verificar si el usuario es staff o si estamos en modo desarrollo
       const isDevelopmentMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
       const userIsStaff = isStaffUser(user);
@@ -49,18 +46,18 @@ export const useThesisUploadHelpers = () => {
       }
 
       // Crear bucket si no existe
-      const bucketCreated = await createBucketIfNotExists('thesis-files');
-      if (!bucketCreated) {
-        console.warn("No se pudo confirmar la existencia del bucket, pero continuamos");
-      }
+      await createBucketIfNotExists('thesis-files');
       
       const fileExt = file.name.split('.').pop();
       const fileName = `thesis-${Date.now()}.${fileExt}`;
 
       // Simular progreso
       const progressInterval = setInterval(() => {
-        setUploadProgress((prev: number) => Math.min(prev + 10, 90));
-      }, 500);
+        setUploadProgress((prev) => {
+          const newProgress = Math.min(prev + 5, 95);
+          return newProgress;
+        });
+      }, 300);
 
       try {
         console.log("Iniciando carga de archivo de tesis:", fileName);
@@ -95,8 +92,10 @@ export const useThesisUploadHelpers = () => {
       } catch (error: any) {
         throw error;
       } finally {
-        setIsUploading(false);
         clearInterval(progressInterval);
+        setTimeout(() => {
+          setIsUploading(false);
+        }, 500);
       }
     } catch (error: any) {
       console.error("Error en uploadThesisFile:", error);
@@ -113,6 +112,11 @@ export const useThesisUploadHelpers = () => {
 
   const deleteThesisFile = async (fileUrl: string) => {
     try {
+      if (!fileUrl) {
+        console.warn("Se intentó eliminar un archivo sin URL");
+        return;
+      }
+      
       // Verificar si el usuario es staff o si estamos en modo desarrollo
       const isDevelopmentMode = import.meta.env.DEV || import.meta.env.MODE === 'development';
       const userIsStaff = isStaffUser(user);
@@ -130,15 +134,21 @@ export const useThesisUploadHelpers = () => {
       // Extraer nombre
       let fileName = '';
       
-      if (fileUrl.includes('/')) {
-        const urlParts = fileUrl.split('/');
-        fileName = urlParts[urlParts.length - 1];
-      } else {
+      try {
+        if (fileUrl.includes('/')) {
+          const urlParts = fileUrl.split('/');
+          fileName = urlParts[urlParts.length - 1];
+        } else {
+          fileName = fileUrl;
+        }
+      } catch (error) {
+        console.error("Error extrayendo nombre de archivo:", error);
         fileName = fileUrl;
       }
       
       if (!fileName) {
-        throw new Error('No se pudo obtener el nombre del archivo');
+        console.warn("No se pudo extraer nombre de archivo:", fileUrl);
+        return;
       }
 
       console.log("Intentando eliminar archivo:", fileName);
@@ -154,13 +164,11 @@ export const useThesisUploadHelpers = () => {
           description: error.message || 'No se pudo eliminar el archivo',
           variant: 'destructive'
         });
-        throw new Error(`Error eliminando el archivo: ${error.message}`);
+      } else {
+        console.log("Archivo de tesis eliminado exitosamente");
       }
-      
-      console.log("Archivo de tesis eliminado exitosamente");
     } catch (error) {
       console.error("Error en deleteThesisFile:", error);
-      throw error;
     }
   };
 

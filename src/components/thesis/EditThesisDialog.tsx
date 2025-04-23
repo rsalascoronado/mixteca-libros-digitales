@@ -62,17 +62,20 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
     
     try {
       // Si se seleccionó un nuevo archivo y ya existía uno anterior, eliminar el anterior
-      if (selectedFile && editingThesis.archivoPdf) {
+      const shouldDeleteOldFile = selectedFile && editingThesis.archivoPdf;
+      
+      // Guardar la tesis con el nuevo archivo (si existe)
+      const updatedThesis = await saveThesisWithFile(editingThesis, selectedFile || undefined);
+      
+      // Eliminar archivo anterior después de guardar exitosamente
+      if (shouldDeleteOldFile) {
         try {
           await deleteThesisFile(editingThesis.archivoPdf);
         } catch (error) {
           console.warn('Error deleting previous file:', error);
-          // Continuamos con la operación aunque falle la eliminación del archivo anterior
+          // No interrumpimos el flujo si falla la eliminación
         }
       }
-      
-      // Guardar la tesis con el nuevo archivo (si existe)
-      const updatedThesis = await saveThesisWithFile(editingThesis, selectedFile || undefined);
       
       // Actualizar la UI y cerrar el diálogo
       onThesisUpdated(updatedThesis);
@@ -100,7 +103,11 @@ const EditThesisDialog = ({ thesis, open, onOpenChange, onThesisUpdated }: EditT
   return (
     <ResponsiveDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(newOpen) => {
+        // Si está en proceso de carga, no permitir cerrar
+        if (isUploading && !newOpen) return;
+        onOpenChange(newOpen);
+      }}
       title="Editar tesis"
       description="Modifica la información de la tesis."
       footer={
