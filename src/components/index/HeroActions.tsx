@@ -20,14 +20,22 @@ export const LoggedInActions = ({ user, hasRole }: HeroActionsProps) => {
         </Button>
       </Link>
       <Link to="/mis-prestamos">
-        <Button size="lg" variant="outline" className="border-white hover:bg-primary-foreground/10 text-white">
+        <Button 
+          size="lg" 
+          variant="default" 
+          className="bg-[#56070c] text-white hover:bg-[#40050a]"
+        >
           <BookOpen className="mr-2 h-5 w-5" />
           Mis préstamos
         </Button>
       </Link>
       {hasRole('administrador') && (
         <Link to="/admin/usuarios">
-          <Button size="lg" variant="outline" className="border-white hover:bg-primary-foreground/10 text-white">
+          <Button 
+            size="lg" 
+            variant="default" 
+            className="bg-secondary text-white hover:bg-secondary/90"
+          >
             <Users className="mr-2 h-5 w-5" />
             Gestionar usuarios
           </Button>
