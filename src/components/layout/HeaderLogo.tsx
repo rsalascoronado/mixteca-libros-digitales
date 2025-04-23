@@ -1,13 +1,21 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Home } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+
 export const HeaderLogo = () => {
   const isMobile = useIsMobile();
-  return <div className="flex items-center space-x-2">
+  
+  return (
+    <div className="flex items-center space-x-2">
       <Link to="/" className="flex items-center">
-        <Button variant="ghost" size={isMobile ? "icon" : "default"} className="text-primary-foreground hover:bg-primary/20 hover:text-white flex items-center">
+        <Button 
+          variant="ghost" 
+          size={isMobile ? "icon" : "default"} 
+          className="text-primary-foreground hover:bg-[#56070c]/20 hover:text-white flex items-center"
+        >
           <Home className="h-5 w-5 mr-2" />
           {!isMobile && "Inicio"}
           <span className="sr-only">Inicio</span>
@@ -15,11 +23,11 @@ export const HeaderLogo = () => {
       </Link>
 
       <Link to="/" className="flex items-center">
-        
         <div className="flex flex-col">
           <span className="text-lg font-bold tracking-tight">Biblioteca</span>
           <span className="text-xs tracking-tight">Universidad Tecnológica de la Mixteca</span>
         </div>
       </Link>
-    </div>;
+    </div>
+  );
 };
